@@ -53,7 +53,7 @@ Object& Object::operator=(const Object& obj) {
 }
 
 Object* makeObject(StoreAs type) {
-    Object* obj = new Object;
+    Object* obj = GarbageCollector.allocNode();
     obj->type = type;
     obj->isnull = false;
     return obj;

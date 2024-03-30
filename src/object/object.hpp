@@ -12,6 +12,7 @@ struct ListHeader;
 
 struct Object {
     bool isnull;
+    bool gcLive;
     StoreAs type;
     union {
         int intVal;
@@ -27,6 +28,28 @@ struct Object {
     bool operator==(const Object& obj) const noexcept;
     bool operator!=(const Object& obj) const noexcept;
 };
+
+class GC_Allocator {
+    private:
+        vector<Object*> created;
+        void mark_node(Object* obj) {
+            if (obj != nullptr) {
+                obj->gcLive = true;
+            }
+        }
+    public:
+        GC_Allocator() {
+
+        }
+        Object* allocNode() {
+            Object* nn = new Object;
+            nn->gcLive = false;
+            created.push_back(nn);
+            return nn;
+        }
+};
+
+inline GC_Allocator GarbageCollector;
 
 struct ListNode {
     Object* data;

@@ -5,10 +5,12 @@ inline const int MAX_MEM_STORE = 1500;
 
 class MemStore {
     private:
+        friend GC_Allocator;
         Object* memstore[MAX_MEM_STORE];
         int nextFreeAddress;
         int freedCells[MAX_MEM_STORE];
         int freedCount;
+        void rungc();
     public:
         MemStore();
         void free(int addr);
