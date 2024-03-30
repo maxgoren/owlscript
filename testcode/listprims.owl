@@ -1,0 +1,10 @@
+list := [13, 42, 86, 37, 24, 11];
+println list;
+i := 0;
+tail := list;
+loop (i < length(list)) {
+    println i + ": " + first(tail);
+    tail := rest(tail);
+    i := i + 1;
+}
+list := map(lambda(x) { return x*2;}, list);

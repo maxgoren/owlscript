@@ -105,7 +105,8 @@ string toString(Object* obj) {
         case AS_INT:    str = to_string(obj->intVal);  break;
         case AS_BOOL:   str = obj->boolVal ? "true":"false"; break;
         case AS_STRING: str = *obj->stringVal; break;
-        case AS_CLOSURE: str = "(LAMBDA)"; break;
+        case AS_CLOSURE: str = "(LAMBDA)"; 
+            break;
         case AS_LIST: 
             str = "[ ";
             if (obj->list != nullptr) {
@@ -123,12 +124,12 @@ string toString(Object* obj) {
                     }
                 }
             } else {
-                str += "(empty)";
+                str += "0";
             }
             str.push_back(']');
             break;
         default: 
-            str = "(empty)"; break;
+            str = "0"; break;
     }
     return str;
 }

@@ -16,7 +16,7 @@ println inner(5);
 println "using closure instead: ";
 def addOne(y) {
     z := y;
-    return lambda() { z := z + 1; return z; }
+    return lambda(x) { z := z + x + 1; return z; }
 }
 
 g := addOne(5);

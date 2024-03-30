@@ -70,6 +70,7 @@ class Interpreter {
         Object* runClosure(ASTNode* node, Object* obj);
         Object* procedureCall(ASTNode* node);
         Object* lambdaExpr(ASTNode* node);
+        Object* mapExpr(ASTNode* node);
         Object* eval(ASTNode* node);
         Object* expression(ASTNode* node);
         Object* listExpr(ASTNode* node);

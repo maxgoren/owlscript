@@ -3,7 +3,7 @@
 MemStore::MemStore() {
     nextFreeAddress = 0;
     memstore[0] = new Object;
-    memstore[0]->type = AS_INT;
+    memstore[0]->type = AS_NIL;
     memstore[0]->isnull = true;
     freedCount = 0;
 }

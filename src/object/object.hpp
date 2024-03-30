@@ -5,7 +5,7 @@
 #include "../closure/closure.hpp"
 using namespace std;
 enum StoreAs {
-    AS_INT, AS_REAL, AS_BOOL, AS_STRING, AS_LIST, AS_CLOSURE
+    AS_INT, AS_REAL, AS_BOOL, AS_STRING, AS_LIST, AS_CLOSURE, AS_NIL
 };
 
 struct ListHeader;

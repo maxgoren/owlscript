@@ -8,7 +8,7 @@ Object* Interpreter::eval(ASTNode* node) {
     enter("eval");
     Object* lhs = expression(node->left);
     Object* rhs = expression(node->right);
-    if (lhs->type != AS_LIST && rhs->type != AS_LIST && lhs->type != AS_STRING && rhs->type != AS_STRING ) {
+    if (lhs->type != AS_LIST && rhs->type != AS_LIST && lhs->type != AS_STRING && rhs->type != AS_STRING && lhs->type != AS_CLOSURE &&  rhs->type != AS_CLOSURE) {
         double left = stof(toString(lhs));
         double right = stof(toString(rhs));
         switch (node->data.tokenVal) {
@@ -29,7 +29,6 @@ Object* Interpreter::eval(ASTNode* node) {
                 cout<<"Unknown Operator: "<<node->data.stringVal<<endl;
         }
     } else if ((lhs->type == AS_STRING || rhs->type == AS_STRING) && node->data.tokenVal == PLUS) {
-        
         return makeStringObject(new string(toString(lhs) + toString(rhs)));
     } else {
         cout<<"Error: Unsupported operation for those types."<<endl;
@@ -77,7 +76,7 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
     run(body);
     Object* retVal = callStack.top()->returnValue;
     for (auto toFree : clos->env) {
-        memStore.free(toFree.second);
+       memStore.free(toFree.second);
     }
     clos->env = callStack.top()->env;
     callStack.pop();
@@ -113,7 +112,7 @@ Object* Interpreter::procedureCall(ASTNode* node) {
 }
 
 Object* Interpreter::lambdaExpr(ASTNode* node) {
-    return makeClosureObject(makeClosure(node->right, node->left, callStack.empty() ? st:callStack.top()->env));
+    return makeClosureObject(makeClosure(node->right, node->left, callStack.empty() ? Environment():callStack.top()->env));
 }
 
 Object* Interpreter::listExpr(ASTNode* node) {
@@ -236,6 +235,11 @@ Object* Interpreter::sortList(ASTNode* node) {
     return makeListObject(list);
 }
 
+Object* Interpreter::mapExpr(ASTNode* node) {
+    cout<<"Lol yeah right."<<endl;
+    return makeListObject(new ListHeader);
+}
+
 Object* Interpreter::getListItem(ASTNode* node, Object* listObj) {
     enter("listEntry");
     if (node->left == nullptr)
@@ -337,6 +341,7 @@ Object* Interpreter::getVariableValue(ASTNode* node) {
     string name = node->data.stringVal;
     addr = getAddress(name);
     result = memStore.get(addr);
+    say(name + "resolves to address: " + to_string(addr) + ", value: " + toString(result));
     if (result->type == AS_LIST && node->left != nullptr) {
          result = getListItem(node, result);
     }
@@ -387,6 +392,9 @@ Object* Interpreter::expression(ASTNode* node) {
         case SORT_EXPR:
             enter("[sortlist_expr]"); leave();
             return sortList(node);
+        case MAP_EXPR:
+            enter("map_expr"); leave();
+            return mapExpr(node);
         default:
             break;
     }

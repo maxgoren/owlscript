@@ -326,7 +326,8 @@ ASTNode* Parser::factor() {
         leave("lambda");
         return lambdaExpr();
     }
-    if (lookahead() == LSQ || lookahead() == LENGTH || lookahead() == SORT || lookahead() == POP || lookahead() == FIRST || lookahead() == REST)
+    if (lookahead() == LSQ || lookahead() == LENGTH || lookahead() == SORT ||
+        lookahead() == POP || lookahead() == MAP || lookahead() == FIRST || lookahead() == REST)
         return listExpr();
     leave();
     return node;
@@ -393,6 +394,18 @@ ASTNode* Parser::listExpr() {
             node->left = d.left;
             return node;
         }
+    }
+    if (lookahead() == MAP) {
+        ASTNode* node = makeExprNode(MAP_EXPR, lookahead(), current.stringVal);
+        match(MAP);
+        match(LPAREN);
+        node->left = simpleExpr();
+        match(COMA);
+        node->right = simpleExpr();
+        match(RPAREN);
+        if (lookahead() == SEMI)
+            match(SEMI);
+        return node;
     }
     if (lookahead() == LENGTH) {
         ASTNode* node = makeExprNode(LISTLEN_EXPR, lookahead(), current.stringVal);

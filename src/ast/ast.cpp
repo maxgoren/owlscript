@@ -60,6 +60,7 @@ void ASTTracer::printNode(ASTNode* node) {
             case LIST_EXPR: cout<<"[LIST_EXPR]"<<endl; break;
             case LISTLEN_EXPR: cout<<"[LISTLEN_EXPR]"<<endl; break;
             case SORT_EXPR: cout<<"[SORT_EXPR]"<<endl; break;
+            case MAP_EXPR: cout<<"[MAP_EXPR]"<<endl; break;
             case CAR_EXPR: cout<<"[CAR_EXPR]"<<endl; break;
             case CDR_EXPR: cout<<"[CDR_EXPR]"<<endl; break;
             default:
