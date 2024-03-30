@@ -71,6 +71,7 @@ void ASTTracer::printNode(ASTNode* node) {
             case IF_STMT:     cout<<"[IF_STMT]"<<endl; break;
             case LOOP_STMT:   cout<<"[LOOP_STMT]"<<endl; break;
             case PRINT_STMT:  cout<<"[PRINT_STMT]"<<endl; break;
+            case READ_STMT:  cout<<"[READ_STMT]"<<endl; break;
             case ASSIGN_STMT: cout<<"[ASSIGN_STMT]"<<endl; break;
             case DEF_STMT:    cout<<"[DEF_STMT]"<<endl; break;
             case RETURN_STMT: cout<<"[RETURN_STMT]"<<endl; break;

@@ -33,6 +33,7 @@ class Parser {
         ASTNode* loopStatement();
         ASTNode* listStatement();
         ASTNode* printStatement();
+        ASTNode* readStatement();
         ASTNode* defStatement();
         ASTNode* idStatement();
         ASTNode* returnStatement();

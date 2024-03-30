@@ -27,6 +27,7 @@ Lexeme Lexer::extractWord() {
     sb.unGet();
     if (word == "print" || word == "println") 
         return Lexeme(PRINT, word, sb.lineNumber());
+    if (word == "read") return Lexeme(READ, word, sb.lineNumber());
     if (word == "if") return Lexeme(IF, word, sb.lineNumber());
     if (word == "else") return Lexeme(ELSE, word, sb.lineNumber());
     if (word == "loop") return Lexeme(LOOP, word, sb.lineNumber());

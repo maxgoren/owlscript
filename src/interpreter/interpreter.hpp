@@ -86,6 +86,7 @@ class Interpreter {
         void appendList(ASTNode* node);
         void returnStmt(ASTNode* node);
         void printStmt(ASTNode* node);
+        void readStmt(ASTNode* node);
         void ifStmt(ASTNode* node);
         void loopStmt(ASTNode* node);
         void assignStmt(ASTNode* node);

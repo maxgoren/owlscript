@@ -216,6 +216,17 @@ ASTNode* Parser::returnStatement() {
     return node;
 }
 
+ASTNode* Parser::readStatement() {
+    enter("read statement");
+    ASTNode* node = makeStmtNode(READ_STMT, lookahead(), current.stringVal);
+    match(READ);
+    node->left = simpleExpr();
+    if (lookahead() == SEMI)
+        match(SEMI);
+    leave();
+    return node;
+}
+
 ASTNode* Parser::exprStatement() {
     enter("expr statement");
     ASTNode* node = simpleExpr();
@@ -229,6 +240,8 @@ ASTNode* Parser::statement() {
     switch (lookahead()) {
         case PRINT: 
             return printStatement();
+        case READ:
+            return readStatement();
         case IF: 
             return ifStatement();
         case LOOP:
@@ -238,6 +251,9 @@ ASTNode* Parser::statement() {
         case ID: 
             say("statement: id");
             return idStatement();
+        case SEMI: match(SEMI);
+                   break;
+        case NUMBER:
         case LPAREN: 
             say("statement: lparen");
             return exprStatement();

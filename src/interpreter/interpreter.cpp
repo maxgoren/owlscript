@@ -74,6 +74,7 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
     say("Executing lambda");
     run(body);
     Object* retVal = callStack.top()->returnValue;
+
     //arguments get freed as normal whether a plain lambda or closure
     for (auto it = clos->paramList; it != nullptr; it = it->left) {
         string name = it->data.stringVal;
@@ -124,7 +125,7 @@ Object* Interpreter::procedureCall(ASTNode* node) {
 
 Object* Interpreter::lambdaExpr(ASTNode* node) {
     bool isClosure = (!callStack.empty());
-    return makeClosureObject(makeLambda(node->right, node->left, callStack.empty() ? Environment():callStack.top()->env, isClosure));
+    return makeClosureObject(makeLambda(node->right, node->left, isClosure ? callStack.top()->env:Environment(), isClosure));
 }
 
 Object* Interpreter::listExpr(ASTNode* node) {
@@ -247,9 +248,29 @@ Object* Interpreter::sortList(ASTNode* node) {
     return makeListObject(list);
 }
 
+//I don't know how I feel about this.
+//It has a blinking in and out of reality feel 
 Object* Interpreter::mapExpr(ASTNode* node) {
-    cout<<"Lol yeah right."<<endl;
-    return makeListObject(new ListHeader);
+    Object* lambdaObj = lambdaExpr(node->left);
+    auto listAddr = getAddress(node->right->data.stringVal);
+    Object* listObj = memStore.get(listAddr);
+    ListHeader* resultList = new ListHeader;
+    resultList->size = 0;
+    resultList->head = nullptr;
+    ListNode d;
+    ListNode* tmpR = &d;
+    for (auto it = listObj->list->head; it != nullptr; it = it->next) {
+        ASTNode* t = new ASTNode;
+        t->left = makeExprNode(CONST_EXPR, NUMBER, toString(it->data));
+        t->right = nullptr; t->mid = nullptr; t->next = nullptr;
+        auto result = runClosure(t, lambdaObj);
+        tmpR->next = new ListNode;
+        tmpR->next->data = result;
+        tmpR = tmpR->next;
+        tmpR->next = nullptr;
+    }
+    resultList->head = d.next;
+    return makeListObject(resultList);
 }
 
 Object* Interpreter::getListItem(ASTNode* node, Object* listObj) {
@@ -425,6 +446,20 @@ void Interpreter::printStmt(ASTNode* node) {
     leave();
 }
 
+void Interpreter::readStmt(ASTNode* node) {
+    enter("[input]");
+    string input;
+    getline(cin, input);
+    say("read in: " + input);
+    int addr = getAddress(node->left->data.stringVal);
+    if (addr == 0) {
+        addr = memStore.storeAtNextFree(makeStringObject(new string(input)));
+    } else {
+        memStore.store(addr, makeStringObject(new string(input)));
+    }
+    leave();
+}
+
 void Interpreter::ifStmt(ASTNode* node) {
     enter("[if statement]");
     ASTNode* t = nullptr;
@@ -498,6 +533,9 @@ void Interpreter::statement(ASTNode* node) {
     switch (node->type.stmt) {
         case PRINT_STMT:
             printStmt(node);
+            break;
+        case READ_STMT:
+            readStmt(node);
             break;
         case ASSIGN_STMT:
             assignStmt(node);
