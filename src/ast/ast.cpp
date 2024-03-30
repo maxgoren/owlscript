@@ -7,6 +7,7 @@ ASTNode* makeExprNode(ExprK type, TOKENS token, string str) {
     node->data.stringVal = str;
     node->data.tokenVal = token;
     node->left = nullptr;
+    node->mid = nullptr;
     node->right = nullptr;
     node->next = nullptr;
     return node;
@@ -19,6 +20,7 @@ ASTNode* makeStmtNode(StmtK type, TOKENS token, string str) {
     node->data.stringVal = str;
     node->data.tokenVal = token;
     node->left = nullptr;
+    node->mid = nullptr;
     node->right = nullptr;
     node->next = nullptr;
     return node;
@@ -35,6 +37,8 @@ void ASTTracer::traverse(ASTNode* x) {
             printNode(node);
         if (node->left != nullptr)
             traverse(node->left);
+        if (node->mid != nullptr)
+            traverse(node->mid);
         if (node->right != nullptr)
             traverse(node->right);
     }
@@ -56,6 +60,8 @@ void ASTTracer::printNode(ASTNode* node) {
             case LIST_EXPR: cout<<"[LIST_EXPR]"<<endl; break;
             case LISTLEN_EXPR: cout<<"[LISTLEN_EXPR]"<<endl; break;
             case SORT_EXPR: cout<<"[SORT_EXPR]"<<endl; break;
+            case CAR_EXPR: cout<<"[CAR_EXPR]"<<endl; break;
+            case CDR_EXPR: cout<<"[CDR_EXPR]"<<endl; break;
             default:
                 break;
         }

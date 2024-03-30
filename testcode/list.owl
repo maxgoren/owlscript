@@ -1,14 +1,9 @@
 i := [13, 42, "yo dag", 6.66, 341];
 m := 0;
-loop (m < 5) {
+loop (m < length(i)) {
 	print (i[m] + " ");
 	m := m + 1;
 }
-println i;
-println length(i);
-pop(i);
-println length(i);
-println i;
-push(i, 241);
-println length(i);
-println i;
+print "\n";
+println first(i);
+println rest(i);

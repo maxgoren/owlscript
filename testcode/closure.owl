@@ -13,19 +13,19 @@ println outter(5);
 println "calling from main: ";
 println inner(5);
 
- 
-def AddOne(y) {
-    z := 1;
-    return lambda() { z := z + 1; return z + y; }
-} 
+println "using closure instead: ";
+def addOne(y) {
+    z := y;
+    return lambda() { z := z + 1; return z; }
+}
 
-println "using lambda closure: ";
-g := AddOne(5);
-println g();
-println g();
+g := addOne(5);
+println g(5);
+println g(5);
 
-println "global level assigned lambdas behave just like functions, but can be passed around: ";
+
 y := lambda(x) { x := x + 1; return x; };
+
 i := 0;
 loop (i < 5) {
     println y(i);

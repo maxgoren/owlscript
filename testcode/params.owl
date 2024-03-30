@@ -1,10 +1,12 @@
 def ok(m) {
-    return m + 1;
+    return (m + 1);
 }
 
 def test(i, j) {
-    return i + j;
+    return (i + j);
 }
 
 println ok(1);
 println test(2,1);
+
+test(3,4);

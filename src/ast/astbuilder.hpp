@@ -20,7 +20,7 @@ class ASTBuilder {
         }
         ASTNode* fromFile(string filename) {
             Lexer lexer;
-            Parser parser;
+            Parser parser(trace);
             return parser.parse(lexer.lex(filename));
         }
 };

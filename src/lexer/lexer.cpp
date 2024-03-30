@@ -37,6 +37,8 @@ Lexeme Lexer::extractWord() {
     if (word == "length") return Lexeme(LENGTH, word, sb.lineNumber());
     if (word == "append") return Lexeme(APPEND, word, sb.lineNumber());
     if (word == "sort") return Lexeme(SORT, word, sb.lineNumber());
+    if (word == "first") return Lexeme(FIRST, word, sb.lineNumber());
+    if (word == "rest") return Lexeme(REST, word, sb.lineNumber());
     if (word == "lambda") return Lexeme(LAMBDA, word, sb.lineNumber());
     return Lexeme(ID, word, sb.lineNumber());
 }

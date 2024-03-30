@@ -73,6 +73,8 @@ class Interpreter {
         Object* eval(ASTNode* node);
         Object* expression(ASTNode* node);
         Object* listExpr(ASTNode* node);
+        Object* carExpr(ASTNode* node);
+        Object* cdrExpr(ASTNode* node);
         Object* getListItem(ASTNode* node, Object* list);
         Object* sortList(ASTNode* node);
         Object* listSize(ASTNode* node);

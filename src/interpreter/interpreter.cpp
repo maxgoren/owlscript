@@ -9,8 +9,8 @@ Object* Interpreter::eval(ASTNode* node) {
     Object* lhs = expression(node->left);
     Object* rhs = expression(node->right);
     if (lhs->type != AS_LIST && rhs->type != AS_LIST && lhs->type != AS_STRING && rhs->type != AS_STRING ) {
-        double left = lhs->realVal;
-        double right = rhs->realVal;
+        double left = stof(toString(lhs));
+        double right = stof(toString(rhs));
         switch (node->data.tokenVal) {
             case PLUS:     return makeRealObject(left+right);
             case MINUS:    return makeRealObject(left-right);
@@ -61,8 +61,12 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
     ar->function = new Procedure;
     ar->function->functionBody = clos->functionBody;
     ar->env = clos->env;
+    ASTNode* t = node->left;
     for (auto it = clos->paramList; it != nullptr; it = it->left) {
-        ar->env.insert(make_pair(it->data.stringVal, memStore.storeAtNextFree(expression(node->left))));
+        ar->env.insert(make_pair(it->data.stringVal, memStore.storeAtNextFree(expression(t))));
+        say(it->data.stringVal + " added to AR.");
+        if (t->left != nullptr)
+            t = t->left;
     }
     ar->returnValue = makeRealObject(0.0);
     ar->dynamicLink = callStack.top();
@@ -179,6 +183,39 @@ Object* Interpreter::listSize(ASTNode* node) {
     return makeIntObject(size);
 }
 
+Object* Interpreter::carExpr(ASTNode* node) {
+    enter("[carExpr]");
+    bool is_local = false;
+    Object* obj;
+    int addr, size;
+    string name = node->left->data.stringVal;
+    addr = getAddress(name);
+    if (addr > 0) {
+        obj = memStore.get(addr);
+        return obj->list->head->data;
+    }
+    leave();
+    return makeIntObject(size);
+}
+
+Object* Interpreter::cdrExpr(ASTNode* node) {
+    enter("[carExpr]");
+    bool is_local = false;
+    Object* obj;
+    int addr, size;
+    string name = node->left->data.stringVal;
+    addr = getAddress(name);
+    if (addr > 0) {
+        obj = memStore.get(addr);
+        ListHeader* cdr = new ListHeader;
+        cdr->size = obj->list->size - 1;
+        cdr->head = obj->list->head->next;
+        return makeListObject(cdr);
+    }
+    leave();
+    return makeIntObject(size);
+}
+
 
 Object* Interpreter::sortList(ASTNode* node) {
     enter("[sort]");
@@ -201,6 +238,8 @@ Object* Interpreter::sortList(ASTNode* node) {
 
 Object* Interpreter::getListItem(ASTNode* node, Object* listObj) {
     enter("listEntry");
+    if (node->left == nullptr)
+        return listObj;
     Object* tmp = expression(node->left);
     int arrIndex = tmp->realVal;
     say("Index: " + to_string(arrIndex));
@@ -333,6 +372,12 @@ Object* Interpreter::expression(ASTNode* node) {
         case STRINGLIT_EXPR:
             enter("[string literal expression]"); leave();
             return makeStringObject(&(node->data.stringVal));
+        case CAR_EXPR: 
+            enter("[car expr]"); leave();
+            return carExpr(node);
+        case CDR_EXPR:
+            enter("[cdr expr]"); leave();
+            return cdrExpr(node);
         case LIST_EXPR:
             enter("[list expression]"); leave();
             return listExpr(node);
@@ -477,11 +522,9 @@ void Interpreter::run(ASTNode* node) {
         return;
     switch(node->kind) {
         case STMTNODE:
-            say("-statement");
             statement(node);
             break;
         case EXPRNODE:
-            say("-expression");
             expression(node);
             break;
     }
@@ -489,7 +532,7 @@ void Interpreter::run(ASTNode* node) {
         stopProcedure = false;
         return;
     }
-    say("sibling"); leave(); leave();
+    leave();
     run(node->next);
 }
 

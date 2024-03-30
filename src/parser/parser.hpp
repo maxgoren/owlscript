@@ -15,6 +15,7 @@ class Parser {
         Lexeme current;
         TOKENS lookahead();
         void nexttoken();
+        void prevtoken();
         bool match(TOKENS token);
         void enter(string s);
         void leave(string s);

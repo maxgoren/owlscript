@@ -12,13 +12,17 @@ void Parser::nexttoken() {
     }
 }
 
+void Parser::prevtoken() {
+    current = lexemes[--lexPos];
+}
+
 bool Parser::match(TOKENS token) {
     if (token == current.tokenVal) {
         nexttoken();
         return true;
     }
     if (current.tokenVal != EOFTOKEN) {
-        cout<<"mismatched token on line "<<current.lineNumber<<": "<<tokenString[current.tokenVal]<<",expected: "<<tokenString[token]<<endl;
+        cout<<"mismatched token on line "<<current.lineNumber<<": "<<tokenString[current.tokenVal]<<", near: "<<current.stringVal<<", expected: "<<tokenString[token]<<endl;
     }
     return false;
 }
@@ -32,6 +36,11 @@ ASTNode* Parser::parse(vector<Lexeme>& tokens) {
     lexemes = tokens;
     current = tokens[0];
     lexPos = 0;
+    if (loud) {
+        for (auto m : tokens) {
+            cout<<m.lineNumber<<": "<<tokenString[m.tokenVal]<<", "<<m.stringVal<<endl;
+        }
+    }
     return program();
 }
 
@@ -63,7 +72,7 @@ ASTNode* Parser::paramList() {
 
 ASTNode* Parser::argsList() {
     enter("args list");
-    ASTNode* node;
+    ASTNode* node = nullptr;
     if (lookahead() == RPAREN) {
         leave("no arguments.");
         return node;
@@ -72,13 +81,14 @@ ASTNode* Parser::argsList() {
     ASTNode* c = &d;
     int argCount = 0;
     do {
-        c->left = expression();
+        c->left = simpleExpr();
         c = c->left;
         argCount++;
         if (lookahead() == COMA)
             match(COMA);
-        else break;
     } while(lookahead() != RPAREN);
+    if (lookahead() == COMA)
+        match(COMA);
     node = d.left;
     leave(to_string(argCount) + " arguments.");
     return node;
@@ -121,7 +131,7 @@ ASTNode* Parser::loopStatement() {
 
 ASTNode* Parser::listStatement() {
     enter("list statement");
-    ASTNode* node;
+    ASTNode* node = nullptr;
     if (lookahead() == PUSH) {
         node = makeStmtNode(PUSH_STMT, lookahead(), current.stringVal);
         match(PUSH);
@@ -167,7 +177,7 @@ ASTNode* Parser::printStatement() {
     enter("print");
     ASTNode* node = makeStmtNode(PRINT_STMT, lookahead(), current.stringVal);
     match(PRINT);
-    node->left = expression();
+    node->left = simpleExpr();
     if (lookahead() == SEMI)
         match(SEMI);
     leave();
@@ -191,26 +201,9 @@ ASTNode* Parser::defStatement() {
 }
 
 ASTNode* Parser::idStatement() {
-    enter("id statement");
-    ASTNode* node = makeExprNode(ID_EXPR, lookahead(), current.stringVal);
-    match(ID);
-    if (lookahead() == ASSIGN) {
-        ASTNode* t = makeStmtNode(ASSIGN_STMT, lookahead(), current.stringVal);
-        t->left = node;
-        node = t;
-        match(ASSIGN);
-        node->right = simpleExpr();
-        if (lookahead() == SEMI)
-            match(SEMI);
-        leave();
-        return node;
-    } else {
-        leave();
-        return var();
-    }
-    leave();
-    return node;
+    return var();
 }
+
 
 ASTNode* Parser::returnStatement() {
     enter("return statement");
@@ -233,34 +226,33 @@ ASTNode* Parser::exprStatement() {
 }
 
 ASTNode* Parser::statement() {
-    ASTNode* node;
-    if (lookahead() == PRINT) {
-        return printStatement();
+    switch (lookahead()) {
+        case PRINT: 
+            return printStatement();
+        case IF: 
+            return ifStatement();
+        case LOOP:
+            return loopStatement();
+        case DEF: 
+            return defStatement();
+        case ID: 
+            say("statement: id");
+            return idStatement();
+        case LPAREN: 
+            say("statement: lparen");
+            return exprStatement();
+        case PUSH:
+        case APPEND:
+        case POP: 
+            return listStatement();
+        case RETURN: 
+            return returnStatement();
+    default:
+        cout<<"Unknown Token on Line: "<< current.lineNumber<<": "<<current.stringVal<<endl;
+        nexttoken();
+        break;
     }
-    if  (lookahead() == IF) {
-        return ifStatement();
-    }
-    if (lookahead() == LOOP) {
-        return loopStatement();
-    }
-    if (lookahead() == PUSH || lookahead() == APPEND || lookahead() == POP) {
-        return listStatement();
-    }
-    if (lookahead() == DEF) {
-        return defStatement();
-    }
-    if (lookahead() == ID) {
-        return idStatement();
-    }
-    if (lookahead() == LPAREN) {
-        return exprStatement();
-    }
-    if (lookahead() == RETURN) {
-        return returnStatement();
-    }
-    cout<<"Unknown Token on Line: "<< current.lineNumber<<": "<<current.stringVal<<endl;
-    nexttoken();
-    return node;
+    return nullptr;
 }
 
 ASTNode* Parser::simpleExpr() {
@@ -323,7 +315,6 @@ ASTNode* Parser::factor() {
         return node;
     }
     if (lookahead() == ID) {
-        leave("id");
         return var();
     }
     if (lookahead() == LPAREN) {
@@ -335,7 +326,7 @@ ASTNode* Parser::factor() {
         leave("lambda");
         return lambdaExpr();
     }
-    if (lookahead() == LSQ || lookahead() == LENGTH || lookahead() == SORT || lookahead() == POP)
+    if (lookahead() == LSQ || lookahead() == LENGTH || lookahead() == SORT || lookahead() == POP || lookahead() == FIRST || lookahead() == REST)
         return listExpr();
     leave();
     return node;
@@ -346,20 +337,36 @@ ASTNode* Parser::var() {
     ASTNode* node = nullptr;
     if (lookahead() == ID) {
         node = makeExprNode(ID_EXPR, lookahead(), current.stringVal);
+        say("id: " + node->data.stringVal);
         match(ID);
         if (lookahead() == LSQ) {
+            say("list access.");
             match(LSQ);
             node->left = simpleExpr();
             match(RSQ);
-            leave("list access");
+            leave();
             return node;
         }
         if (lookahead() == LPAREN) {
             match(LPAREN);
+            say("procedure call");
             node->type.expr = FUNC_EXPR;
             node->left = argsList();
             match(RPAREN);
-            leave("procedure call");
+            if (lookahead() == SEMI)
+                match(SEMI);
+            leave();
+            return node;
+        }
+        if (lookahead() == ASSIGN) {
+            ASTNode* t = makeStmtNode(ASSIGN_STMT, lookahead(), current.stringVal);
+            t->left = node;
+            node = t;
+            match(ASSIGN);
+            node->right = simpleExpr();
+            if (lookahead() == SEMI)
+                match(SEMI);
+            leave();
             return node;
         }
     }
@@ -390,6 +397,26 @@ ASTNode* Parser::listExpr() {
     if (lookahead() == LENGTH) {
         ASTNode* node = makeExprNode(LISTLEN_EXPR, lookahead(), current.stringVal);
         match(LENGTH);
+        match(LPAREN);
+        node->left = simpleExpr();
+        match(RPAREN);
+        if (lookahead() == SEMI)
+            match(SEMI);
+        return node;
+    }
+    if (lookahead() == FIRST) {
+        ASTNode* node = makeExprNode(CAR_EXPR, lookahead(), current.stringVal);
+        match(FIRST);
+        match(LPAREN);
+        node->left = simpleExpr();
+        match(RPAREN);
+        if (lookahead() == SEMI)
+            match(SEMI);
+        return node;
+    }
+    if (lookahead() == REST) {
+        ASTNode* node = makeExprNode(CDR_EXPR, lookahead(), current.stringVal);
+        match(REST);
         match(LPAREN);
         node->left = simpleExpr();
         match(RPAREN);
