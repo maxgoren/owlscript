@@ -7,12 +7,13 @@ using namespace std;
 
 typedef map<string, int> Environment;
 
-struct Closure {
+struct Lambda {
     ASTNode* paramList;
     ASTNode* functionBody;
     Environment env;
+    bool isClosure;
 };
 
-Closure* makeClosure(ASTNode* funcBody, ASTNode* paramList, Environment env);
+Lambda* makeLambda(ASTNode* funcBody, ASTNode* paramList, Environment env, bool isClosure);
 
 #endif

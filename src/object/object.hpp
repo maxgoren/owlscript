@@ -19,7 +19,7 @@ struct Object {
         bool boolVal;
         string* stringVal;
         ListHeader* list;
-        Closure* closure;
+        Lambda* closure;
     };
     Object();
     Object(const Object& obj);
@@ -48,7 +48,7 @@ Object* makeRealObject(float value);
 Object* makeBoolObject(bool value);
 Object* makeStringObject(string* object);
 Object* makeListObject(ListHeader* listObj);
-Object* makeClosureObject(Closure* closure);
+Object* makeClosureObject(Lambda* closure);
 string toString(Object* object);
 int compareObjects(Object* lhs, Object* rhs);
 #endif

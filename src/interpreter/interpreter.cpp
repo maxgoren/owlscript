@@ -9,8 +9,8 @@ Object* Interpreter::eval(ASTNode* node) {
     Object* lhs = expression(node->left);
     Object* rhs = expression(node->right);
     if (lhs->type != AS_LIST && rhs->type != AS_LIST && lhs->type != AS_STRING && rhs->type != AS_STRING && lhs->type != AS_CLOSURE &&  rhs->type != AS_CLOSURE) {
-        double left = stof(toString(lhs));
-        double right = stof(toString(rhs));
+        double left = (dontEval.find(lhs->type) == dontEval.end()) ? stof(toString(lhs)):0;
+        double right = (dontEval.find(lhs->type) == dontEval.end()) ? stof(toString(rhs)):0;
         switch (node->data.tokenVal) {
             case PLUS:     return makeRealObject(left+right);
             case MINUS:    return makeRealObject(left-right);
@@ -49,12 +49,11 @@ ActivationRecord* Interpreter::prepareActivationRecord(ASTNode* node) {
             t = t->left;
     }
     ar->returnValue = makeRealObject(0.0);
-    ar->dynamicLink = callStack.top();
+    ar->staticLink = callStack.top();
     return ar;
 }
 
 Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
-    say("[CLOSURE]");
     auto clos = obj->closure;
     ActivationRecord* ar = new ActivationRecord;
     ar->function = new Procedure;
@@ -68,17 +67,29 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
             t = t->left;
     }
     ar->returnValue = makeRealObject(0.0);
-    ar->dynamicLink = callStack.top();
+    ar->staticLink = callStack.top();
     callStack.push(ar);
     auto body = callStack.top()->function->functionBody;
     stopProcedure = false;
     say("Executing lambda");
     run(body);
     Object* retVal = callStack.top()->returnValue;
-    for (auto toFree : clos->env) {
-       memStore.free(toFree.second);
+    //arguments get freed as normal whether a plain lambda or closure
+    for (auto it = clos->paramList; it != nullptr; it = it->left) {
+        string name = it->data.stringVal;
+        int freeAddr = clos->env[name];
+        memStore.free(freeAddr);
+        clos->env.erase(name);
     }
-    //clos->env = callStack.top()->env;
+    //Things are a bit trickier for free variables.
+    if (clos->isClosure) {
+        for (auto m : callStack.top()->env) {
+            int oldAddr = clos->env[m.first];
+            int replaceAddr = callStack.top()->env[m.first];
+            clos->env[m.first] = replaceAddr;
+            memStore.free(oldAddr);
+        }
+    }
     callStack.pop();
     return retVal;
 }
@@ -112,7 +123,8 @@ Object* Interpreter::procedureCall(ASTNode* node) {
 }
 
 Object* Interpreter::lambdaExpr(ASTNode* node) {
-    return makeClosureObject(makeClosure(node->right, node->left, callStack.empty() ? Environment():callStack.top()->env));
+    bool isClosure = (!callStack.empty());
+    return makeClosureObject(makeLambda(node->right, node->left, callStack.empty() ? Environment():callStack.top()->env, isClosure));
 }
 
 Object* Interpreter::listExpr(ASTNode* node) {
@@ -154,8 +166,8 @@ int Interpreter::getAddress(string name) {
 
     //If address is still zero, we havent found the variable yet.
     //Are we in a nested procedure? Check the outter procedures symbol table.
-    if (addr == 0 && callStack.size() > 1 && callStack.top()->dynamicLink->env.find(name) != callStack.top()->dynamicLink->env.end())
-        addr = callStack.top()->dynamicLink->env[name];
+    if (addr == 0 && callStack.size() > 1 && callStack.top()->staticLink->env.find(name) != callStack.top()->staticLink->env.end())
+        addr = callStack.top()->staticLink->env[name];
 
     //If the address is still zero, check the global symbol table
     if (addr == 0 && st.find(name) != st.end())
@@ -522,10 +534,10 @@ void Interpreter::statement(ASTNode* node) {
 Interpreter::Interpreter() {
     recDepth = 0;
     stopProcedure = false;
+    dontEval.insert({AS_LIST, AS_CLOSURE, AS_STRING});
 }
 
 void Interpreter::run(ASTNode* node) {
-    enter("[run]");
     if (node == nullptr)
         return;
     switch(node->kind) {

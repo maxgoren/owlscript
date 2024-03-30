@@ -89,7 +89,7 @@ Object* makeListObject(ListHeader* list) {
     return obj;
 }
 
-Object* makeClosureObject(Closure* closure) {
+Object* makeClosureObject(Lambda* closure) {
     Object* obj = makeObject(AS_CLOSURE);
     obj->closure = closure;
     return obj;

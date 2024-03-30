@@ -2,6 +2,7 @@
 #define interpreter_hpp
 #include <iostream>
 #include <map>
+#include <set>
 #include "../object/object.hpp"
 #include "../closure/closure.hpp"
 #include "../parser/parser.hpp"
@@ -19,7 +20,7 @@ struct ActivationRecord {
     Procedure* function;
     map<string, int> env;
     Object* returnValue;
-    ActivationRecord* dynamicLink;
+    ActivationRecord* staticLink;
     ActivationRecord();
 };
 
@@ -60,6 +61,7 @@ class Interpreter {
         void leave(string s);
         void leave();
         void say(string s);
+        set<StoreAs> dontEval;
         map<string, int> st;
         map<string, Procedure*> procedures;
         CallStack callStack;

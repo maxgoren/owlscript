@@ -1,9 +1,12 @@
 #include "closure.hpp"
 
-Closure* makeClosure(ASTNode* funcBody, ASTNode* paramList, Environment env) {
-    Closure* clos = new Closure;
+Lambda* makeLambda(ASTNode* funcBody, ASTNode* paramList, Environment env, bool asClose) {
+    Lambda* clos = new Lambda;
     clos->paramList = paramList;
     clos->functionBody = funcBody;
-    clos->env = env;
+    for (auto m : env) {
+        clos->env[m.first] = m.second;
+    }
+    clos->isClosure = asClose;
     return clos;
 }
