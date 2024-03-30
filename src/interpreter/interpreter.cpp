@@ -78,7 +78,7 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
     for (auto toFree : clos->env) {
        memStore.free(toFree.second);
     }
-    clos->env = callStack.top()->env;
+    //clos->env = callStack.top()->env;
     callStack.pop();
     return retVal;
 }
