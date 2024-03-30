@@ -50,12 +50,7 @@ If your other car is a cdr, or you just prefer speaking with a bit of a lisp, Ow
 
     list := [13, 42, 86, 37, 24, 11];
     println list;
-    i := 0;
-    tail := list;
-    loop (i < length(list)) {
-        println i + ": " + first(tail);
-        tail := rest(tail);
-        i := i + 1;
-    }
-    print "\n";
-    println list;
+    mutated := map(lambda(x) { return x*2;}, list);
+    println mutated;
+    println first(list);
+    println rest(list);
