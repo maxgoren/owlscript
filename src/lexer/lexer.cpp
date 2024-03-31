@@ -106,9 +106,7 @@ Lexer::Lexer() {
 }
 
 vector<Lexeme>& Lexer::lexString(string str) {
-    vector<string> line;
-    line.push_back(str);
-    sb.load(line);
+    sb.load(str);
     return start();
 }
 

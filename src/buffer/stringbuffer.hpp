@@ -18,6 +18,7 @@ class StringBuffer {
     public:
         StringBuffer();
         void load(vector<string>& text);
+        void load(string text);
         void loadFile(string filename);
         char nextChar();
         int lineNumber();

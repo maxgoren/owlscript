@@ -15,6 +15,12 @@ void StringBuffer::load(vector<string>& text) {
     input = text;
     init();
 }
+
+void StringBuffer::load(string text) {
+    input = { text };
+    init();
+}
+
 void StringBuffer::loadFile(string filename) {
     ifstream ifile(filename);
     if (ifile.is_open()) {
