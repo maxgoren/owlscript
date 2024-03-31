@@ -7,7 +7,7 @@ using namespace std;
 
 enum TOKENS {
     ERROR, WHITESPACE, EOFTOKEN,
-    DEF, NUMBER, STRING, ID,
+    DEF, NUMBER, STRING, ID, NIL, TRUE, FALSE,
     PLUS, MINUS, MULTIPLY, DIVIDE, ASSIGN,
     SEMI, COLON, PERIOD, COMA, QUOTE, NOT,
     LSQ, RSQ, LPAREN, RPAREN, LCURLY, RCURLY,
@@ -18,7 +18,7 @@ enum TOKENS {
 
 inline string tokenString[] = {
     "ERROR", "WHITESPACE", "EOFTOKEN",
-    "DEF", "NUMBER", "STRING", "ID",
+    "DEF", "NUMBER", "STRING", "ID", "NIL", "TRUE", "FALSE",
     "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "ASSIGN",
     "SEMI", "COLON", "PERIOD", "COMA", "QUOTE", "NOT",
     "LSQ", "RSQ", "LPAREN", "RPAREN", "LCURLY", "RCURLY",

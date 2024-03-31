@@ -5,7 +5,7 @@
 #include "../closure/closure.hpp"
 using namespace std;
 enum StoreAs {
-    AS_INT, AS_REAL, AS_BOOL, AS_STRING, AS_LIST, AS_CLOSURE, AS_NIL
+    AS_INT, AS_REAL, AS_BOOL, AS_CHAR, AS_STRING, AS_LIST, AS_CLOSURE, AS_NIL
 };
 
 struct ListHeader;
@@ -18,6 +18,7 @@ struct Object {
         int intVal;
         float realVal;
         bool boolVal;
+        char charVal;
         string* stringVal;
         ListHeader* list;
         Lambda* closure;
@@ -68,10 +69,12 @@ ListNode* mergeSortList(ListNode* h);
 Object* makeObject(StoreAs type);
 Object* makeIntObject(int value);
 Object* makeRealObject(float value);
+Object* makeCharObject(char object);
 Object* makeBoolObject(bool value);
 Object* makeStringObject(string* object);
 Object* makeListObject(ListHeader* listObj);
 Object* makeClosureObject(Lambda* closure);
+Object* makeNilObject();
 string toString(Object* object);
 int compareObjects(Object* lhs, Object* rhs);
 #endif

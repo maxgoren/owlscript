@@ -8,9 +8,9 @@ Object* Interpreter::eval(ASTNode* node) {
     enter("eval");
     Object* lhs = expression(node->left);
     Object* rhs = expression(node->right);
-    if (lhs->type != AS_LIST && rhs->type != AS_LIST && lhs->type != AS_STRING && rhs->type != AS_STRING && lhs->type != AS_CLOSURE &&  rhs->type != AS_CLOSURE) {
-        double left = (dontEval.find(lhs->type) == dontEval.end()) ? stof(toString(lhs)):0;
-        double right = (dontEval.find(lhs->type) == dontEval.end()) ? stof(toString(rhs)):0;
+    if (dontEval.find(lhs->type) == dontEval.end() && dontEval.find(rhs->type) == dontEval.end()) {
+        double left = stof(toString(lhs));
+        double right = stof(toString(rhs));
         switch (node->data.tokenVal) {
             case PLUS:     return makeRealObject(left+right);
             case MINUS:    return makeRealObject(left-right);
@@ -374,7 +374,7 @@ Object* Interpreter::getVariableValue(ASTNode* node) {
     string name = node->data.stringVal;
     addr = getAddress(name);
     result = memStore.get(addr);
-    say(name + "resolves to address: " + to_string(addr) + ", value: " + toString(result));
+    say(name + " resolves to address: " + to_string(addr) + ", value: " + toString(result));
     if (result->type == AS_LIST && node->left != nullptr) {
          result = getListItem(node, result);
     }
@@ -400,6 +400,9 @@ Object* Interpreter::expression(ASTNode* node) {
             return makeStringObject(new string("(err)"));
         case CONST_EXPR:
             enter("[const expression] " + node->data.stringVal); leave();
+            if (node->data.stringVal == "true") return makeBoolObject(true);
+            if (node->data.stringVal == "false") return makeBoolObject(false);
+            if (node->data.stringVal == "nil") return makeNilObject();
             return makeRealObject(stof(node->data.stringVal.c_str()));
         case FUNC_EXPR:
             enter("[func_expr] " + node->data.stringVal); leave();
@@ -462,23 +465,18 @@ void Interpreter::readStmt(ASTNode* node) {
 
 void Interpreter::ifStmt(ASTNode* node) {
     enter("[if statement]");
-    ASTNode* t = nullptr;
+    ASTNode* branch = nullptr;
     say("testing condition");
     auto result = expression(node->left)->boolVal;
     if (result) {
         say("executing matching result");
-        t = node->mid;
-        while (t != nullptr) {
-            statement(t);
-            t = t->next;
-        }
+        branch = node->mid;
     } else {
         say("executing else clause");
-        t = node->right;
-        while (t != nullptr) {
-            statement(t);
-            t = t->next;
-        }
+        branch = node->right;
+    }
+    for (ASTNode* t = branch; t != nullptr; t = t->next ) {
+        statement(t);
     }
     leave();
 }
@@ -497,13 +495,25 @@ void Interpreter::loopStmt(ASTNode* node) {
 
 void Interpreter::assignStmt(ASTNode* node) {
     enter("[assign]");
-    string name = node->left->data.stringVal;
-    Object* value = expression(node->right);
-    int saveAddr = memStore.storeAtNextFree(value);
-    if (!callStack.empty()) {
-        callStack.top()->env[name] = saveAddr;
+    string name;
+    Object* value;
+    if (node->left != nullptr) {
+        name = node->left->data.stringVal;
     } else {
-        st[name] = saveAddr;
+        cout<<"Error: missing name"<<endl;
+        leave();
+        return;
+    }
+    if (node->right != nullptr) {
+        value = expression(node->right);
+        int saveAddr = memStore.storeAtNextFree(value);
+        if (!callStack.empty()) {
+            callStack.top()->env[name] = saveAddr;
+        } else {
+            st[name] = saveAddr;
+        }
+    } else {
+        cout<<"Error: missing assignment value"<<endl;
     }
     leave();
 }

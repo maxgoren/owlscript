@@ -42,6 +42,9 @@ Lexeme Lexer::extractWord() {
     if (word == "first") return Lexeme(FIRST, word, sb.lineNumber());
     if (word == "rest") return Lexeme(REST, word, sb.lineNumber());
     if (word == "lambda") return Lexeme(LAMBDA, word, sb.lineNumber());
+    if (word == "nil") return Lexeme(NIL, word, sb.lineNumber());
+    if (word == "true") return Lexeme(TRUE, word, sb.lineNumber());
+    if (word == "false") return Lexeme(FALSE, word, sb.lineNumber());
     return Lexeme(ID, word, sb.lineNumber());
 }
 Lexeme Lexer::extractNumber() {

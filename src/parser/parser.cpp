@@ -110,7 +110,7 @@ ASTNode* Parser::ifStatement() {
         node->right = statementList();
         if (lookahead() == RCURLY)
             match(RCURLY);
-    } else cout<<"Hey, who ate my closing brace?"<<endl;
+    }
     leave();
     return node;
 }
@@ -320,6 +320,24 @@ ASTNode* Parser::factor() {
         node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
         match(NUMBER);
         leave("number");
+        return node;
+    }
+    if (lookahead() == NIL) {
+        node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
+        match(NIL);
+        leave("nil");
+        return node;
+    }
+    if (lookahead() == TRUE) {
+        node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
+        match(TRUE);
+        leave("true");
+        return node;
+    }
+    if (lookahead() == FALSE) {
+        node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
+        match(FALSE);
+        leave("false");
         return node;
     }
     if (lookahead() == QUOTE) {

@@ -10,11 +10,14 @@ Object::Object(const Object& obj) {
         case AS_BOOL:   boolVal = obj.boolVal; break;
         case AS_INT:    intVal = obj.intVal; break;
         case AS_REAL:   realVal = obj.realVal; break;
+        case AS_CHAR:   charVal = obj.charVal; break;
         case AS_STRING: stringVal = obj.stringVal; break;
         case AS_LIST:   list = obj.list; break;
         case AS_CLOSURE: closure = obj.closure; break;
+        case AS_NIL:
+        default:
+            break;
     }
-    isnull = obj.isnull;
     type = obj.type;
 }
 
@@ -24,9 +27,13 @@ bool Object::operator==(const Object& obj) const noexcept {
             case AS_BOOL: return boolVal == obj.boolVal;
             case AS_INT:  return intVal == obj.intVal;
             case AS_REAL: return realVal == obj.realVal;
+            case AS_CHAR: return charVal == obj.charVal;
             case AS_STRING: return stringVal == obj.stringVal;
             case AS_LIST: return  list == obj.list;
             case AS_CLOSURE: return closure == obj.closure;
+            case AS_NIL:
+        default:
+            break;
         }
     }
     return false;
@@ -42,11 +49,14 @@ Object& Object::operator=(const Object& obj) {
             case AS_BOOL:   boolVal = obj.boolVal;
             case AS_INT:    intVal = obj.intVal;
             case AS_REAL:   realVal = obj.realVal;
+            case AS_CHAR:   charVal = obj.charVal; break;
             case AS_STRING: stringVal = obj.stringVal;
             case AS_LIST:   list = obj.list;
             case AS_CLOSURE: closure = obj.closure;
+            case AS_NIL:
+            default:
+                break;
         }
-        isnull = obj.isnull;
         type = obj.type;
     }
     return *this;
@@ -68,6 +78,12 @@ Object* makeIntObject(int value) {
 Object* makeRealObject(float value) {
     Object* obj = makeObject(AS_REAL);
     obj->realVal = value;
+    return obj;
+}
+
+Object* makeCharObject(char value) {
+    Object* obj = makeObject(AS_CHAR);
+    obj->charVal = value;
     return obj;
 }
 
@@ -95,18 +111,24 @@ Object* makeClosureObject(Lambda* closure) {
     return obj;
 }
 
+Object* makeNilObject() {
+    Object* obj = makeObject(AS_NIL);
+    return obj;
+}
+
 string toString(Object* obj) {
     if (obj == nullptr)
         return "[err]";
     string str;
     Object* data;
     switch (obj->type) {
+        case AS_NIL:    str = "0"; break;
+        case AS_CHAR:   str.push_back(obj->charVal); break;
         case AS_REAL:   str = to_string(obj->realVal); break;
         case AS_INT:    str = to_string(obj->intVal);  break;
-        case AS_BOOL:   str = obj->boolVal ? "true":"false"; break;
+        case AS_BOOL:   str = obj->boolVal ? "1":"0"; break;
         case AS_STRING: str = *obj->stringVal; break;
-        case AS_CLOSURE: str = "(LAMBDA)"; 
-            break;
+        case AS_CLOSURE: str = "(LAMBDA)"; break;
         case AS_LIST: 
             str = "[ ";
             if (obj->list != nullptr) {
@@ -132,4 +154,8 @@ string toString(Object* obj) {
             str = "0"; break;
     }
     return str;
+}
+
+int compareObjects(Object* lhs, Object* rhs) {
+
 }

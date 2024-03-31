@@ -31,12 +31,16 @@ behavior. the length of a list is returned through the built-in function 'length
 	    m := m + 1;
     }
     print "\n";
+    max@MaxGorenLaptop:~/owlscript$ owlscript testcode/testListIndex.owl 
+    13.000000 42.000000 yo dag 6.660000 341.000000
 
 You can also print a list all at once instead of iterating through as above simply by using the print and println statement:
 
-    heroes := ["batman", "superman", "snoop dogg", "emmanual west"];
+    heroes := ["batman","superman","snoop dogg","emmanual west"];
     println heros;
-
+    max@MaxGorenLaptop:~/owlscript$ owlscript testcode/heros.owl 
+     [ "batman", "superman", "snoop dogg", "emmanual west" ]
+    
 Aside from indexed access, OwlScript also supports push/pop for use like a stack and append/pop for use as a queue.
 
     villains := [];
@@ -45,6 +49,9 @@ Aside from indexed access, OwlScript also supports push/pop for use like a stack
     push("sponge bob");
     #whoops
     pop(villains);
+    println villains;
+    max@MaxGorenLaptop:~/owlscript$ owlscript testcode/villains.owl 
+     [ "joker", "lex luther" ]
 
 If your other car is a cdr, or you just prefer speaking with a bit of a lisp, OwlScript has some other familiar primitives as well:
 
@@ -54,3 +61,9 @@ If your other car is a cdr, or you just prefer speaking with a bit of a lisp, Ow
     println mutated;
     println first(list);
     println rest(list);
+    
+    max@MaxGorenLaptop:~/owlscript$ owlscript testcode/testListPrimitives.owl 
+     [ 13.000000, 42.000000, 86.000000, 37.000000, 24.000000, 11.000000 ]
+     [ 26.000000, 84.000000, 172.000000, 74.000000, 48.000000, 22.000000 ]
+     13.000000
+     [ 42.000000, 86.000000, 37.000000, 24.000000, 11.000000 ]
