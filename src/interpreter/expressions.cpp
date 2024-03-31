@@ -83,6 +83,21 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
     return retVal;
 }
 
+Object* Interpreter::runProcedure(ASTNode* node) {
+    callStack.push(prepareActivationRecord(node));
+    ASTNode* body = callStack.top()->function->functionBody;
+    say("Calling: " + node->data.stringVal);
+    stopProcedure = false;
+    run(body);
+    Object* retVal = callStack.top()->returnValue;
+    say("Returned: " + to_string(retVal->realVal) + " from " + node->data.stringVal);
+    for (auto toFree : callStack.top()->env) {
+        memStore.free(toFree.second);
+    }
+    callStack.pop();
+    return retVal;
+}
+
 ActivationRecord* Interpreter::prepareActivationRecord(ASTNode* node) {
     ActivationRecord* ar = new ActivationRecord();
     Procedure* func = procedures[node->data.stringVal];
@@ -100,21 +115,9 @@ ActivationRecord* Interpreter::prepareActivationRecord(ASTNode* node) {
 }
 
 Object* Interpreter::procedureCall(ASTNode* node) {
-    Object* retVal;
     enter("[procedureCall]");
     if (procedures.find(node->data.stringVal) != procedures.end()) {
-        callStack.push(prepareActivationRecord(node));
-        say("Calling: " + node->data.stringVal);
-        auto body = callStack.top()->function->functionBody;
-        stopProcedure = false;
-        run(body);
-        retVal = callStack.top()->returnValue;
-        say("Returned: " + to_string(retVal->realVal) + " from " + node->data.stringVal);
-        for (auto toFree : callStack.top()->env) {
-            memStore.free(toFree.second);
-        }
-        callStack.pop();
-        return retVal;
+        return runProcedure(node);
     }
     int addr = getAddress(node->data.stringVal);
     Object* obj = memStore.get(addr);
@@ -124,7 +127,7 @@ Object* Interpreter::procedureCall(ASTNode* node) {
         say("No such function: " + node->data.stringVal);
     }
     leave();
-    return retVal;
+    return makeNilObject();
 }
 
 Object* Interpreter::lambdaExpr(ASTNode* node) {

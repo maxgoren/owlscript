@@ -33,24 +33,15 @@ struct Object {
 class GC_Allocator {
     private:
         vector<Object*> created;
-        void mark_node(Object* obj) {
-            if (obj != nullptr) {
-                obj->gcLive = true;
-            }
-        }
+        void mark_node(Object* obj);
     public:
-        GC_Allocator() {
-
-        }
-        Object* allocNode() {
-            Object* nn = new Object;
-            nn->gcLive = false; //will be flipped to true when the mark phase knows to be reachable
-            created.push_back(nn);
-            return nn;
-        }
+        GC_Allocator();
+        Object* allocNode();
+        void mark();
+        void sweep();
 };
-
 inline GC_Allocator GarbageCollector;
+
 
 struct ListNode {
     Object* data;
@@ -81,4 +72,5 @@ Object* makeListObject(ListHeader* listObj);
 Object* makeClosureObject(Lambda* closure);
 Object* makeNilObject();
 string toString(Object* object);
+
 #endif

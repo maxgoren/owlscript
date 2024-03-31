@@ -81,6 +81,7 @@ class Interpreter {
         Object* callBuiltIn(ASTNode* node);
         ActivationRecord* prepareActivationRecord(ASTNode* node);
         Object* runClosure(ASTNode* node, Object* obj);
+        Object* runProcedure(ASTNode* node);
         Object* procedureCall(ASTNode* node);
         Object* lambdaExpr(ASTNode* node);
         void returnStmt(ASTNode* node);
