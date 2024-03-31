@@ -252,8 +252,13 @@ Object* Interpreter::sortList(ASTNode* node) {
 //It has a blinking in and out of reality feel 
 Object* Interpreter::mapExpr(ASTNode* node) {
     Object* lambdaObj = lambdaExpr(node->left);
-    auto listAddr = getAddress(node->right->data.stringVal);
-    Object* listObj = memStore.get(listAddr);
+    Object* listObj = nullptr;
+    if (node->right->kind == EXPRNODE && node->right->type.expr == LIST_EXPR) {
+        listObj = listExpr(node->right);
+    } else {
+        auto listAddr = getAddress(node->right->data.stringVal);
+        listObj = memStore.get(listAddr);
+    }
     ListHeader* resultList = new ListHeader;
     resultList->size = 0;
     resultList->head = nullptr;
