@@ -76,5 +76,4 @@ Object* makeListObject(ListHeader* listObj);
 Object* makeClosureObject(Lambda* closure);
 Object* makeNilObject();
 string toString(Object* object);
-int compareObjects(Object* lhs, Object* rhs);
 #endif

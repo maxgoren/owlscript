@@ -155,7 +155,3 @@ string toString(Object* obj) {
     }
     return str;
 }
-
-int compareObjects(Object* lhs, Object* rhs) {
-
-}
