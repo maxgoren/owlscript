@@ -264,9 +264,14 @@ ASTNode* Parser::statement() {
         case RETURN: 
             return returnStatement();
     default:
-        cout<<"Unknown Token on Line: "<< current.lineNumber<<": "<<current.stringVal<<endl;
-        nexttoken();
-        break;
+        ASTNode* node = factor();
+        if (node == nullptr) {
+            cout<<"Unknown Token on Line: "<< current.lineNumber<<": "<<current.stringVal<<endl;
+            nexttoken();
+        } else {
+            return node;
+        }
+
     }
     return nullptr;
 }
@@ -274,7 +279,8 @@ ASTNode* Parser::statement() {
 ASTNode* Parser::simpleExpr() {
     enter("simple expr");
     ASTNode* node = expression();
-    if (lookahead() == EQUAL || lookahead() == LESS || lookahead() == NOTEQUAL || lookahead() == GREATER) {
+    if (lookahead() == EQUAL || lookahead() == LESS || lookahead() == NOTEQUAL || 
+        lookahead() == GREATER || lookahead() == LTE || lookahead() == GTE) {
         ASTNode* t = makeExprNode(OP_EXPR, lookahead(), current.stringVal);
         t->left = node;
         match(lookahead());
@@ -302,7 +308,7 @@ ASTNode* Parser::expression() {
 ASTNode* Parser::term() {
     enter("term");
     ASTNode* node = factor();
-    while (lookahead() == MULTIPLY || lookahead() == DIVIDE) {
+    while (lookahead() == MULTIPLY || lookahead() == DIVIDE || lookahead() == MOD) {
         ASTNode* expNode = makeExprNode(OP_EXPR, lookahead(), current.stringVal);
         expNode->left = node;
         node = expNode;

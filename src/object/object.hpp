@@ -44,7 +44,7 @@ class GC_Allocator {
         }
         Object* allocNode() {
             Object* nn = new Object;
-            nn->gcLive = false;
+            nn->gcLive = false; //will be flipped to true when the mark phase knows to be reachable
             created.push_back(nn);
             return nn;
         }
@@ -65,7 +65,6 @@ struct ListHeader {
 ListNode* copyList(ListNode* a);
 ListNode* mergeList(ListNode* a, ListNode* b);
 ListNode* mergeSortList(ListNode* h);
-
 Object* makeObject(StoreAs type);
 Object* makeIntObject(int value);
 Object* makeRealObject(float value);

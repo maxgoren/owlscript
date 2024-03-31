@@ -69,12 +69,24 @@ Lexeme Lexer::checkSpecials() {
     if (sb.getChar() == '-') return Lexeme(MINUS, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '/') return Lexeme(DIVIDE, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '*') return Lexeme(MULTIPLY, sb.asString(), sb.lineNumber());
+    if (sb.getChar() == '%') return Lexeme(MOD, sb.asString(), sb.lineNumber());
     if (sb.getChar() == ';') return Lexeme(SEMI, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '.') return Lexeme(PERIOD, sb.asString(), sb.lineNumber());
     if (sb.getChar() == ',') return Lexeme(COMA, sb.asString(), sb.lineNumber());
-    if (sb.getChar() == '<') return Lexeme(LESS, sb.asString(), sb.lineNumber());
-    if (sb.getChar() == '>') return Lexeme(GREATER, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '"') return Lexeme(QUOTE, sb.asString(), sb.lineNumber());
+    if (sb.getChar() == '<') {
+        sb.nextChar();
+        if (sb.getChar() == '=') 
+            return Lexeme(LTE, "<=", sb.lineNumber());
+        sb.unGet();
+        return Lexeme(LESS, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == '>') {
+        sb.nextChar();
+        if (sb.getChar() == '=') 
+            return Lexeme(GTE, "==", sb.lineNumber());
+        sb.unGet();
+        return Lexeme(GREATER, sb.asString(), sb.lineNumber());
+    }
     if (sb.getChar() == '!') {
         sb.nextChar();
         if (sb.getChar() == '=') 
