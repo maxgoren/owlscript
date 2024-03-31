@@ -10,7 +10,6 @@ Object* Interpreter::listSize(ASTNode* node) {
     } else {
         string name = node->left->data.stringVal;
         if (builtIns.find(name) != builtIns.end()) {
-            cout<<"Hit the built in"<<endl;
             obj = callBuiltIn(node->left);
         } else {
             addr = getAddress(name);
@@ -37,7 +36,6 @@ Object* Interpreter::carExpr(ASTNode* node) {
     } else {
         string name = node->left->data.stringVal;
         if (builtIns.find(name) != builtIns.end()) {
-            cout<<"Hit the built in"<<endl;
             obj = callBuiltIn(node->left);
         } else {
             addr = getAddress(name);
@@ -64,7 +62,6 @@ Object* Interpreter::cdrExpr(ASTNode* node) {
     } else {
         string name = node->left->data.stringVal;
         if (builtIns.find(name) != builtIns.end()) {
-            cout<<"Hit the built in"<<endl;
             obj = callBuiltIn(node->left);
         } else {
             addr = getAddress(name);
@@ -95,7 +92,6 @@ Object* Interpreter::sortList(ASTNode* node) {
     } else {
         string name = node->left->data.stringVal;
         if (builtIns.find(name) != builtIns.end()) {
-            cout<<"Hit the built in"<<endl;
             obj = callBuiltIn(node->left);
         } else {
             addr = getAddress(name);
@@ -128,7 +124,6 @@ Object* Interpreter::mapExpr(ASTNode* node) {
     } else {
         string name = node->right->data.stringVal;
         if (builtIns.find(name) != builtIns.end()) {
-            cout<<"Hit the built in"<<endl;
             listObj = callBuiltIn(node->left);
         } else {
             int addr = getAddress(name);
@@ -139,9 +134,7 @@ Object* Interpreter::mapExpr(ASTNode* node) {
             listObj = memStore.get(addr);
         }
     }
-    ListHeader* resultList = new ListHeader;
-    resultList->size = 0;
-    resultList->head = nullptr;
+    ListHeader* resultList = makeListHeader();
     ListNode d;
     ListNode* tmpR = &d;
     for (auto it = listObj->list->head; it != nullptr; it = it->next) {
@@ -183,20 +176,15 @@ void Interpreter::pushList(ASTNode* node) {
     enter("[push list]");
     Object* listObj;
     int addr;
-    auto name = node->left->data.stringVal;
+    string name = node->left->data.stringVal;
     say("list: " + name);
     Object* value = expression(node->right);
     say("push: " + toString(value));
-    ListNode *toAdd = new ListNode;
-    toAdd->data = value;
-    toAdd->next = nullptr;
     addr = getAddress(name);
     if (addr > 0) {
         addr = st[name];
         listObj = memStore.get(addr);
-        toAdd->next = listObj->list->head;
-        listObj->list->head = toAdd;
-        listObj->list->size += 1;
+        push_front_list(listObj->list, value);
         memStore.store(addr, listObj);
     }
     leave();
@@ -206,25 +194,15 @@ void Interpreter::appendList(ASTNode* node) {
     enter("[append list]");
     Object* listObj;
     int addr;
-    auto name = node->left->data.stringVal;
+    string name = node->left->data.stringVal;
     say("list: " + name);
     Object* value = expression(node->right);
     say("push: " + toString(value));
-    ListNode *toAdd = new ListNode;
-    toAdd->data = value;
-    toAdd->next = nullptr;
     addr = getAddress(name);
     if (addr > 0) {
         addr = st[name];
         listObj = memStore.get(addr);
-        ListNode* itr = listObj->list->head;
-        if (itr == nullptr) {
-            listObj->list->head = toAdd;
-        } else {
-            while (itr->next != nullptr) itr = itr->next;
-            itr->next = toAdd;
-        }
-        listObj->list->size += 1;
+        push_back_list(listObj->list, value);
         memStore.store(addr, listObj);
     }
     leave();
@@ -232,7 +210,6 @@ void Interpreter::appendList(ASTNode* node) {
 
 Object* Interpreter::callBuiltIn(ASTNode* node) {
     string name = node->data.stringVal;
-    cout<<name<<endl;
     if (name == "first")
         return carExpr(node);
     if (name == "rest")
@@ -250,7 +227,6 @@ void Interpreter::popList(ASTNode* node) {
     int addr;
     string name = node->left->data.stringVal;
     if (builtIns.find(name) != builtIns.end()) {
-        cout<<"Hit the built in"<<endl;
         obj = callBuiltIn(node->left);
     } else {
         addr = getAddress(name);
@@ -260,13 +236,7 @@ void Interpreter::popList(ASTNode* node) {
         }
         obj = memStore.get(addr);
     }
-    ListNode* x = obj->list->head;
-    Object* result;
-    if (x != nullptr) {
-        obj->list->head = obj->list->head->next;
-        result = x->data;
-        obj->list->size -= 1;
-        memStore.store(addr, obj);
-    }
+    pop_front_list(obj->list);
+    memStore.store(addr, obj);
     leave();
 }

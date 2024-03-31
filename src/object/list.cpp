@@ -1,5 +1,53 @@
 #include "object.hpp"
 
+ListHeader* makeListHeader() {
+    ListHeader*  lh = new ListHeader;
+    lh->head = nullptr;
+    lh->tail = nullptr;
+    lh->size = 0;
+    return lh;
+}
+
+ListNode* makeListNode(Object* obj) {
+    ListNode* ln = new ListNode;
+    ln->data = obj;
+    ln->next = nullptr;
+    return ln;
+}
+
+void push_front_list(ListHeader* lh, Object* obj) {
+    if (lh == nullptr) return;
+    ListNode* ln = makeListNode(obj);
+    ln->next = lh->head;
+    lh->head = ln;
+    if (lh->tail == nullptr) lh->tail = ln;
+    lh->size++;
+}
+
+void push_back_list(ListHeader* lh, Object* obj) {
+    if (lh == nullptr) return;
+    ListNode* ln = makeListNode(obj);
+    if (lh->size == 0) {
+        lh->head = ln;
+        lh->tail = ln;
+    } else {
+        lh->tail->next = ln;
+        lh->tail = ln;
+    }
+    lh->size++;
+}
+
+Object* pop_front_list(ListHeader* lh) {
+    if (lh == nullptr || lh->head == nullptr) return nullptr;
+    ListNode* t = lh->head;
+    lh->head = lh->head->next;
+    lh->size--;
+    Object* ret = t->data;
+    delete t;
+    return ret;
+}
+
+
 ListNode* copyList(ListNode* a) {
     ListNode dummy; ListNode *t = &dummy;
     ListNode* it = a;

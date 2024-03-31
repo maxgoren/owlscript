@@ -8,5 +8,4 @@ def test(i, j) {
 
 println ok(1);
 println test(2,1);
-
-test(3,4);
+println test(3,4);

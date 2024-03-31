@@ -134,29 +134,18 @@ Object* Interpreter::lambdaExpr(ASTNode* node) {
 
 Object* Interpreter::listExpr(ASTNode* node) {
     enter("[list_expr]");
-    ListHeader* list = new ListHeader;
-    list->size = 0;
+    ListHeader* list = makeListHeader();
     ASTNode* t = node->left;
-    ListNode d;
-    ListNode* x = &d;
     if (t == nullptr) {
-        x = new ListNode;
-        list->size = 0;
-        list->head = nullptr;
         leave();
         return makeListObject(list);
     }
     while (t != nullptr) {
         Object* obj = expression(t);
         say("push: " + toString(obj));
-        x->next = new ListNode;
-        x = x->next;
-        x->data = obj;
-        x->next = nullptr;
+        push_back_list(list, obj);
         t = t->left;
-        list->size++;
     }
-    list->head = d.next;
     leave();
     return makeListObject(list);
 }

@@ -60,8 +60,14 @@ struct ListNode {
 struct ListHeader {
     int size;
     ListNode* head;
+    ListNode* tail;
 };
 
+ListHeader* makeListHeader();
+ListNode* makeListNode(Object* obj);
+void push_front_list(ListHeader* lh, Object* obj);
+void push_back_list(ListHeader* lh, Object* obj);
+Object* pop_front_list(ListHeader* lh);
 ListNode* copyList(ListNode* a);
 ListNode* mergeList(ListNode* a, ListNode* b);
 ListNode* mergeSortList(ListNode* h);
