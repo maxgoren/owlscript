@@ -35,6 +35,8 @@ Parser::Parser(bool trace) {
 ASTNode* Parser::parse(vector<Lexeme>& tokens) {
     lexemes = tokens;
     current = tokens[0];
+    if (tokens[0].tokenVal == EOFTOKEN)
+        return nullptr;
     lexPos = 0;
     if (loud) {
         for (auto m : tokens) {

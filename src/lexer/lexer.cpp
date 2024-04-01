@@ -141,7 +141,7 @@ vector<Lexeme>& Lexer::start() {
         } else {
             next = checkSpecials();
         }
-        if (next.tokenVal != WHITESPACE)
+        if (next.tokenVal != WHITESPACE && next.tokenVal != ERROR)
             lexemes.push_back(next);
         if (sb.getChar() == '"') {
             sb.nextChar();
