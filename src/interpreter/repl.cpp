@@ -18,7 +18,7 @@ void REPL::repl() {
             continue;
         }
         if (input != ".exit" && input != "quit") {
-            auto ast = astBuilder.build(input, false);
+            auto ast = astBuilder.build(input, tracing);
             ASTTracer trace;
             if (tracing)
                 trace.traverse(ast);

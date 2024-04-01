@@ -68,14 +68,49 @@ void Interpreter::assignStmt(ASTNode* node) {
     }
     if (node->right != nullptr) {
         value = expression(node->right);
-        int saveAddr = memStore.storeAtNextFree(value);
+    } else {
+        cout<<"Error: missing assignment value"<<endl;
+        return;
+    }
+    int saveAddr = getAddress(name);
+    if (saveAddr == 0) {
+        saveAddr = memStore.storeAtNextFree(value);
         if (!callStack.empty()) {
             callStack.top()->env[name] = saveAddr;
         } else {
             st[name] = saveAddr;
         }
     } else {
-        cout<<"Error: missing assignment value"<<endl;
+        Object* obj = memStore.get(saveAddr);
+        if (obj->type == AS_LIST) {
+            int arrIndex = 0;
+            if (node->left->left){
+                arrIndex =  atoi(node->left->left->data.stringVal.c_str());
+            }
+            say("Index: " + to_string(arrIndex));
+            ListNode* x = obj->list->head;
+            if (arrIndex == 0) {
+                x->data = value;
+            } else {
+                int i = 0;
+                while (i < arrIndex) {
+                    if (x->next != nullptr)
+                        x = x->next;
+                    else break;
+                    i++;
+                }
+            }
+            x->data = value;
+        } else {
+            obj = value;
+        }
+        memStore.store(saveAddr,obj);
+        if (!callStack.empty()) {
+            callStack.top()->env[name] = saveAddr;
+        } else {
+            st[name] = saveAddr;
+        }
+        
     }
     leave();
 }

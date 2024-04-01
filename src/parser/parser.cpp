@@ -386,6 +386,16 @@ ASTNode* Parser::var() {
             node->left = simpleExpr();
             match(RSQ);
             leave();
+        }
+        if (lookahead() == ASSIGN) {
+            ASTNode* t = makeStmtNode(ASSIGN_STMT, lookahead(), current.stringVal);
+            t->left = node;
+            node = t;
+            match(ASSIGN);
+            node->right = simpleExpr();
+            if (lookahead() == SEMI)
+                match(SEMI);
+            leave();
             return node;
         }
         if (lookahead() == LPAREN) {
@@ -399,17 +409,7 @@ ASTNode* Parser::var() {
             leave();
             return node;
         }
-        if (lookahead() == ASSIGN) {
-            ASTNode* t = makeStmtNode(ASSIGN_STMT, lookahead(), current.stringVal);
-            t->left = node;
-            node = t;
-            match(ASSIGN);
-            node->right = simpleExpr();
-            if (lookahead() == SEMI)
-                match(SEMI);
-            leave();
-            return node;
-        }
+        return node;
     }
     return node;
 }

@@ -27,9 +27,6 @@ int Interpreter::getAddress(string name) {
     //If the address is still zero, check the global symbol table
     if (addr == 0 && st.find(name) != st.end())
         addr = st[name];
-   
-    if (addr == 0)
-        cout<<"Error: No var named "<<name<<" found."<<endl;
     
     return addr;
 }
