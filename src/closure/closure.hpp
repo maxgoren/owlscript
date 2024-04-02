@@ -1,11 +1,11 @@
 #ifndef CLOSURE_HPP
 #define CLOSURE_HPP
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include "../ast/ast.hpp"
 using namespace std;
 
-typedef map<string, int> Environment;
+typedef unordered_map<string, int> Environment;
 
 struct Lambda {
     ASTNode* paramList;

@@ -3,6 +3,7 @@
 #include "../buffer/stringbuffer.hpp"
 #include <vector>
 #include <iostream>
+#include <unordered_map>
 using namespace std;
 
 enum TOKENS {
@@ -13,7 +14,8 @@ enum TOKENS {
     LSQ, RSQ, LPAREN, RPAREN, LCURLY, RCURLY,
     LESS, GREATER, EQUAL, NOTEQUAL, LTE, GTE,
     IF, ELSE, PRINT, READ, LOOP, RETURN, LAMBDA,
-    PUSH, POP, APPEND, LENGTH, SORT, MAP, FIRST, REST
+    PUSH, POP, APPEND, LENGTH, SORT, MAP, FIRST, REST,
+    CLASS, THIS, HASH
 };
 
 inline string tokenString[] = {
@@ -24,7 +26,8 @@ inline string tokenString[] = {
     "LSQ", "RSQ", "LPAREN", "RPAREN", "LCURLY", "RCURLY",
     "LESS", "GREATER", "EQUAL", "NOTEQUAL", "LTE", "GTE",
     "IF", "ELSE", "PRINT", "READ", "LOOP", "RETURN", "LAMBDA", 
-    "PUSH", "POP", "APPEND", "LENGTH", "SORT", "MAP", "FIRST", "REST"
+    "PUSH", "POP", "APPEND", "LENGTH", "SORT", "MAP", "FIRST", "REST",
+    "CLASS", "THIS", "HASH"
 };
 
 struct Lexeme {
@@ -41,12 +44,14 @@ struct Lexeme {
 class Lexer {
     private:
         StringBuffer sb;
+        unordered_map<string, TOKENS> reservedWords;
         vector<Lexeme> lexemes;
         Lexeme extractWord();
         Lexeme extractNumber();
         Lexeme checkSpecials();
         Lexeme extractStringLiteral();
         vector<Lexeme>& start();
+        void initReserved();
     public:
         Lexer();
         vector<Lexeme>& lex(string filename);

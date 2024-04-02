@@ -25,28 +25,12 @@ Lexeme Lexer::extractWord() {
         sb.nextChar();
     }
     sb.unGet();
-    if (word == "print" || word == "println") 
-        return Lexeme(PRINT, word, sb.lineNumber());
-    if (word == "read") return Lexeme(READ, word, sb.lineNumber());
-    if (word == "if") return Lexeme(IF, word, sb.lineNumber());
-    if (word == "else") return Lexeme(ELSE, word, sb.lineNumber());
-    if (word == "loop") return Lexeme(LOOP, word, sb.lineNumber());
-    if (word == "def") return Lexeme(DEF, word, sb.lineNumber());
-    if (word == "return") return Lexeme(RETURN, word, sb.lineNumber());
-    if (word == "push") return Lexeme(PUSH, word, sb.lineNumber());
-    if (word == "pop") return Lexeme(POP, word, sb.lineNumber());
-    if (word == "length") return Lexeme(LENGTH, word, sb.lineNumber());
-    if (word == "append") return Lexeme(APPEND, word, sb.lineNumber());
-    if (word == "sort") return Lexeme(SORT, word, sb.lineNumber());
-    if (word == "map") return Lexeme(MAP, word, sb.lineNumber());
-    if (word == "first") return Lexeme(FIRST, word, sb.lineNumber());
-    if (word == "rest") return Lexeme(REST, word, sb.lineNumber());
-    if (word == "lambda") return Lexeme(LAMBDA, word, sb.lineNumber());
-    if (word == "nil") return Lexeme(NIL, word, sb.lineNumber());
-    if (word == "true") return Lexeme(TRUE, word, sb.lineNumber());
-    if (word == "false") return Lexeme(FALSE, word, sb.lineNumber());
+    if (reservedWords.find(word) != reservedWords.end()) {
+        return Lexeme(reservedWords[word], word, sb.lineNumber());
+    }
     return Lexeme(ID, word, sb.lineNumber());
 }
+
 Lexeme Lexer::extractNumber() {
     string word;
     while (sb.getChar() != sb.EOFMark() && (isdigit(sb.getChar()) || sb.getChar() == '.')) {
@@ -56,6 +40,7 @@ Lexeme Lexer::extractNumber() {
     sb.unGet();
     return Lexeme(NUMBER, word, sb.lineNumber());
 }
+
 Lexeme Lexer::checkSpecials() {
     if (sb.getChar() == ' ' || sb.getChar() == '\t' || sb.getChar() == '\r' || sb.getChar() == '\n') 
         return Lexeme(WHITESPACE, sb.asString(), sb.lineNumber());
@@ -114,7 +99,30 @@ Lexeme Lexer::checkSpecials() {
 }
 
 Lexer::Lexer() {
+    initReserved();
+}
 
+void Lexer::initReserved() {
+    reservedWords["print"]  = PRINT;
+    reservedWords["println"]= PRINT;
+    reservedWords["read"] = READ;
+    reservedWords["if"] = IF;
+    reservedWords["else"] = ELSE;
+    reservedWords["loop"] = LOOP;
+    reservedWords["def"] = DEF;
+    reservedWords["return"] = RETURN;
+    reservedWords["push"] = PUSH;
+    reservedWords["pop"] = POP;
+    reservedWords["length"] = LENGTH;
+    reservedWords["append"] = APPEND;
+    reservedWords["sort"] = SORT;
+    reservedWords["map"] = MAP;
+    reservedWords["first"] = FIRST;
+    reservedWords["rest"] = REST;
+    reservedWords["lambda"] = LAMBDA;
+    reservedWords["nil"] = NIL;
+    reservedWords["true"] = TRUE;
+    reservedWords["false"] = FALSE;
 }
 
 vector<Lexeme>& Lexer::lexString(string str) {

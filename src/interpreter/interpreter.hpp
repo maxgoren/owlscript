@@ -1,8 +1,8 @@
 #ifndef interpreter_hpp
 #define interpreter_hpp
 #include <iostream>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include "../object/object.hpp"
 #include "../closure/closure.hpp"
 #include "../parser/parser.hpp"
@@ -18,7 +18,7 @@ struct Procedure {
 
 struct ActivationRecord {
     Procedure* function;
-    map<string, int> env;
+    unordered_map<string, int> env;
     Object* returnValue;
     ActivationRecord* staticLink;
     ActivationRecord();
@@ -62,10 +62,10 @@ class Interpreter {
         void leave();
         void say(string s);
         //runtime environment
-        set<StoreAs> dontEval;  //types eval() should not try to evaluate.
-        set<string> builtIns;   //name of 'built in' procedures
-        map<string, int> st;   //global level symbol table
-        map<string, Procedure*> procedures;
+        unordered_set<StoreAs> dontEval;  //types eval() should not try to evaluate.
+        unordered_set<string> builtIns;   //name of 'built in' procedures
+        unordered_map<string, int> st;   //global level symbol table
+        unordered_map<string, Procedure*> procedures;
         CallStack callStack; //for managing procedure calls
         bool stopProcedure; //for bailing out of recursion
         MemStore memStore;  //for storing objects

@@ -163,9 +163,10 @@ void Interpreter::run(ASTNode* node) {
     if (stopProcedure) {
         stopProcedure = false;
         return;
+    } else {
+        leave();
+        run(node->next);
     }
-    leave();
-    run(node->next);
 }
 
 void Interpreter::enter(string s) {
