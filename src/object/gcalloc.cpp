@@ -21,6 +21,20 @@ Object* GC_Allocator::allocNode() {
 
 void GC_Allocator::freeNode(Object* obj) {
     if (obj != nullptr) {
+        cout<<"Called Free."<<endl;
+        if (obj->type == AS_LIST) {
+            cout<<"On list.."<<endl;
+            ListHeader* lh = obj->list;
+            ListNode* x = lh->head;
+            while (x != nullptr) {
+                ListNode* t = x;
+                x = x->next;
+                cout<<"Freed: "<<toString(t->data)<<endl;
+                freeNode(t->data);
+                delete t;
+            }
+        }
+        obj->type = AS_NIL;
         freed.push_back(obj);
     }
 }

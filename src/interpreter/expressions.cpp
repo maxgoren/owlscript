@@ -6,8 +6,16 @@ Object* Interpreter::eval(ASTNode* node) {
     Object* rhs = expression(node->right);
     if (dontEval.find(lhs->type) == dontEval.end() && dontEval.find(rhs->type) == dontEval.end()) {
         double left, right;
-        left = stof(toString(lhs));
-        right = stof(toString(rhs));
+        if (lhs->type == AS_CLOSURE) {
+            right = stof(toString(runClosure(node, lhs)));
+        } else {
+            left = stof(toString(lhs));
+        }
+        if (rhs->type == AS_CLOSURE) {
+            right = stof(toString(runClosure(node, rhs)));
+        } else {
+            right = stof(toString(rhs));
+        }
         switch (node->data.tokenVal) {
             case PLUS:     return makeRealObject(left+right);
             case MINUS:    return makeRealObject(left-right);
