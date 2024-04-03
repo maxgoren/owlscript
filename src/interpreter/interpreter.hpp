@@ -7,50 +7,9 @@
 #include "../closure/closure.hpp"
 #include "../parser/parser.hpp"
 #include "../memstore/memstore.hpp"
+#include "callstack.hpp"
 using namespace std;
 
-
-struct Procedure {
-    string name;
-    ASTNode* paramList;
-    ASTNode* functionBody;
-};
-
-struct ActivationRecord {
-    Procedure* function;
-    unordered_map<string, int> env;
-    Object* returnValue;
-    ActivationRecord* staticLink;
-    ActivationRecord();
-};
-
-
-class CallStack {
-    private:
-        ActivationRecord* stack[255];
-        int p;
-    public:
-        CallStack() {
-            p = 0;
-        }
-        bool empty() {
-            return p == 0;
-        }
-        int size() {
-            return p;
-        }
-        void push(ActivationRecord* ar) {
-            stack[p++] = ar;
-        }
-        void pop() {
-            ActivationRecord* t = top();
-            p--;
-            delete t;
-        }
-        ActivationRecord* top() {
-            return stack[p-1];
-        }
-};
 
 class Interpreter {
     private:
@@ -109,6 +68,7 @@ class Interpreter {
         void run(ASTNode* node);
         void setLoud(bool isloud);
         void resetRecDepth();
+        void memstats();
 };
 
 #endif

@@ -17,6 +17,10 @@ void REPL::repl() {
             interpreter.setLoud(tracing);
             continue;
         }
+        if (input == ".memstat") {
+            interpreter.memstats();
+            continue;
+        }
         if (input != ".exit" && input != "quit") {
             auto ast = astBuilder.build(input, tracing);
             ASTTracer trace;

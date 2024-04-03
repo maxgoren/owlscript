@@ -23,20 +23,27 @@ int MemStore::storeAtNextFree(Object* obj) {
 }
 
 int MemStore::allocate() {
+    int addr = 0;
     if (nextFreeAddress+1 == MAX_MEM_STORE) {
         if (freedCount == 0) {
             cout<<"Error: out of memory!"<<endl;
-            return 0;
+            addr = 0;
         } else {
-            return freedCells[--freedCount];
+            addr = freedCells[--freedCount];
         }
-    } 
-    return ++nextFreeAddress;
+    } else {
+        addr = ++nextFreeAddress;
+    }
+    liveCells++;
+    return addr;
 }
 
 void MemStore::free(int addr) {
-    if (addr > 0 && addr < MAX_MEM_STORE)
+    if (addr > 0 && addr < MAX_MEM_STORE) {
         freedCells[freedCount++] = addr;
+        liveCells--;
+        GarbageCollector.freeNode(memstore[addr]);
+    }
 }
 
 Object*& MemStore::get(int addr) {
@@ -44,4 +51,11 @@ Object*& MemStore::get(int addr) {
         return memstore[addr];
     cout<<"Error: invalid memory address: 0x"<<addr<<endl;
     return memstore[0];
+}
+
+void MemStore::memstats() {
+    cout<<"Memstats: "<<endl;
+    cout<<"Next Free Addr:  "<<nextFreeAddress<<endl;
+    cout<<"Free store size: "<<freedCount<<endl;
+    cout<<"Overall Usage: "<<((double)liveCells/MAX_MEM_STORE)<<endl;
 }

@@ -9,6 +9,7 @@ using std::string;
 class ASTBuilder {
     private:
         bool trace;
+        Lexer lexer;
     public:
         ASTBuilder(bool loud = false);
         ASTNode* build(string text, bool tracing);

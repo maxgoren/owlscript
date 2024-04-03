@@ -5,7 +5,6 @@ ASTBuilder::ASTBuilder(bool loud) {
 }
 
 ASTNode* ASTBuilder::build(string text, bool tracing) {
-    Lexer lexer;
     Parser parser(tracing);
     auto tokens = lexer.lexString(text);
     if (tracing) {
@@ -17,7 +16,6 @@ ASTNode* ASTBuilder::build(string text, bool tracing) {
 }
 
 ASTNode* ASTBuilder::fromFile(string filename) {
-    Lexer lexer;
     Parser parser(trace);
     return parser.parse(lexer.lex(filename));
 }

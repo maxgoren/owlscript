@@ -12,6 +12,7 @@ owlscript:
 	g++ --std=c++17 -c src/interpreter/listops.cpp
 	g++ --std=c++17 -c src/interpreter/expressions.cpp
 	g++ --std=c++17 -c src/interpreter/statements.cpp
+	g++ --std=c++17 -c src/interpreter/callstack.cpp
 	g++ --std=c++17 -c src/interpreter/interpreter.cpp
 	g++ --std=c++17 -c src/interpreter/repl.cpp
 	g++ --std=c++17 -c src/cli.cpp
@@ -32,6 +33,7 @@ debug:
 	g++ --std=c++17 -g -c src/memstore/memstore.cpp
 	g++ --std=c++17 -g -c src/interpreter/expressions.cpp
 	g++ --std=c++17 -g -c src/interpreter/statements.cpp
+	g++ --std=c++17 -g -c src/interpreter/callstack.cpp
 	g++ --std=c++17 -g -c src/interpreter/interpreter.cpp
 	g++ --std=c++17 -g -c src/interpreter/repl.cpp
 	g++ --std=c++17 -g -c src/cli.cpp

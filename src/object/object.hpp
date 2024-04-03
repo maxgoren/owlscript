@@ -33,10 +33,12 @@ struct Object {
 class GC_Allocator {
     private:
         vector<Object*> created;
+        vector<Object*> freed;
         void mark_node(Object* obj);
     public:
         GC_Allocator();
         Object* allocNode();
+        void freeNode(Object* obj);
         void mark();
         void sweep();
 };

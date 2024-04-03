@@ -137,6 +137,7 @@ vector<Lexeme>& Lexer::lex(string filename) {
 
 vector<Lexeme>& Lexer::start() {
     Lexeme next;
+    lexemes.clear();
     while (sb.getChar() != sb.EOFMark()) {
         if (isalpha(sb.getChar())) {
             next = extractWord();

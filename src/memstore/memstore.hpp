@@ -1,7 +1,7 @@
 #ifndef memstore_hpp
 #define memstore_hpp
 #include "../object/object.hpp"
-inline const int MAX_MEM_STORE = 1500;
+inline const int MAX_MEM_STORE = 2500;
 
 class MemStore {
     private:
@@ -10,6 +10,7 @@ class MemStore {
         int nextFreeAddress;
         int freedCells[MAX_MEM_STORE];
         int freedCount;
+        int liveCells;
         void rungc();
     public:
         MemStore();
@@ -18,6 +19,7 @@ class MemStore {
         int storeAtNextFree(Object* obj);
         int allocate();
         Object*& get(int addr);
+        void memstats();
 };
 
 #endif
