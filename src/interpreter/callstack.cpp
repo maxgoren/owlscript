@@ -35,7 +35,6 @@ void CallStack::push(ActivationRecord* ar) {
 
 void CallStack::pop() {
     if (p-1 == 0) {
-        cout<<"Stack underrun."<<endl;
         return;
     }
     ActivationRecord* t = top();

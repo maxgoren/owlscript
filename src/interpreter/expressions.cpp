@@ -6,14 +6,8 @@ Object* Interpreter::eval(ASTNode* node) {
     Object* rhs = expression(node->right);
     if (dontEval.find(lhs->type) == dontEval.end() && dontEval.find(rhs->type) == dontEval.end()) {
         double left, right;
-        if (lhs->type == AS_CLOSURE)
-            left = stof(toString(runClosure(node, lhs)));
-        else
-            left = stof(toString(lhs));
-        if (rhs->type == AS_CLOSURE)
-            right = stof(toString(runClosure(node, rhs)));
-        else
-            right = stof(toString(rhs));
+        left = stof(toString(lhs));
+        right = stof(toString(rhs));
         switch (node->data.tokenVal) {
             case PLUS:     return makeRealObject(left+right);
             case MINUS:    return makeRealObject(left-right);
@@ -40,9 +34,10 @@ Object* Interpreter::eval(ASTNode* node) {
                 cout<<"Unknown Operator: "<<node->data.stringVal<<endl;
         }
     } else if ((lhs->type == AS_STRING || rhs->type == AS_STRING) && node->data.tokenVal == PLUS) {
+        cout<<"Hit string eval"<<endl;
         return makeStringObject(new string(toString(lhs) + toString(rhs)));
     } else {
-        cout<<"Error: Unsupported operation for those types."<<endl;
+        cout<<"Error: Unsupported operation for those types: "<<(lhs->type)<<", "<<(rhs->type)<<endl;
     }
     leave();
     return makeRealObject(-1.0f);

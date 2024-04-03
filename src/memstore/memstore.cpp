@@ -42,7 +42,7 @@ void MemStore::free(int addr) {
     if (addr > 0 && addr < MAX_MEM_STORE) {
         freedCells[freedCount++] = addr;
         liveCells--;
-        GarbageCollector.freeNode(memstore[addr]);
+        //GarbageCollector.freeNode(memstore[addr]);
     }
 }
 

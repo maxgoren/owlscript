@@ -7,7 +7,7 @@ ActivationRecord::ActivationRecord() {
 Interpreter::Interpreter() {
     recDepth = 0;
     stopProcedure = false;
-    dontEval.insert({AS_LIST, AS_STRING});
+    dontEval.insert({AS_LIST, AS_CLOSURE, AS_STRING});
     builtIns.insert({"rest", "first", "sort", "map", "length"});
 }
 
