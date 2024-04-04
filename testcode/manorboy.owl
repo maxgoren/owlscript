@@ -8,4 +8,4 @@ def A(k, xa, xb, xc, xd, xe) {
     }
     return B();
 }
-println A(4, 1, -1, -1, 1, 0);
+println A(3, 1, -1, -1, 1, 0);

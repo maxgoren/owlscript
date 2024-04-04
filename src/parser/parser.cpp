@@ -364,6 +364,12 @@ ASTNode* Parser::factor() {
         node = simpleExpr();
         match(RPAREN);
     }
+    if (lookahead() == MINUS) {
+        node = makeExprNode(UOP_EXPR, lookahead(), current.stringVal);
+        match(MINUS);
+        node->left = simpleExpr();
+        return node;
+    }
     if (lookahead() == LAMBDA) {
         leave("lambda");
         return lambdaExpr();

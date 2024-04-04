@@ -50,6 +50,7 @@ Object* Interpreter::getVariableValue(ASTNode* node) {
 Object* Interpreter::expression(ASTNode* node) {
     Object* result, *tmp;
     int addr, arrIndex = 0;
+    double val;
     if (node == nullptr || node->kind != EXPRNODE) {
         cout<<"Error: found expression where expecting a statement."<<endl;
         return makeNilObject();
@@ -58,6 +59,10 @@ Object* Interpreter::expression(ASTNode* node) {
         case OP_EXPR:
             enter("[op expression]" + node->data.stringVal); leave();
             return eval(node);
+        case UOP_EXPR:
+            enter("[unary op expression]");
+            val = stof(toString(expression(node->left)));
+            return makeRealObject(val * -1);
         case ID_EXPR:
             enter("[id expression]");
             result = getVariableValue(node);

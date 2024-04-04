@@ -46,6 +46,7 @@ class Parser {
         ASTNode* lambdaExpr();
         ASTNode* paramList();
         ASTNode* argsList();
+        ASTNode* unary();
 };
 
 #endif
