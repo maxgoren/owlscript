@@ -1,5 +1,11 @@
 #include "interpreter.hpp"
 
+void Interpreter::letStmt(ASTNode* node) {
+    enter("[LET STMT]");
+    assignStmt(node->left);
+    leave();
+}
+
 void Interpreter::printStmt(ASTNode* node) {
     enter("[print]" + node->data.stringVal);
     Object* obj = expression(node->left);
@@ -70,6 +76,11 @@ void Interpreter::assignStmt(ASTNode* node) {
         value = expression(node->right);
     } else {
         cout<<"Error: missing assignment value"<<endl;
+        return;
+    }
+    if (!callStack.empty() && callStack.top()->env.find(name) == callStack.top()->env.end()) { 
+        callStack.top()->env[name] = memStore.storeAtNextFree(value);
+        leave();
         return;
     }
     int saveAddr = getAddress(name);

@@ -42,7 +42,6 @@ Object* Interpreter::eval(ASTNode* node) {
                 cout<<"Unknown Operator: "<<node->data.stringVal<<endl;
         }
     } else if ((lhs->type == AS_STRING || rhs->type == AS_STRING) && node->data.tokenVal == PLUS) {
-        cout<<"Hit string eval"<<endl;
         return makeStringObject(new string(toString(lhs) + toString(rhs)));
     } else {
         cout<<"Error: Unsupported operation for those types: "<<(lhs->type)<<", "<<(rhs->type)<<endl;
@@ -59,9 +58,9 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
     ar->env = clos->env;
     ASTNode* t = node->left;
     for (auto it = clos->paramList; it != nullptr; it = it->left) {
-        ar->env.insert(make_pair(it->data.stringVal, memStore.storeAtNextFree(expression(t))));
+        ar->env.insert(make_pair(it->data.stringVal, memStore.storeAtNextFree(t == nullptr ? makeIntObject(0):expression(t))));
         say(it->data.stringVal + " added to AR.");
-        if (t->left != nullptr)
+        if (t != nullptr && t->left != nullptr)
             t = t->left;
     }
     ar->returnValue = makeRealObject(0.0);

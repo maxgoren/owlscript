@@ -123,6 +123,7 @@ void Lexer::initReserved() {
     reservedWords["nil"] = NIL;
     reservedWords["true"] = TRUE;
     reservedWords["false"] = FALSE;
+    reservedWords["let"] = LET;
 }
 
 vector<Lexeme>& Lexer::lexString(string str) {

@@ -238,8 +238,21 @@ ASTNode* Parser::exprStatement() {
     return node;
 }
 
+ASTNode* Parser::letStatement() {
+    enter("let statement");
+    ASTNode* node = makeStmtNode(LET_STMT, lookahead(), current.stringVal);
+    match(LET);
+    node->left = simpleExpr();
+    if (lookahead() == SEMI) 
+        match(SEMI);
+    leave();
+    return node;
+}
+
 ASTNode* Parser::statement() {
     switch (lookahead()) {
+        case LET:
+            return letStatement();
         case PRINT: 
             return printStatement();
         case READ:

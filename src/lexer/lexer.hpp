@@ -15,7 +15,7 @@ enum TOKENS {
     LESS, GREATER, EQUAL, NOTEQUAL, LTE, GTE,
     IF, ELSE, PRINT, READ, LOOP, RETURN, LAMBDA,
     PUSH, POP, APPEND, LENGTH, SORT, MAP, FIRST, REST,
-    CLASS, THIS, HASH
+    CLASS, THIS, HASH, LET
 };
 
 inline string tokenString[] = {
@@ -27,7 +27,7 @@ inline string tokenString[] = {
     "LESS", "GREATER", "EQUAL", "NOTEQUAL", "LTE", "GTE",
     "IF", "ELSE", "PRINT", "READ", "LOOP", "RETURN", "LAMBDA", 
     "PUSH", "POP", "APPEND", "LENGTH", "SORT", "MAP", "FIRST", "REST",
-    "CLASS", "THIS", "HASH"
+    "CLASS", "THIS", "HASH", "LET"
 };
 
 struct Lexeme {

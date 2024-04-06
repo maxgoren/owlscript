@@ -1,0 +1,15 @@
+def show() {
+    print (r + " ");
+}
+
+def small() {
+    let r := 0.25;
+    show();
+    println r;
+}
+
+r := 0.125;
+show();
+small();
+show();
+small();

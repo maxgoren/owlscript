@@ -69,6 +69,7 @@ void ASTTracer::printNode(ASTNode* node) {
         }
     } else if (node->kind == STMTNODE) {
         switch (node->type.stmt) {
+            case LET_STMT:    cout<<"[LET_STMT]"<<endl; break;
             case IF_STMT:     cout<<"[IF_STMT]"<<endl; break;
             case LOOP_STMT:   cout<<"[LOOP_STMT]"<<endl; break;
             case PRINT_STMT:  cout<<"[PRINT_STMT]"<<endl; break;

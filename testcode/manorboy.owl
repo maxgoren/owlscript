@@ -1,11 +1,16 @@
 def A(k, xa, xb, xc, xd, xe) {
+    println ("Enter A: " + k + " " + xa + " " + xb + " " + xc + " " + xd + " " + xe);
     def B() {
+        println ("Enter B: " + k + " " + xa + " " + xb + " " + xc + " " + xd + " " + xe);
         k := k - 1;
-        return A(k, lambda() { return B(); }, xa, xb, xc, xd);
+        return A(k, lambda() { println "B lmbda!"; return B(); }, xa, xb, xc, xd);
     }
     if (k <= 0) {
-        return xd + xe;
+        println "k < 0";
+        return xd() + xe();
     }
+    println "k > 0";
     return B();
 }
-println A(3, 1, -1, -1, 1, 0);
+g := lambda(y) { println "ex lmbd"; it := y; return it; };
+println A(10, g(1), g(-1), g(-1), g(1), g(0));

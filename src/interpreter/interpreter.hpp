@@ -16,6 +16,7 @@ class Interpreter {
         //for tracing
         bool loud;
         int recDepth;
+        int step;
         void enter(string s);
         void leave(string s);
         void leave();
@@ -49,6 +50,7 @@ class Interpreter {
         void loopStmt(ASTNode* node);
         void assignStmt(ASTNode* node);
         void statement(ASTNode* node);
+        void letStmt(ASTNode* node);
         //I/O related
         void printStmt(ASTNode* node);
         void readStmt(ASTNode* node);

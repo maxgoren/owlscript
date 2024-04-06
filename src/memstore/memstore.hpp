@@ -1,7 +1,7 @@
 #ifndef memstore_hpp
 #define memstore_hpp
 #include "../object/object.hpp"
-inline const int MAX_MEM_STORE = 12500;
+inline const int MAX_MEM_STORE = 37500;
 
 class MemStore {
     private:

@@ -18,12 +18,10 @@ int Interpreter::getAddress(string name) {
     //if we are in a procedure call, check the procedures symbol table first.
     if (!callStack.empty() && callStack.top()->env.find(name) != callStack.top()->env.end())
         addr = callStack.top()->env[name];
-
     //If address is still zero, we havent found the variable yet.
     //Are we in a nested procedure? Check the outter procedures symbol table, but only one, this is not dynamic scoping.
     if (addr == 0 && callStack.size() > 1 && callStack.top()->staticLink->env.find(name) != callStack.top()->staticLink->env.end())
         addr = callStack.top()->staticLink->env[name];
-
     //If the address is still zero, check the global symbol table
     if (addr == 0 && st.find(name) != st.end())
         addr = st[name];
@@ -48,10 +46,13 @@ Object* Interpreter::getVariableValue(ASTNode* node) {
 }
 
 Object* Interpreter::expression(ASTNode* node) {
+    if (node == nullptr) {
+        return makeNilObject();
+    }
     Object* result, *tmp;
     int addr, arrIndex = 0;
     double val;
-    if (node == nullptr || node->kind != EXPRNODE) {
+    if (node->kind != EXPRNODE) {
         cout<<"Error: found expression where expecting a statement."<<endl;
         return makeNilObject();
     }
@@ -116,6 +117,9 @@ Object* Interpreter::expression(ASTNode* node) {
 void Interpreter::statement(ASTNode* node) {
     enter("[statement]");
     switch (node->type.stmt) {
+        case LET_STMT:
+            letStmt(node);
+            break;
         case PRINT_STMT:
             printStmt(node);
             break;
@@ -175,7 +179,8 @@ void Interpreter::run(ASTNode* node) {
 }
 
 void Interpreter::enter(string s) {
-    recDepth++;
+    recDepth = (recDepth > 60) ? 0:recDepth+1;
+    step++;
     say(s);
 }
 
@@ -187,7 +192,7 @@ void Interpreter::say(string s) {
     if (loud) {
         for (int i = 0; i < recDepth; i++)
             cout<<"  ";
-        cout<<"("<<recDepth<<") "<<s<<endl;
+        cout<<"("<<step<<") "<<s<<endl;
     }
 }
 
@@ -198,9 +203,11 @@ void Interpreter::leave(string s) {
 
 void Interpreter::leave() {
     --recDepth;
+    step--;
     if (recDepth < 0) {
         resetRecDepth();
     }
+    if (step < 0) step = 0;
 }
 
 void Interpreter::resetRecDepth() {
