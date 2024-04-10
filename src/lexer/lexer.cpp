@@ -55,6 +55,7 @@ Lexeme Lexer::checkSpecials() {
     if (sb.getChar() == '/') return Lexeme(DIVIDE, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '*') return Lexeme(MULTIPLY, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '%') return Lexeme(MOD, sb.asString(), sb.lineNumber());
+    if (sb.getChar() == '^') return Lexeme(POW, sb.asString(), sb.lineNumber());
     if (sb.getChar() == ';') return Lexeme(SEMI, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '.') return Lexeme(PERIOD, sb.asString(), sb.lineNumber());
     if (sb.getChar() == ',') return Lexeme(COMA, sb.asString(), sb.lineNumber());
@@ -124,6 +125,7 @@ void Lexer::initReserved() {
     reservedWords["true"] = TRUE;
     reservedWords["false"] = FALSE;
     reservedWords["let"] = LET;
+    reservedWords["sqrt"] = SQRT;
 }
 
 vector<Lexeme>& Lexer::lexString(string str) {

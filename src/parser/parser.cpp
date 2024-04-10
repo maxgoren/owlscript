@@ -54,7 +54,7 @@ ASTNode* Parser::statementList() {
     enter("statement list");
     ASTNode* node = statement();
     ASTNode* m = node;
-    while (lookahead() != RCURLY && lookahead() != EOFTOKEN) {
+    while (lookahead() != RCURLY && lookahead() != ELSE && lookahead() != EOFTOKEN) {
         ASTNode* t = statement();
         if (m == nullptr) {
             node = m = t;
@@ -103,16 +103,20 @@ ASTNode* Parser::ifStatement() {
     match(LPAREN);
     node->left = simpleExpr();
     match(RPAREN);
+    say("Matched If test.");
     match(LCURLY);
     node->mid = statementList();
     if (lookahead() == RCURLY)
         match(RCURLY);
+    say("Matched true statement");
     if (lookahead() == ELSE) {
         match(ELSE);
+        match(LCURLY);
+        say("Matching else....");
         node->right = statementList();
-        if (lookahead() == RCURLY)
-            match(RCURLY);
     }
+    if (lookahead() == RCURLY)
+        match(RCURLY);
     leave();
     return node;
 }
@@ -279,7 +283,7 @@ ASTNode* Parser::statement() {
         case RETURN: 
             return returnStatement();
     default:
-        ASTNode* node = factor();
+        ASTNode* node = simpleExpr();
         if (node == nullptr) {
             cout<<"Unknown Token on Line: "<< current.lineNumber<<": "<<current.stringVal<<endl;
             nexttoken();
@@ -306,15 +310,21 @@ ASTNode* Parser::simpleExpr() {
     return node;
 }
 
-ASTNode* Parser::expression() {
+ASTNode* Parser::factor() {
     enter("expr");
-    ASTNode* node = term();
-    while (lookahead() == PLUS || lookahead() == MINUS) {
+    ASTNode* node = primary();
+    while (lookahead() == POW || lookahead() == SQRT) {
         ASTNode* expNode = makeExprNode(OP_EXPR, lookahead(), current.stringVal);
-        expNode->left = node;
+        if (node != nullptr)
+            expNode->left = node;
         node = expNode;
+        auto matched = lookahead();
         match(lookahead());
-        node->right = term();
+        if (matched != SQRT)
+            node->right = primary();
+        else { 
+            node->left = primary();
+        }
     }
     leave();
     return node;
@@ -334,9 +344,23 @@ ASTNode* Parser::term() {
     return node;
 }
 
-ASTNode* Parser::factor() {
-    ASTNode* node;
+ASTNode* Parser::expression() {
     enter("factor");
+    ASTNode* node = term();
+    while (lookahead() == PLUS || lookahead() == MINUS) {
+        ASTNode* expNode = makeExprNode(OP_EXPR, lookahead(), current.stringVal);
+        expNode->left = node;
+        node = expNode;
+        match(lookahead());
+        node->right = term();
+    }
+    leave();
+    return node;
+}
+
+ASTNode* Parser::primary() {
+    ASTNode* node;
+    enter("primary");
     if (lookahead() == NUMBER) {
         node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
         match(NUMBER);

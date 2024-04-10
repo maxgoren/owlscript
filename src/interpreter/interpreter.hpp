@@ -3,6 +3,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
+#include <cmath>
 #include "../object/object.hpp"
 #include "../closure/closure.hpp"
 #include "../parser/parser.hpp"
@@ -65,6 +66,7 @@ class Interpreter {
         void popList(ASTNode* node);
         void pushList(ASTNode* node);
         void appendList(ASTNode* node);
+        bool scopeIsGlobal();
     public:
         Interpreter();
         void run(ASTNode* node);

@@ -17,6 +17,8 @@ Object* Interpreter::eval(ASTNode* node) {
             right = stof(toString(rhs));
         }
         switch (node->data.tokenVal) {
+            case SQRT:     return makeRealObject(sqrt(left));
+            case POW:      return makeRealObject(pow(left, right));
             case PLUS:     return makeRealObject(left+right);
             case MINUS:    return makeRealObject(left-right);
             case DIVIDE:
@@ -109,7 +111,11 @@ Object* Interpreter::runProcedure(ASTNode* node) {
 
 ActivationRecord* Interpreter::prepareActivationRecord(ASTNode* node) {
     ActivationRecord* ar = new ActivationRecord();
-    Procedure* func = procedures[node->data.stringVal];
+    Procedure* func;
+    string procedureName = node->data.stringVal;
+    if (!callStack.empty() && callStack.top()->nestedProc.find(procedureName) !=  callStack.top()->nestedProc.end())
+        func =  callStack.top()->nestedProc[procedureName];
+    else func = procedures[procedureName];
     ar->function = func;
     ASTNode* t = node->left;
     for (auto it = func->paramList; it != nullptr; it = it->left) {
@@ -125,6 +131,9 @@ ActivationRecord* Interpreter::prepareActivationRecord(ASTNode* node) {
 
 Object* Interpreter::procedureCall(ASTNode* node) {
     enter("[procedureCall]");
+    if (!callStack.empty() && callStack.top()->nestedProc.find(node->data.stringVal) !=  callStack.top()->nestedProc.end()) {
+        return runProcedure(node);
+    }
     if (procedures.find(node->data.stringVal) != procedures.end()) {
         return runProcedure(node);
     }

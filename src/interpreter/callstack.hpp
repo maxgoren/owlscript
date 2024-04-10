@@ -10,6 +10,7 @@ struct Procedure {
 struct ActivationRecord {
     Procedure* function;
     unordered_map<string, int> env;
+    unordered_map<string, Procedure*> nestedProc;
     Object* returnValue;
     ActivationRecord* staticLink;
     ActivationRecord();

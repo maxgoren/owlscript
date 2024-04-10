@@ -1,0 +1,12 @@
+def makeCount() {
+    let i := 0;
+    return lambda() { i := i + 1; return i; };
+}
+
+
+let counter := makeCount();
+let t := 0;
+loop (t < 10) {
+    println counter();
+    t := t + 1;
+}

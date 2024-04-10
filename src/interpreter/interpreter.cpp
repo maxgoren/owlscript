@@ -11,6 +11,10 @@ Interpreter::Interpreter() {
     builtIns.insert({"rest", "first", "sort", "map", "length"});
 }
 
+bool Interpreter::scopeIsGlobal() {
+    return callStack.empty();
+}
+
 //resolve names to addresses using innermost nesting rule.
 int Interpreter::getAddress(string name) {
     int addr = 0; //address zero is never used, and is used as a control address for storing nil object.

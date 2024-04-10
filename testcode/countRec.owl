@@ -1,0 +1,9 @@
+def count(n) {
+    if (n>0) { 
+        print (n + " ");
+        return count(n-1);
+    } else {
+        println "miahhhh!";
+    }
+}
+count(3);

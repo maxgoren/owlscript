@@ -132,8 +132,14 @@ void Interpreter::defineFunction(ASTNode* node) {
     np->name = node->data.stringVal;
     np->paramList = node->left;
     np->functionBody = node->right;
-    procedures[np->name] = np;
-    leave(np->name + " defined.");
+    if (!callStack.empty()) {
+        callStack.top()->nestedProc[np->name] = np;
+        say(np->name + " defined as nested procedure.");
+    } else {
+        procedures[np->name] = np;
+        say(np->name + " defined globally.");
+    }
+    leave();
 }
 
 void Interpreter::returnStmt(ASTNode* node) {
