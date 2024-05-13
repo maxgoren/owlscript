@@ -44,12 +44,12 @@ Lexeme Lexer::extractNumber() {
 Lexeme Lexer::checkSpecials() {
     if (sb.getChar() == ' ' || sb.getChar() == '\t' || sb.getChar() == '\r' || sb.getChar() == '\n') 
         return Lexeme(WHITESPACE, sb.asString(), sb.lineNumber());
-    if (sb.getChar() == '(') return Lexeme(LPAREN, sb.asString(), sb.lineNumber());
-    if (sb.getChar() == ')') return Lexeme(RPAREN, sb.asString(), sb.lineNumber());
-    if (sb.getChar() == '{') return Lexeme(LCURLY, sb.asString(), sb.lineNumber());
-    if (sb.getChar() == '}') return Lexeme(RCURLY, sb.asString(), sb.lineNumber());
-    if (sb.getChar() == '[') return Lexeme(LSQ, sb.asString(), sb.lineNumber());
-    if (sb.getChar() == ']') return Lexeme(RSQ, sb.asString(), sb.lineNumber());
+    if (sb.getChar() == '(') { parenCount++; return Lexeme(LPAREN, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == ')') { parenCount--; return Lexeme(RPAREN, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == '{') { curlyCount++; return Lexeme(LCURLY, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == '}') { curlyCount--; return Lexeme(RCURLY, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == '[') { squareCount++; return Lexeme(LSQ, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == ']') { squareCount--; return Lexeme(RSQ, sb.asString(), sb.lineNumber()); }
     if (sb.getChar() == '+') return Lexeme(PLUS, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '-') return Lexeme(MINUS, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '/') return Lexeme(DIVIDE, sb.asString(), sb.lineNumber());
@@ -100,6 +100,9 @@ Lexeme Lexer::checkSpecials() {
 }
 
 Lexer::Lexer() {
+    parenCount = 0;
+    curlyCount = 0;
+    squareCount = 0;
     initReserved();
 }
 
@@ -141,6 +144,9 @@ vector<Lexeme>& Lexer::lex(string filename) {
 vector<Lexeme>& Lexer::start() {
     Lexeme next;
     lexemes.clear();
+    parenCount = 0;
+    curlyCount = 0;
+    squareCount = 0;
     while (sb.getChar() != sb.EOFMark()) {
         if (isalpha(sb.getChar())) {
             next = extractWord();
@@ -167,6 +173,10 @@ vector<Lexeme>& Lexer::start() {
         if (sb.getChar() == sb.EOFMark())
             break;
         sb.nextChar();
+    }
+    if ((curlyCount + squareCount + parenCount) != 0) {
+        cout<<"Error: Unbalanced Statement."<<endl;
+        lexemes.clear();
     }
     lexemes.push_back(Lexeme(EOFTOKEN, "<EOF>", sb.lineNumber()));
     return lexemes;

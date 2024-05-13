@@ -57,7 +57,7 @@ Object* Interpreter::expression(ASTNode* node) {
     int addr, arrIndex = 0;
     double val;
     if (node->kind != EXPRNODE) {
-        cout<<"Error: found expression where expecting a statement."<<endl;
+        cout<<"Error: found statement where expecting expression."<<endl;
         return makeNilObject();
     }
     switch (node->type.expr) {

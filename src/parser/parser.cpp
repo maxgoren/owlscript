@@ -313,14 +313,14 @@ ASTNode* Parser::simpleExpr() {
 ASTNode* Parser::factor() {
     enter("expr");
     ASTNode* node = primary();
-    while (lookahead() == POW || lookahead() == SQRT) {
-        ASTNode* expNode = makeExprNode(OP_EXPR, lookahead(), current.stringVal);
+    while (lookahead() == POW || lookahead() == SQRT || lookahead() == MINUS) {
+        ASTNode* expNode = makeExprNode(lookahead() == MINUS ? UOP_EXPR:OP_EXPR, lookahead(), current.stringVal);
         if (node != nullptr)
             expNode->left = node;
         node = expNode;
         auto matched = lookahead();
         match(lookahead());
-        if (matched != SQRT)
+        if (matched != SQRT && matched != MINUS)
             node->right = primary();
         else { 
             node->left = primary();
@@ -400,12 +400,6 @@ ASTNode* Parser::primary() {
         match(LPAREN);
         node = simpleExpr();
         match(RPAREN);
-    }
-    if (lookahead() == MINUS) {
-        node = makeExprNode(UOP_EXPR, lookahead(), current.stringVal);
-        match(MINUS);
-        node->left = simpleExpr();
-        return node;
     }
     if (lookahead() == LAMBDA) {
         leave("lambda");

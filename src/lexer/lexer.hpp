@@ -52,6 +52,9 @@ class Lexer {
         Lexeme extractStringLiteral();
         vector<Lexeme>& start();
         void initReserved();
+        int parenCount;
+        int curlyCount;
+        int squareCount;
     public:
         Lexer();
         vector<Lexeme>& lex(string filename);
