@@ -341,8 +341,8 @@ ASTNode* Parser::term() {
 ASTNode* Parser::factor() {
     enter("factor");
     ASTNode* node = primary();
-    while (lookahead() == POW || lookahead() == SQRT /*|| lookahead() == MINUS*/) {
-        ASTNode* expNode = makeExprNode(/*lookahead() == MINUS ? UOP_EXPR:*/OP_EXPR, lookahead(), current.stringVal);
+    while (lookahead() == POW || lookahead() == SQRT) {
+        ASTNode* expNode = makeExprNode(OP_EXPR, lookahead(), current.stringVal);
         if (node != nullptr)
             expNode->left = node;
         node = expNode;
@@ -361,6 +361,12 @@ ASTNode* Parser::factor() {
 ASTNode* Parser::primary() {
     ASTNode* node;
     enter("primary");
+    if (lookahead() == MINUS) {
+        node = makeExprNode(UOP_EXPR, lookahead(), current.stringVal);
+        match(MINUS);
+        node->left = primary();
+        return node;
+    }
     if (lookahead() == NUMBER) {
         node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
         match(NUMBER);
