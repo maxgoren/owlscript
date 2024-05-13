@@ -310,21 +310,15 @@ ASTNode* Parser::simpleExpr() {
     return node;
 }
 
-ASTNode* Parser::factor() {
-    enter("expr");
-    ASTNode* node = primary();
-    while (lookahead() == POW || lookahead() == SQRT || lookahead() == MINUS) {
-        ASTNode* expNode = makeExprNode(lookahead() == MINUS ? UOP_EXPR:OP_EXPR, lookahead(), current.stringVal);
-        if (node != nullptr)
-            expNode->left = node;
+ASTNode* Parser::expression() {
+    enter("expression");
+    ASTNode* node = term();
+    while (lookahead() == PLUS || lookahead() == MINUS) {
+        ASTNode* expNode = makeExprNode(OP_EXPR, lookahead(), current.stringVal);
+        expNode->left = node;
         node = expNode;
-        auto matched = lookahead();
         match(lookahead());
-        if (matched != SQRT && matched != MINUS)
-            node->right = primary();
-        else { 
-            node->left = primary();
-        }
+        node->right = term();
     }
     leave();
     return node;
@@ -344,15 +338,21 @@ ASTNode* Parser::term() {
     return node;
 }
 
-ASTNode* Parser::expression() {
+ASTNode* Parser::factor() {
     enter("factor");
-    ASTNode* node = term();
-    while (lookahead() == PLUS || lookahead() == MINUS) {
-        ASTNode* expNode = makeExprNode(OP_EXPR, lookahead(), current.stringVal);
-        expNode->left = node;
+    ASTNode* node = primary();
+    while (lookahead() == POW || lookahead() == SQRT /*|| lookahead() == MINUS*/) {
+        ASTNode* expNode = makeExprNode(/*lookahead() == MINUS ? UOP_EXPR:*/OP_EXPR, lookahead(), current.stringVal);
+        if (node != nullptr)
+            expNode->left = node;
         node = expNode;
+        auto matched = lookahead();
         match(lookahead());
-        node->right = term();
+        if (matched != SQRT && matched != MINUS)
+            node->right = primary();
+        else { 
+            node->left = primary();
+        }
     }
     leave();
     return node;
