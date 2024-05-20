@@ -44,12 +44,34 @@ Lexeme Lexer::extractNumber() {
 Lexeme Lexer::checkSpecials() {
     if (sb.getChar() == ' ' || sb.getChar() == '\t' || sb.getChar() == '\r' || sb.getChar() == '\n') 
         return Lexeme(WHITESPACE, sb.asString(), sb.lineNumber());
-    if (sb.getChar() == '(') { parenCount++; return Lexeme(LPAREN, sb.asString(), sb.lineNumber()); }
-    if (sb.getChar() == ')') { parenCount--; return Lexeme(RPAREN, sb.asString(), sb.lineNumber()); }
-    if (sb.getChar() == '{') { curlyCount++; return Lexeme(LCURLY, sb.asString(), sb.lineNumber()); }
-    if (sb.getChar() == '}') { curlyCount--; return Lexeme(RCURLY, sb.asString(), sb.lineNumber()); }
-    if (sb.getChar() == '[') { squareCount++; return Lexeme(LSQ, sb.asString(), sb.lineNumber()); }
-    if (sb.getChar() == ']') { squareCount--; return Lexeme(RSQ, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == '(') { parStack.push(sb.getChar()); return Lexeme(LPAREN, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == ')') {  
+        if (parStack.top() != '(') {
+            cout<<"Error: Mismatched Parentheses on line "<<sb.lineNumber()<<endl;
+            return Lexeme(ERROR, "<error>", sb.lineNumber());
+        } else {
+            parStack.pop();
+        }   
+        return Lexeme(RPAREN, sb.asString(), sb.lineNumber()); 
+    }
+    if (sb.getChar() == '{') { parStack.push(sb.getChar());  return Lexeme(LCURLY, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == '}') {  
+        if (parStack.top() != '{') {
+            cout<<"Error: Mismatched Curly Brace on line "<<sb.lineNumber()<<endl;
+            return Lexeme(ERROR, "<error>", sb.lineNumber());
+        } else {
+            parStack.pop();
+        } 
+        return Lexeme(RCURLY, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == '[') { parStack.push(sb.getChar());  return Lexeme(LSQ, sb.asString(), sb.lineNumber()); }
+    if (sb.getChar() == ']') {  
+        if (parStack.top() != '[') {
+            cout<<"Error: Mismatched Bracket on line "<<sb.lineNumber()<<endl;
+            return Lexeme(ERROR, "<error>", sb.lineNumber());
+        } else {
+            parStack.pop();
+        } 
+        return Lexeme(RSQ, sb.asString(), sb.lineNumber()); }
     if (sb.getChar() == '+') return Lexeme(PLUS, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '-') return Lexeme(MINUS, sb.asString(), sb.lineNumber());
     if (sb.getChar() == '/') return Lexeme(DIVIDE, sb.asString(), sb.lineNumber());
@@ -100,9 +122,6 @@ Lexeme Lexer::checkSpecials() {
 }
 
 Lexer::Lexer() {
-    parenCount = 0;
-    curlyCount = 0;
-    squareCount = 0;
     initReserved();
 }
 
@@ -144,9 +163,9 @@ vector<Lexeme>& Lexer::lex(string filename) {
 vector<Lexeme>& Lexer::start() {
     Lexeme next;
     lexemes.clear();
-    parenCount = 0;
-    curlyCount = 0;
-    squareCount = 0;
+    if (!parStack.empty()) {
+        while (!parStack.empty()) parStack.pop();
+    }
     while (sb.getChar() != sb.EOFMark()) {
         if (isalpha(sb.getChar())) {
             next = extractWord();
@@ -159,7 +178,7 @@ vector<Lexeme>& Lexer::start() {
         } else {
             next = checkSpecials();
         }
-        if (next.tokenVal != WHITESPACE && next.tokenVal != ERROR)
+        if (next.tokenVal != WHITESPACE)
             lexemes.push_back(next);
         if (sb.getChar() == '"') {
             sb.nextChar();
@@ -170,12 +189,28 @@ vector<Lexeme>& Lexer::start() {
                 lexemes.push_back(next);
             }
         }
+        if (lexemes.back().tokenVal == ERROR) {
+            cout<<"Error encountered, aborting."<<endl;
+            lexemes.clear();
+            break;
+        }
         if (sb.getChar() == sb.EOFMark())
             break;
         sb.nextChar();
     }
-    if ((curlyCount + squareCount + parenCount) != 0) {
-        cout<<"Error: Unbalanced Statement."<<endl;
+    if (!parStack.empty()) {
+        cout<<"Error: Missing ";
+        switch (parStack.top()) {
+            case '{': cout<<"}!"<<endl;
+                break;
+            case '(': cout<<")!"<<endl;
+                break;
+            case '[': cout<<"]!"<<endl;
+                break;
+            default:
+                cout<<" paren"<<endl;
+                break;
+        }
         lexemes.clear();
     }
     lexemes.push_back(Lexeme(EOFTOKEN, "<EOF>", sb.lineNumber()));

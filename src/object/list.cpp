@@ -29,11 +29,10 @@ void push_back_list(ListHeader* lh, Object* obj) {
     ListNode* ln = makeListNode(obj);
     if (lh->size == 0) {
         lh->head = ln;
-        lh->tail = ln;
     } else {
         lh->tail->next = ln;
-        lh->tail = ln;
     }
+    lh->tail = ln;
     lh->size++;
 }
 
@@ -65,7 +64,6 @@ ListNode* copyList(ListNode* a) {
 ListNode* mergeList(ListNode* a, ListNode* b) {
     ListNode dummy; ListNode *c = &dummy;
     while (a != nullptr && b != nullptr) {
-        //thats just ugly.
         if (stof(toString(b->data)) > stof(toString(a->data))) {
             c->next = a; a = a->next; c = c->next;
         } else {

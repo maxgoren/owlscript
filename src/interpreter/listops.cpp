@@ -22,13 +22,14 @@ Object* Interpreter::listSize(ASTNode* node) {
     }
     if (obj != nullptr) {
         size = obj->list->size;
+        say("Length: " + to_string(size));
     }
     leave();
     return makeIntObject(size);
 }
 
 Object* Interpreter::carExpr(ASTNode* node) {
-    enter("[carExpr]");
+    enter("[car Expr]");
     Object* obj;
     int addr;
     if (node->left->kind == EXPRNODE && node->left->type.expr == LIST_EXPR) {
@@ -54,7 +55,7 @@ Object* Interpreter::carExpr(ASTNode* node) {
 }
 
 Object* Interpreter::cdrExpr(ASTNode* node) {
-    enter("[cdrExpr]");
+    enter("[cdr Expr]");
     Object* obj = nullptr;
     int addr;
     if (node->left->kind == EXPRNODE && node->left->type.expr == LIST_EXPR) {
@@ -117,6 +118,7 @@ Object* Interpreter::sortList(ASTNode* node) {
 //I don't know how I feel about this.
 //It has a blinking in and out of reality feel 
 Object* Interpreter::mapExpr(ASTNode* node) {
+    enter("map_expr"); 
     Object* lambdaObj = lambdaExpr(node->left);
     Object* listObj = nullptr;
     if (node->right->kind == EXPRNODE && node->right->type.expr == LIST_EXPR) {
@@ -148,6 +150,7 @@ Object* Interpreter::mapExpr(ASTNode* node) {
         tmpR->next = nullptr;
     }
     resultList->head = d.next;
+    leave();
     return makeListObject(resultList);
 }
 

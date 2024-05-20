@@ -62,12 +62,11 @@ Object* Interpreter::expression(ASTNode* node) {
     }
     switch (node->type.expr) {
         case OP_EXPR:
-            enter("[op expression]" + node->data.stringVal); leave();
             return eval(node);
         case UOP_EXPR:
             enter("[unary op expression]");
-            val = stof(toString(expression(node->left)));
-            return makeRealObject(val * -1);
+            val = atoi(toString(expression(node->left)).c_str());
+            return makeIntObject(-val);
         case ID_EXPR:
             enter("[id expression]");
             result = getVariableValue(node);
@@ -83,33 +82,25 @@ Object* Interpreter::expression(ASTNode* node) {
             if (node->data.stringVal == "true") return makeBoolObject(true);
             if (node->data.stringVal == "false") return makeBoolObject(false);
             if (node->data.stringVal == "nil") return makeNilObject();
-            return makeRealObject(stof(node->data.stringVal.c_str()));
+            return makeIntObject(atoi(node->data.stringVal.c_str()));
+        case STRINGLIT_EXPR:
+            enter("[string literal expression]" + node->data.stringVal); leave();
+            return makeStringObject(&(node->data.stringVal));
         case FUNC_EXPR:
-            enter("[func_expr] " + node->data.stringVal); leave();
             return procedureCall(node);
         case LAMBDA_EXPR:
-            enter("[lambda_expr]"); leave();
             return lambdaExpr(node);
-        case STRINGLIT_EXPR:
-            enter("[string literal expression]"); leave();
-            return makeStringObject(&(node->data.stringVal));
         case CAR_EXPR: 
-            enter("[car expr]"); leave();
             return carExpr(node);
         case CDR_EXPR:
-            enter("[cdr expr]"); leave();
             return cdrExpr(node);
         case LIST_EXPR:
-            enter("[list expression]"); leave();
             return listExpr(node);
         case LISTLEN_EXPR:
-            enter("[listlen expr]"); leave();
             return listSize(node);
         case SORT_EXPR:
-            enter("[sortlist_expr]"); leave();
             return sortList(node);
         case MAP_EXPR:
-            enter("map_expr"); leave();
             return mapExpr(node);
         default:
             break;
@@ -140,7 +131,6 @@ void Interpreter::statement(ASTNode* node) {
             appendList(node);
             break;
         case POP_STMT:
-            enter("[pop list expr]"); leave();
             popList(node);
             break;
         case DEF_STMT:
@@ -155,6 +145,9 @@ void Interpreter::statement(ASTNode* node) {
         case RETURN_STMT:
             returnStmt(node);
             break;
+        case FUNC_EXPR:
+            procedureCall(node);
+            break;
         default: 
             cout<<"Invalid Statement: "<<node->data.stringVal<<endl;
         break;
@@ -165,13 +158,17 @@ void Interpreter::statement(ASTNode* node) {
 void Interpreter::run(ASTNode* node) {
     if (node == nullptr)
         return;
+    Object* result = nullptr;
     switch(node->kind) {
         case STMTNODE:
             statement(node);
             break;
         case EXPRNODE:
-            expression(node);
+            result = expression(node);
             break;
+    }
+    if (result != nullptr) {
+        cout<<toString(result)<<endl;
     }
     if (stopProcedure) {
         stopProcedure = false;
@@ -180,44 +177,4 @@ void Interpreter::run(ASTNode* node) {
         leave();
         run(node->next);
     }
-}
-
-void Interpreter::enter(string s) {
-    recDepth = (recDepth > 60) ? 0:recDepth+1;
-    step++;
-    say(s);
-}
-
-void Interpreter::setLoud(bool l) {
-    loud = l;
-}
-
-void Interpreter::say(string s) {
-    if (loud) {
-        for (int i = 0; i < recDepth; i++)
-            cout<<"  ";
-        cout<<"("<<step<<") "<<s<<endl;
-    }
-}
-
-void Interpreter::leave(string s) {
-    say(s);
-    leave();
-}
-
-void Interpreter::leave() {
-    --recDepth;
-    step--;
-    if (recDepth < 0) {
-        resetRecDepth();
-    }
-    if (step < 0) step = 0;
-}
-
-void Interpreter::resetRecDepth() {
-    recDepth = 0;
-}
-
-void Interpreter::memstats() {
-    memStore.memstats();
 }

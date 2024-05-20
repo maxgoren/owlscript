@@ -11,7 +11,6 @@ CallStack::~CallStack() {
 }
 
 void CallStack::grow() {
-    cout<<"[Stack Grow]"<<endl;
     ActivationRecord** ns = new ActivationRecord*[2*max];
     for (int i = 0; i < max; i++)
         ns[i] = stack[i];

@@ -138,42 +138,43 @@ ASTNode* Parser::loopStatement() {
 ASTNode* Parser::listStatement() {
     enter("list statement");
     ASTNode* node = nullptr;
-    if (lookahead() == PUSH) {
-        node = makeStmtNode(PUSH_STMT, lookahead(), current.stringVal);
-        match(PUSH);
-        match(LPAREN);
-        node->left = simpleExpr();
-        match(COMA);
-        node->right = simpleExpr();
-        match(RPAREN);
-        if (lookahead() == SEMI)
-            match(SEMI);
-        leave("push");
-        return node;
-    }
-    if (lookahead() == APPEND) {
-        node = makeStmtNode(APPEND_STMT, lookahead(), current.stringVal);
-        match(APPEND);
-        match(LPAREN);
-        node->left = simpleExpr();
-        match(COMA);
-        node->right = simpleExpr();
-        match(RPAREN);
-        if (lookahead() == SEMI)
-            match(SEMI);
-        leave("append");
-        return node;
-    }
-    if (lookahead() == POP) {
-        ASTNode* node = makeStmtNode(POP_STMT, lookahead(), current.stringVal);
-        match(POP);
-        match(LPAREN);
-        node->left = simpleExpr();
-        match(RPAREN);
-        if (lookahead() == SEMI)
-            match(SEMI);
-        leave("pop");
-        return node;
+    switch (lookahead()) {
+        case PUSH:
+            node = makeStmtNode(PUSH_STMT, lookahead(), current.stringVal);
+            match(PUSH);
+            match(LPAREN);
+            node->left = simpleExpr();
+            match(COMA);
+            node->right = simpleExpr();
+            match(RPAREN);
+            if (lookahead() == SEMI)
+                match(SEMI);
+            leave("push");
+            return node;
+        case APPEND:
+            node = makeStmtNode(APPEND_STMT, lookahead(), current.stringVal);
+            match(APPEND);
+            match(LPAREN);
+            node->left = simpleExpr();
+            match(COMA);
+            node->right = simpleExpr();
+            match(RPAREN);
+            if (lookahead() == SEMI)
+                match(SEMI);
+            leave("append");
+            return node;
+        case POP:
+            node = makeStmtNode(POP_STMT, lookahead(), current.stringVal);
+            match(POP);
+            match(LPAREN);
+            node->left = simpleExpr();
+            match(RPAREN);
+            if (lookahead() == SEMI)
+                match(SEMI);
+            leave("pop");
+            return node;
+        default:
+            break;
     }
     leave();
     return nullptr;
@@ -274,7 +275,7 @@ ASTNode* Parser::statement() {
                    break;
         case NUMBER:
         case LPAREN: 
-            say("statement: lparen");
+            say("statement: exprstatement");
             return exprStatement();
         case PUSH:
         case APPEND:
@@ -348,7 +349,7 @@ ASTNode* Parser::factor() {
         node = expNode;
         auto matched = lookahead();
         match(lookahead());
-        if (matched != SQRT && matched != MINUS)
+        if (matched != SQRT)
             node->right = primary();
         else { 
             node->left = primary();
@@ -359,61 +360,58 @@ ASTNode* Parser::factor() {
 }
 
 ASTNode* Parser::primary() {
-    ASTNode* node;
+    ASTNode* node = nullptr;
     enter("primary");
-    if (lookahead() == MINUS) {
-        node = makeExprNode(UOP_EXPR, lookahead(), current.stringVal);
-        match(MINUS);
-        node->left = primary();
-        return node;
+    switch (lookahead()) {
+        case MINUS:
+            node = makeExprNode(UOP_EXPR, lookahead(), current.stringVal);
+            match(MINUS);
+            node->left = primary();
+            return node;
+        case NUMBER:
+            node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
+            match(NUMBER);
+            leave("number");
+            return node;
+        case ID:
+            return var();
+        case LPAREN:
+            match(LPAREN);
+            node = simpleExpr();
+            match(RPAREN);
+            return node;
+        case NIL:
+            node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
+            match(NIL);
+            leave("nil");
+            return node;
+        case TRUE:
+            node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
+            match(TRUE);
+            leave("true");
+            return node;
+        case FALSE:
+            node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
+            match(FALSE);
+            leave("false");
+            return node;
+        case QUOTE:
+            match(QUOTE);
+            node = makeExprNode(STRINGLIT_EXPR, lookahead(), current.stringVal);
+            match(STRING);
+            match(QUOTE);
+            leave("string");
+            return node;
+        case LAMBDA:
+            leave("lambda");
+            return lambdaExpr();
+        case LSQ: case LENGTH: case SORT:
+        case MAP: case FIRST: case REST:
+        case POP: 
+            return listExpr();
+        default:
+            break;
     }
-    if (lookahead() == NUMBER) {
-        node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
-        match(NUMBER);
-        leave("number");
-        return node;
-    }
-    if (lookahead() == NIL) {
-        node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
-        match(NIL);
-        leave("nil");
-        return node;
-    }
-    if (lookahead() == TRUE) {
-        node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
-        match(TRUE);
-        leave("true");
-        return node;
-    }
-    if (lookahead() == FALSE) {
-        node = makeExprNode(CONST_EXPR, lookahead(), current.stringVal);
-        match(FALSE);
-        leave("false");
-        return node;
-    }
-    if (lookahead() == QUOTE) {
-        match(QUOTE);
-        node = makeExprNode(STRINGLIT_EXPR, lookahead(), current.stringVal);
-        match(STRING);
-        match(QUOTE);
-        leave("string");
-        return node;
-    }
-    if (lookahead() == ID) {
-        return var();
-    }
-    if (lookahead() == LPAREN) {
-        match(LPAREN);
-        node = simpleExpr();
-        match(RPAREN);
-    }
-    if (lookahead() == LAMBDA) {
-        leave("lambda");
-        return lambdaExpr();
-    }
-    if (lookahead() == LSQ || lookahead() == LENGTH || lookahead() == SORT ||
-        lookahead() == POP || lookahead() == MAP || lookahead() == FIRST || lookahead() == REST)
-        return listExpr();
     leave();
     return node;
 }
@@ -431,6 +429,7 @@ ASTNode* Parser::var() {
             node->left = simpleExpr();
             match(RSQ);
             leave();
+            return node;
         }
         if (lookahead() == ASSIGN) {
             ASTNode* t = makeStmtNode(ASSIGN_STMT, lookahead(), current.stringVal);
@@ -460,77 +459,76 @@ ASTNode* Parser::var() {
 }
 
 ASTNode* Parser::listExpr() {
-    if (lookahead() == LSQ) {
-        ASTNode* node = makeExprNode(LIST_EXPR, lookahead(), current.stringVal);
-        match(LSQ);
-        if (lookahead() == RSQ) {
-            match(RSQ);
+    ASTNode* node = nullptr;
+    switch (lookahead()) {
+        case LSQ:
+            node = makeExprNode(LIST_EXPR, lookahead(), current.stringVal);
+            match(LSQ);
+            if (lookahead() == RSQ) {
+                match(RSQ);
+                return node;
+            } else {
+                ASTNode d;
+                ASTNode* c = &d;
+                do {
+                    c->left = expression();
+                    c = c->left;
+                    if (lookahead() == COMA)
+                        match(COMA);
+                } while(lookahead() != RSQ);
+                match(RSQ);
+                node->left = d.left;
+            }
             return node;
-        } else {
-            ASTNode d;
-            ASTNode* c = &d;
-            do {
-                c->left = expression();
-                c = c->left;
-                if (lookahead() == COMA)
-                    match(COMA);
-            } while(lookahead() != RSQ);
-            match(RSQ);
-            node->left = d.left;
+        case MAP:
+            node = makeExprNode(MAP_EXPR, lookahead(), current.stringVal);
+            match(MAP);
+            match(LPAREN);
+            node->left = simpleExpr();
+            match(COMA);
+            node->right = simpleExpr();
+            match(RPAREN);
+            if (lookahead() == SEMI)
+                match(SEMI);
             return node;
-        }
-    }
-    if (lookahead() == MAP) {
-        ASTNode* node = makeExprNode(MAP_EXPR, lookahead(), current.stringVal);
-        match(MAP);
-        match(LPAREN);
-        node->left = simpleExpr();
-        match(COMA);
-        node->right = simpleExpr();
-        match(RPAREN);
-        if (lookahead() == SEMI)
-            match(SEMI);
-        return node;
-    }
-    if (lookahead() == LENGTH) {
-        ASTNode* node = makeExprNode(LISTLEN_EXPR, lookahead(), current.stringVal);
-        match(LENGTH);
-        match(LPAREN);
-        node->left = simpleExpr();
-        match(RPAREN);
-        if (lookahead() == SEMI)
-            match(SEMI);
-        return node;
-    }
-    if (lookahead() == FIRST) {
-        ASTNode* node = makeExprNode(CAR_EXPR, lookahead(), current.stringVal);
-        match(FIRST);
-        match(LPAREN);
-        node->left = simpleExpr();
-        match(RPAREN);
-        if (lookahead() == SEMI)
-            match(SEMI);
-        return node;
-    }
-    if (lookahead() == REST) {
-        ASTNode* node = makeExprNode(CDR_EXPR, lookahead(), current.stringVal);
-        match(REST);
-        match(LPAREN);
-        node->left = simpleExpr();
-        match(RPAREN);
-        if (lookahead() == SEMI)
-            match(SEMI);
-        return node;
-    }
-    if (lookahead() == SORT) {
-        ASTNode* node = makeExprNode(SORT_EXPR, lookahead(), current.stringVal);
-        match(SORT);
-        match(LPAREN);
-        node->left = simpleExpr();
-        match(RPAREN);
-        if (lookahead() == SEMI)
-            match(SEMI);
-        return node;
+        case LENGTH:
+            node = makeExprNode(LISTLEN_EXPR, lookahead(), current.stringVal);
+            match(LENGTH);
+            match(LPAREN);
+            node->left = simpleExpr();
+            match(RPAREN);
+            if (lookahead() == SEMI)
+                match(SEMI);
+            return node;
+        case FIRST:
+            node = makeExprNode(CAR_EXPR, lookahead(), current.stringVal);
+            match(FIRST);
+            match(LPAREN);
+            node->left = simpleExpr();
+            match(RPAREN);
+            if (lookahead() == SEMI)
+                match(SEMI);
+            return node;
+        case REST:
+            node = makeExprNode(CDR_EXPR, lookahead(), current.stringVal);
+            match(REST);
+            match(LPAREN);
+            node->left = simpleExpr();
+            match(RPAREN);
+            if (lookahead() == SEMI)
+                match(SEMI);
+            return node;
+        case SORT:
+            node = makeExprNode(SORT_EXPR, lookahead(), current.stringVal);
+            match(SORT);
+            match(LPAREN);
+            node->left = simpleExpr();
+            match(RPAREN);
+            if (lookahead() == SEMI)
+                match(SEMI);
+            return node;
+        default:
+            break;
     }
     return nullptr;
 }

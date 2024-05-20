@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <unordered_map>
+#include <stack>
 using namespace std;
 
 enum TOKENS {
@@ -44,6 +45,7 @@ struct Lexeme {
 class Lexer {
     private:
         StringBuffer sb;
+        stack<char> parStack;
         unordered_map<string, TOKENS> reservedWords;
         vector<Lexeme> lexemes;
         Lexeme extractWord();
@@ -52,9 +54,6 @@ class Lexer {
         Lexeme extractStringLiteral();
         vector<Lexeme>& start();
         void initReserved();
-        int parenCount;
-        int curlyCount;
-        int squareCount;
     public:
         Lexer();
         vector<Lexeme>& lex(string filename);

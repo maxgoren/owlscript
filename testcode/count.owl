@@ -1,0 +1,10 @@
+def count(k) {
+    if (k > 0) {
+        println k;
+        count(k-1);
+    } else {
+        println ".";
+    }
+}
+
+count(5);

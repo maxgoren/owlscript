@@ -1,39 +1,39 @@
 #include "interpreter.hpp"
 
 Object* Interpreter::eval(ASTNode* node) {
-    enter("eval");
+    enter("eval" + node->data.stringVal);
     Object* lhs = expression(node->left);
     Object* rhs = expression(node->right);
     if (dontEval.find(lhs->type) == dontEval.end() && dontEval.find(rhs->type) == dontEval.end()) {
-        double left, right;
+        int left, right;
         if (lhs->type == AS_CLOSURE) {
-            right = stof(toString(runClosure(node, lhs)));
+            right = atoi(toString(runClosure(node, lhs)).c_str());
         } else {
-            left = stof(toString(lhs));
+            left = atoi(toString(lhs).c_str());
         }
         if (rhs->type == AS_CLOSURE) {
-            right = stof(toString(runClosure(node, rhs)));
+            right = atoi(toString(runClosure(node, rhs)).c_str());
         } else {
-            right = stof(toString(rhs));
+            right = atoi(toString(rhs).c_str());
         }
         switch (node->data.tokenVal) {
             case SQRT:     return makeRealObject(sqrt(left));
-            case POW:      return makeRealObject(pow(left, right));
-            case PLUS:     return makeRealObject(left+right);
-            case MINUS:    return makeRealObject(left-right);
+            case POW:      return makeIntObject(pow(left, right));
+            case PLUS:     return makeIntObject(left+right);
+            case MINUS:    return makeIntObject(left-right);
             case DIVIDE:
                 if (right == 0) {
                     cout<<"Error: attempted divide by zero"<<endl;
-                    return makeRealObject(0.0f);
+                    return makeIntObject(0);
                 }
-                return makeRealObject(left/right);
+                return left%right == 0 ? makeIntObject(left/right):makeRealObject((float)left/(float)right);
             case MOD:
                 if (right == 0) {
                     cout<<"Error: attempted divide by zero"<<endl;
-                    return makeRealObject(0.0f);
+                    return makeIntObject(0);
                 }
-                return makeRealObject((int)left % (int)right);
-            case MULTIPLY: return makeRealObject(left*right);
+                return left%right == 0 ? makeIntObject(left/right):makeRealObject((float)left/(float)right);
+            case MULTIPLY: return makeIntObject(left*right);
             case LESS:     return makeBoolObject(left < right);
             case GREATER:  return makeBoolObject(left > right);
             case LTE:      return makeBoolObject(left <= right);
@@ -49,7 +49,7 @@ Object* Interpreter::eval(ASTNode* node) {
         cout<<"Error: Unsupported operation for those types: "<<(lhs->type)<<", "<<(rhs->type)<<endl;
     }
     leave();
-    return makeRealObject(-1.0f);
+    return makeIntObject(0);
 }
 
 Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
@@ -65,7 +65,7 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
         if (t != nullptr && t->left != nullptr)
             t = t->left;
     }
-    ar->returnValue = makeRealObject(0.0);
+    ar->returnValue = makeIntObject(0);
     ar->staticLink = callStack.top();
     callStack.push(ar);
     auto body = callStack.top()->function->functionBody;
@@ -130,7 +130,7 @@ ActivationRecord* Interpreter::prepareActivationRecord(ASTNode* node) {
 }
 
 Object* Interpreter::procedureCall(ASTNode* node) {
-    enter("[procedureCall]");
+    enter("[procedureCall] " + node->data.stringVal);
     if (!callStack.empty() && callStack.top()->nestedProc.find(node->data.stringVal) !=  callStack.top()->nestedProc.end()) {
         return runProcedure(node);
     }
@@ -149,6 +149,7 @@ Object* Interpreter::procedureCall(ASTNode* node) {
 }
 
 Object* Interpreter::lambdaExpr(ASTNode* node) {
+    enter("[lambda_expr]"); leave();
     bool isClosure = (!callStack.empty());
     return makeClosureObject(makeLambda(node->right, node->left, isClosure ? callStack.top()->env:Environment(), isClosure));
 }
@@ -157,10 +158,6 @@ Object* Interpreter::listExpr(ASTNode* node) {
     enter("[list_expr]");
     ListHeader* list = makeListHeader();
     ASTNode* t = node->left;
-    if (t == nullptr) {
-        leave();
-        return makeListObject(list);
-    }
     while (t != nullptr) {
         Object* obj = expression(t);
         say("push: " + toString(obj));
