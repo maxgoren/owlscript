@@ -155,3 +155,19 @@ string toString(Object* obj) {
     }
     return str;
 }
+
+string getTypeOf(Object* obj) {
+    switch (obj->type) {
+        case AS_BOOL: return "boolean";
+        case AS_INT:  return "integer";
+        case AS_REAL: return "realnum";
+        case AS_CHAR: return "char";
+        case AS_STRING: return "string";
+        case AS_LIST: return  "list";
+        case AS_CLOSURE: return "lambda";
+        case AS_NIL:
+    default:
+        break;
+    }
+    return "error";
+}

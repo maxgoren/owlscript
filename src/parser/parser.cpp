@@ -147,10 +147,8 @@ ASTNode* Parser::listStatement() {
             match(COMA);
             node->right = simpleExpr();
             match(RPAREN);
-            if (lookahead() == SEMI)
-                match(SEMI);
             leave("push");
-            return node;
+            break;
         case APPEND:
             node = makeStmtNode(APPEND_STMT, lookahead(), current.stringVal);
             match(APPEND);
@@ -159,25 +157,22 @@ ASTNode* Parser::listStatement() {
             match(COMA);
             node->right = simpleExpr();
             match(RPAREN);
-            if (lookahead() == SEMI)
-                match(SEMI);
-            leave("append");
-            return node;
+            break;
         case POP:
             node = makeStmtNode(POP_STMT, lookahead(), current.stringVal);
             match(POP);
             match(LPAREN);
             node->left = simpleExpr();
             match(RPAREN);
-            if (lookahead() == SEMI)
-                match(SEMI);
             leave("pop");
-            return node;
+            break;
         default:
+            leave();
             break;
     }
-    leave();
-    return nullptr;
+    if (lookahead() == SEMI)
+        match(SEMI);
+    return node;
 }
 
 ASTNode* Parser::printStatement() {
@@ -291,7 +286,6 @@ ASTNode* Parser::statement() {
         } else {
             return node;
         }
-
     }
     return nullptr;
 }
@@ -401,6 +395,16 @@ ASTNode* Parser::primary() {
             match(STRING);
             match(QUOTE);
             leave("string");
+            return node;
+        case TYPEOF:
+            node = makeExprNode(TYPEOF_EXPR, lookahead(), current.stringVal);
+            match(TYPEOF);
+            match(LPAREN);
+            node->left = simpleExpr();
+            match(RPAREN);
+            if (lookahead() == SEMI)
+                match(SEMI);
+            leave();
             return node;
         case LAMBDA:
             leave("lambda");
@@ -539,7 +543,7 @@ ASTNode* Parser::lambdaExpr() {
     match(LAMBDA);
     match(LPAREN);
     if (lookahead() != RPAREN)
-        node->left = simpleExpr();
+        node->left = argsList();
     match(RPAREN);
     match(LCURLY);
     node->right = statementList();

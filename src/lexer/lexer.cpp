@@ -141,13 +141,17 @@ void Lexer::initReserved() {
     reservedWords["sort"] = SORT;
     reservedWords["map"] = MAP;
     reservedWords["first"] = FIRST;
+    reservedWords["filter"] = FILTER;
     reservedWords["rest"] = REST;
+    reservedWords["car"] = FIRST;
+    reservedWords["cdr"] = REST;
     reservedWords["lambda"] = LAMBDA;
     reservedWords["nil"] = NIL;
     reservedWords["true"] = TRUE;
     reservedWords["false"] = FALSE;
     reservedWords["let"] = LET;
     reservedWords["sqrt"] = SQRT;
+    reservedWords["typeof"] = TYPEOF;
 }
 
 vector<Lexeme>& Lexer::lexString(string str) {

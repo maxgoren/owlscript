@@ -126,7 +126,7 @@ Object* Interpreter::mapExpr(ASTNode* node) {
     } else {
         string name = node->right->data.stringVal;
         if (builtIns.find(name) != builtIns.end()) {
-            listObj = callBuiltIn(node->left);
+            listObj = callBuiltIn(node->right);
         } else {
             int addr = getAddress(name);
             if (addr == 0) {
@@ -213,9 +213,9 @@ void Interpreter::appendList(ASTNode* node) {
 
 Object* Interpreter::callBuiltIn(ASTNode* node) {
     string name = node->data.stringVal;
-    if (name == "first")
+    if (name == "first" || name == "car")
         return carExpr(node);
-    if (name == "rest")
+    if (name == "rest" || name == "cdr")
         return cdrExpr(node);
     if (name == "sort")
         return sortList(node);

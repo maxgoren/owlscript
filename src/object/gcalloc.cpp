@@ -50,5 +50,6 @@ void GC_Allocator::sweep() {
 void GC_Allocator::mark_node(Object* obj) {
     if (obj != nullptr) {
         obj->gcLive = true;
+        mark_node(obj);
     }
 }

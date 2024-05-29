@@ -74,5 +74,6 @@ Object* makeListObject(ListHeader* listObj);
 Object* makeClosureObject(Lambda* closure);
 Object* makeNilObject();
 string toString(Object* object);
+string getTypeOf(Object* object);
 
 #endif

@@ -8,7 +8,7 @@ Interpreter::Interpreter() {
     recDepth = 0;
     stopProcedure = false;
     dontEval.insert({AS_LIST, AS_STRING});
-    builtIns.insert({"rest", "first", "sort", "map", "length"});
+    builtIns.insert({"car","cdr","rest", "first", "sort", "map", "length"});
 }
 
 bool Interpreter::scopeIsGlobal() {
@@ -86,6 +86,9 @@ Object* Interpreter::expression(ASTNode* node) {
         case STRINGLIT_EXPR:
             enter("[string literal expression]" + node->data.stringVal); leave();
             return makeStringObject(&(node->data.stringVal));
+        case TYPEOF_EXPR:
+            enter("[type of expr]");
+            return makeStringObject(new string(getTypeOf(expression(node->left))));
         case FUNC_EXPR:
             return procedureCall(node);
         case LAMBDA_EXPR:

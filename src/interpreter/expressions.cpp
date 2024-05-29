@@ -45,6 +45,13 @@ Object* Interpreter::eval(ASTNode* node) {
         }
     } else if ((lhs->type == AS_STRING || rhs->type == AS_STRING) && node->data.tokenVal == PLUS) {
         return makeStringObject(new string(toString(lhs) + toString(rhs)));
+    } else if ((lhs->type == AS_LIST) && (rhs->type == AS_LIST) && node->data.tokenVal == PLUS) {
+        ListHeader* newList = makeListHeader();
+        for (auto list = lhs->list->head; list != nullptr; list = list->next)
+            push_back_list(newList, list->data);
+        for (auto list = rhs->list->head; list != nullptr; list = list->next)
+            push_back_list(newList, list->data);
+        return makeListObject(newList);
     } else {
         cout<<"Error: Unsupported operation for those types: "<<(lhs->type)<<", "<<(rhs->type)<<endl;
     }
