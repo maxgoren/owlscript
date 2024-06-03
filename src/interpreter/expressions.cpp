@@ -5,35 +5,35 @@ Object* Interpreter::eval(ASTNode* node) {
     Object* lhs = expression(node->left);
     Object* rhs = expression(node->right);
     if (dontEval.find(lhs->type) == dontEval.end() && dontEval.find(rhs->type) == dontEval.end()) {
-        int left, right;
+        double left, right;
         if (lhs->type == AS_CLOSURE) {
-            right = atoi(toString(runClosure(node, lhs)).c_str());
+            right = stof(toString(runClosure(node, lhs)).c_str());
         } else {
-            left = atoi(toString(lhs).c_str());
+            left = stof(toString(lhs).c_str());
         }
         if (rhs->type == AS_CLOSURE) {
-            right = atoi(toString(runClosure(node, rhs)).c_str());
+            right = stof(toString(runClosure(node, rhs)).c_str());
         } else {
-            right = atoi(toString(rhs).c_str());
+            right = stof(toString(rhs).c_str());
         }
         switch (node->data.tokenVal) {
             case SQRT:     return makeRealObject(sqrt(left));
-            case POW:      return makeIntObject(pow(left, right));
-            case PLUS:     return makeIntObject(left+right);
-            case MINUS:    return makeIntObject(left-right);
+            case POW:      return makeRealObject(pow(left, right));
+            case PLUS:     return makeRealObject(left+right);
+            case MINUS:    return makeRealObject(left-right);
+            case MULTIPLY: return makeRealObject(left*right);
             case DIVIDE:
                 if (right == 0) {
                     cout<<"Error: attempted divide by zero"<<endl;
                     return makeIntObject(0);
                 }
-                return left%right == 0 ? makeIntObject(left/right):makeRealObject((float)left/(float)right);
+                return makeRealObject(left/right);
             case MOD:
                 if (right == 0) {
                     cout<<"Error: attempted divide by zero"<<endl;
                     return makeIntObject(0);
                 }
-                return left%right == 0 ? makeIntObject(left/right):makeRealObject((float)left/(float)right);
-            case MULTIPLY: return makeIntObject(left*right);
+                return makeRealObject((int)left%(int)right);
             case LESS:     return makeBoolObject(left < right);
             case GREATER:  return makeBoolObject(left > right);
             case LTE:      return makeBoolObject(left <= right);
@@ -108,7 +108,7 @@ Object* Interpreter::runProcedure(ASTNode* node) {
     stopProcedure = false;
     run(body);
     Object* retVal = callStack.top()->returnValue;
-    say("Returned: " + to_string(retVal->realVal) + " from " + node->data.stringVal);
+    say("Returned: " + toString(retVal) + " from " + node->data.stringVal);
     for (auto toFree : callStack.top()->env) {
         memStore.free(toFree.second);
     }

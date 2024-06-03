@@ -75,11 +75,15 @@ Object* makeIntObject(int value) {
     return obj;
 }
 
-Object* makeRealObject(float value) {
+Object* makeRealObject(double value) {
+    if (std::fmod(value, 1) == 0) {
+        return makeIntObject(static_cast<int>(value));
+    }
     Object* obj = makeObject(AS_REAL);
     obj->realVal = value;
     return obj;
 }
+
 
 Object* makeCharObject(char value) {
     Object* obj = makeObject(AS_CHAR);

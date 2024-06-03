@@ -1,0 +1,13 @@
+#!/usr/bin/owlscript
+def fact(x) {
+    if (x < 1) {
+        return 1;
+    }
+    return x * fact(x-1);
+}
+
+let count := 5;
+loop (count < 17) {
+    println fact(count);
+    count := count + 1;
+}

@@ -2,6 +2,7 @@
 #define object_hpp
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include "../closure/closure.hpp"
 using namespace std;
 enum StoreAs {
@@ -16,7 +17,7 @@ struct Object {
     StoreAs type;
     union {
         int intVal;
-        float realVal;
+        double realVal;
         bool boolVal;
         char charVal;
         string* stringVal;
@@ -66,7 +67,7 @@ ListNode* mergeList(ListNode* a, ListNode* b);
 ListNode* mergeSortList(ListNode* h);
 Object* makeObject(StoreAs type);
 Object* makeIntObject(int value);
-Object* makeRealObject(float value);
+Object* makeRealObject(double value);
 Object* makeCharObject(char object);
 Object* makeBoolObject(bool value);
 Object* makeStringObject(string* object);

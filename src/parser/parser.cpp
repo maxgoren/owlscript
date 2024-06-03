@@ -488,7 +488,7 @@ ASTNode* Parser::listExpr() {
             node = makeExprNode(MAP_EXPR, lookahead(), current.stringVal);
             match(MAP);
             match(LPAREN);
-            node->left = simpleExpr();
+            node->left = lambdaExpr();
             match(COMA);
             node->right = simpleExpr();
             match(RPAREN);

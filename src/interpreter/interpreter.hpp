@@ -69,7 +69,7 @@ class Interpreter {
         bool scopeIsGlobal();
     public:
         Interpreter();
-        void run(ASTNode* node);
+        Object* run(ASTNode* node);
         void setLoud(bool isloud);
         void resetRecDepth();
         void memstats();

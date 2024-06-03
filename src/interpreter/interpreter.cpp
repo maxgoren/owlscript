@@ -82,7 +82,7 @@ Object* Interpreter::expression(ASTNode* node) {
             if (node->data.stringVal == "true") return makeBoolObject(true);
             if (node->data.stringVal == "false") return makeBoolObject(false);
             if (node->data.stringVal == "nil") return makeNilObject();
-            return makeIntObject(atoi(node->data.stringVal.c_str()));
+            return makeRealObject(stof(node->data.stringVal.c_str()));
         case STRINGLIT_EXPR:
             enter("[string literal expression]" + node->data.stringVal); leave();
             return makeStringObject(&(node->data.stringVal));
@@ -158,26 +158,23 @@ void Interpreter::statement(ASTNode* node) {
     leave();
 }
 
-void Interpreter::run(ASTNode* node) {
+Object* Interpreter::run(ASTNode* node) {
+    Object* result = new Object();
     if (node == nullptr)
-        return;
-    Object* result = nullptr;
+        return result;
     switch(node->kind) {
         case STMTNODE:
             statement(node);
             break;
         case EXPRNODE:
-            result = expression(node);
-            break;
-    }
-    if (result != nullptr) {
-        cout<<toString(result)<<endl;
+            return expression(node);
     }
     if (stopProcedure) {
         stopProcedure = false;
-        return;
+        return result;
     } else {
         leave();
         run(node->next);
     }
+    return result;
 }
