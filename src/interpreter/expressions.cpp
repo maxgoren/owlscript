@@ -1,5 +1,29 @@
 #include "interpreter.hpp"
 
+bool Interpreter::isRelOp(TOKENS token) {
+    switch (token) {     
+        case LTE:      
+        case GTE:  
+        case LESS:
+        case EQUAL:    
+        case GREATER:  
+        case NOTEQUAL: return true;
+        default: break; 
+    }
+    return false;
+}
+
+Object* Interpreter::evalRelOp(TOKENS op, double left, double right) {
+    switch (op) {
+        case LESS:     return makeBoolObject(left < right);
+        case GREATER:  return makeBoolObject(left > right);
+        case LTE:      return makeBoolObject(left <= right);
+        case GTE:      return makeBoolObject(left >= right);
+        case EQUAL:    return makeBoolObject(left == right);
+        case NOTEQUAL: return makeBoolObject(left != right);
+    }
+}
+
 Object* Interpreter::eval(ASTNode* node) {
     enter("eval" + node->data.stringVal);
     Object* lhs = expression(node->left);
@@ -15,6 +39,9 @@ Object* Interpreter::eval(ASTNode* node) {
             right = stof(toString(runClosure(node, rhs)).c_str());
         } else {
             right = stof(toString(rhs).c_str());
+        }
+        if (isRelOp(node->data.tokenVal)) {
+            return evalRelOp(node->data.tokenVal, left, right);
         }
         switch (node->data.tokenVal) {
             case SQRT:     return makeRealObject(sqrt(left));
@@ -34,12 +61,6 @@ Object* Interpreter::eval(ASTNode* node) {
                     return makeIntObject(0);
                 }
                 return makeRealObject((int)left%(int)right);
-            case LESS:     return makeBoolObject(left < right);
-            case GREATER:  return makeBoolObject(left > right);
-            case LTE:      return makeBoolObject(left <= right);
-            case GTE:      return makeBoolObject(left >= right);
-            case EQUAL:    return makeBoolObject(left == right);
-            case NOTEQUAL: return makeBoolObject(left != right);
             default:
                 cout<<"Unknown Operator: "<<node->data.stringVal<<endl;
         }
@@ -61,25 +82,25 @@ Object* Interpreter::eval(ASTNode* node) {
 
 Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
     auto clos = obj->closure;
-    ActivationRecord* ar = new ActivationRecord;
-    ar->function = new Procedure;
-    ar->function->functionBody = clos->functionBody;
-    ar->env = clos->env;
+    ActivationRecord ar;
+    ar.function = new Procedure;
+    ar.function->functionBody = clos->functionBody;
+    ar.env = clos->env;
     ASTNode* t = node->left;
     for (auto it = clos->paramList; it != nullptr; it = it->left) {
-        ar->env.insert(make_pair(it->data.stringVal, memStore.storeAtNextFree(t == nullptr ? makeIntObject(0):expression(t))));
+        ar.env.insert(make_pair(it->data.stringVal, memStore.storeAtNextFree(t == nullptr ? makeIntObject(0):expression(t))));
         say(it->data.stringVal + " added to AR.");
         if (t != nullptr && t->left != nullptr)
             t = t->left;
     }
-    ar->returnValue = makeIntObject(0);
-    ar->staticLink = callStack.top();
+    ar.returnValue = makeIntObject(0);
+    ar.staticLink = &callStack.top();
     callStack.push(ar);
-    auto body = callStack.top()->function->functionBody;
+    auto body = callStack.top().function->functionBody;
     stopProcedure = false;
     say("Executing lambda");
     run(body);
-    Object* retVal = callStack.top()->returnValue;
+    Object* retVal = callStack.top().returnValue;
 
     //arguments get freed as normal whether a plain lambda or closure
     for (auto it = clos->paramList; it != nullptr; it = it->left) {
@@ -90,9 +111,9 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
     }
     //Things are a bit trickier for free variables.
     if (clos->isClosure) {
-        for (auto m : callStack.top()->env) {
+        for (auto m : callStack.top().env) {
             int oldAddr = clos->env[m.first];
-            int replaceAddr = callStack.top()->env[m.first];
+            int replaceAddr = callStack.top().env[m.first];
             clos->env[m.first] = replaceAddr;
             memStore.free(oldAddr);
         }
@@ -103,42 +124,42 @@ Object* Interpreter::runClosure(ASTNode* node, Object* obj) {
 
 Object* Interpreter::runProcedure(ASTNode* node) {
     callStack.push(prepareActivationRecord(node));
-    ASTNode* body = callStack.top()->function->functionBody;
+    ASTNode* body = callStack.top().function->functionBody;
     say("Calling: " + node->data.stringVal);
     stopProcedure = false;
     run(body);
-    Object* retVal = callStack.top()->returnValue;
+    Object* retVal = callStack.top().returnValue;
     say("Returned: " + toString(retVal) + " from " + node->data.stringVal);
-    for (auto toFree : callStack.top()->env) {
+    for (auto toFree : callStack.top().env) {
         memStore.free(toFree.second);
     }
     callStack.pop();
     return retVal;
 }
 
-ActivationRecord* Interpreter::prepareActivationRecord(ASTNode* node) {
-    ActivationRecord* ar = new ActivationRecord();
+ActivationRecord Interpreter::prepareActivationRecord(ASTNode* node) {
+    ActivationRecord ar;
     Procedure* func;
     string procedureName = node->data.stringVal;
-    if (!callStack.empty() && callStack.top()->nestedProc.find(procedureName) !=  callStack.top()->nestedProc.end())
-        func =  callStack.top()->nestedProc[procedureName];
+    if (!callStack.empty() && callStack.top().nestedProc.find(procedureName) !=  callStack.top().nestedProc.end())
+        func =  callStack.top().nestedProc[procedureName];
     else func = procedures[procedureName];
-    ar->function = func;
+    ar.function = func;
     ASTNode* t = node->left;
     for (auto it = func->paramList; it != nullptr; it = it->left) {
-        ar->env.insert(make_pair(it->data.stringVal, memStore.storeAtNextFree(expression(t))));
+        ar.env.insert(make_pair(it->data.stringVal, memStore.storeAtNextFree(expression(t))));
         say(it->data.stringVal + " added to AR.");
         if (t->left != nullptr)
             t = t->left;
     }
-    ar->returnValue = makeRealObject(0.0);
-    ar->staticLink = callStack.top();
+    ar.returnValue = makeRealObject(0.0);
+    ar.staticLink = &callStack.top();
     return ar;
 }
 
 Object* Interpreter::procedureCall(ASTNode* node) {
     enter("[procedureCall] " + node->data.stringVal);
-    if (!callStack.empty() && callStack.top()->nestedProc.find(node->data.stringVal) !=  callStack.top()->nestedProc.end()) {
+    if (!callStack.empty() && callStack.top().nestedProc.find(node->data.stringVal) !=  callStack.top().nestedProc.end()) {
         return runProcedure(node);
     }
     if (procedures.find(node->data.stringVal) != procedures.end()) {
@@ -158,7 +179,7 @@ Object* Interpreter::procedureCall(ASTNode* node) {
 Object* Interpreter::lambdaExpr(ASTNode* node) {
     enter("[lambda_expr]"); leave();
     bool isClosure = (!callStack.empty());
-    return makeClosureObject(makeLambda(node->right, node->left, isClosure ? callStack.top()->env:Environment(), isClosure));
+    return makeClosureObject(makeLambda(node->right, node->left, isClosure ? callStack.top().env:Environment(), isClosure));
 }
 
 Object* Interpreter::listExpr(ASTNode* node) {

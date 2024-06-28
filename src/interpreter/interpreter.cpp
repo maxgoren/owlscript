@@ -20,12 +20,12 @@ int Interpreter::getAddress(string name) {
     int addr = 0; //address zero is never used, and is used as a control address for storing nil object.
 
     //if we are in a procedure call, check the procedures symbol table first.
-    if (!callStack.empty() && callStack.top()->env.find(name) != callStack.top()->env.end())
-        addr = callStack.top()->env[name];
+    if (!callStack.empty() && callStack.top().env.find(name) != callStack.top().env.end())
+        addr = callStack.top().env[name];
     //If address is still zero, we havent found the variable yet.
     //Are we in a nested procedure? Check the outter procedures symbol table, but only one, this is not dynamic scoping.
-    if (addr == 0 && callStack.size() > 1 && callStack.top()->staticLink->env.find(name) != callStack.top()->staticLink->env.end())
-        addr = callStack.top()->staticLink->env[name];
+    if (addr == 0 && callStack.size() > 1 && callStack.top().staticLink->env.find(name) != callStack.top().staticLink->env.end())
+        addr = callStack.top().staticLink->env[name];
     //If the address is still zero, check the global symbol table
     if (addr == 0 && st.find(name) != st.end())
         addr = st[name];

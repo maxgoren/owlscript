@@ -37,10 +37,12 @@ class Interpreter {
         //expression evaluation
         Object* eval(ASTNode* node);
         Object* expression(ASTNode* node);
+        Object* evalRelOp(TOKENS op, double left, double right);
+        bool isRelOp(TOKENS token);
         //Procedure and Function related methods
         void defineFunction(ASTNode* node);
         Object* callBuiltIn(ASTNode* node);
-        ActivationRecord* prepareActivationRecord(ASTNode* node);
+        ActivationRecord prepareActivationRecord(ASTNode* node);
         Object* runClosure(ASTNode* node, Object* obj);
         Object* runProcedure(ASTNode* node);
         Object* procedureCall(ASTNode* node);

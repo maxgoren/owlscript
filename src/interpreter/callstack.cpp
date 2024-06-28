@@ -3,7 +3,7 @@
 CallStack::CallStack() {
     p = 0;
     max = 255;
-    stack = new ActivationRecord*[max];
+    stack = new ActivationRecord[max];
 }
 
 CallStack::~CallStack() {
@@ -11,7 +11,7 @@ CallStack::~CallStack() {
 }
 
 void CallStack::grow() {
-    ActivationRecord** ns = new ActivationRecord*[2*max];
+    ActivationRecord* ns = new ActivationRecord[2*max];
     for (int i = 0; i < max; i++)
         ns[i] = stack[i];
     delete [] stack;
@@ -27,7 +27,7 @@ int CallStack::size() {
     return p;
 }
 
-void CallStack::push(ActivationRecord* ar) {
+void CallStack::push(ActivationRecord ar) {
     if (p+1 == max) grow();
     stack[p++] = ar;
 }
@@ -36,10 +36,8 @@ void CallStack::pop() {
     if (p-1 == 0) {
         return;
     }
-    ActivationRecord* t = top();
     p--;
-    delete t;
 }
-ActivationRecord* CallStack::top() {
+ActivationRecord& CallStack::top() {
     return stack[p-1];
 }

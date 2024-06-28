@@ -78,8 +78,8 @@ void Interpreter::assignStmt(ASTNode* node) {
         cout<<"Error: missing assignment value"<<endl;
         return;
     }
-    if (!callStack.empty() && callStack.top()->env.find(name) == callStack.top()->env.end()) { 
-        callStack.top()->env[name] = memStore.storeAtNextFree(value);
+    if (!callStack.empty() && callStack.top().env.find(name) == callStack.top().env.end()) { 
+        callStack.top().env[name] = memStore.storeAtNextFree(value);
         leave();
         return;
     }
@@ -87,7 +87,7 @@ void Interpreter::assignStmt(ASTNode* node) {
     if (saveAddr == 0) {
         saveAddr = memStore.storeAtNextFree(value);
         if (!callStack.empty()) {
-            callStack.top()->env[name] = saveAddr;
+            callStack.top().env[name] = saveAddr;
         } else {
             st[name] = saveAddr;
         }
@@ -117,7 +117,7 @@ void Interpreter::assignStmt(ASTNode* node) {
         }
         memStore.store(saveAddr,obj);
         if (!callStack.empty()) {
-            callStack.top()->env[name] = saveAddr;
+            callStack.top().env[name] = saveAddr;
         } else {
             st[name] = saveAddr;
         }
@@ -133,7 +133,7 @@ void Interpreter::defineFunction(ASTNode* node) {
     np->paramList = node->left;
     np->functionBody = node->right;
     if (!callStack.empty()) {
-        callStack.top()->nestedProc[np->name] = np;
+        callStack.top().nestedProc[np->name] = np;
         say(np->name + " defined as nested procedure.");
     } else {
         procedures[np->name] = np;
@@ -145,8 +145,8 @@ void Interpreter::defineFunction(ASTNode* node) {
 void Interpreter::returnStmt(ASTNode* node) {
     enter("[return]");
     if (!callStack.empty()) {
-        callStack.top()->returnValue = expression(node->left);
-        say("Returning: " + toString(callStack.top()->returnValue));
+        callStack.top().returnValue = expression(node->left);
+        say("Returning: " + toString(callStack.top().returnValue));
         stopProcedure = true;
     }
     leave();

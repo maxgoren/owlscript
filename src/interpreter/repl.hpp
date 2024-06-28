@@ -3,6 +3,7 @@
 #include <iostream>
 #include "interpreter.hpp"
 #include "../ast/astbuilder.hpp"
+#include "readline/readline.h"
 using std::string;
 using std::cout;
 using std::endl;

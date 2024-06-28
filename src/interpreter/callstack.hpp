@@ -19,7 +19,7 @@ struct ActivationRecord {
 
 class CallStack {
     private:
-        ActivationRecord** stack;
+        ActivationRecord* stack;
         int p;
         int max;
         void grow();
@@ -28,9 +28,9 @@ class CallStack {
         ~CallStack();
         bool empty();
         int size();
-        void push(ActivationRecord* ar);
+        void push(ActivationRecord ar);
         void pop();
-        ActivationRecord* top();
+        ActivationRecord& top();
 };
 
 #endif

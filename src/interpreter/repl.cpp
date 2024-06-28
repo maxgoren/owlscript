@@ -9,8 +9,9 @@ void REPL::repl() {
     string input;
     interpreter.setLoud(false);
     while (input != ".exit" && input != "quit") {
-        cout<<"Owlscript> ";
-        getline(cin, input);
+        string prompt = "Owlscript> ";
+        //getline(cin, input);
+        input = readline(prompt.c_str());
         cout<<"   '-> "<<input<<endl;
         if (input == ".trace") {
             tracing = !tracing;

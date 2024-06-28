@@ -17,7 +17,7 @@ owlscript:
 	g++ --std=c++17 -c src/interpreter/interpreter.cpp
 	g++ --std=c++17 -c src/interpreter/repl.cpp
 	g++ --std=c++17 -c src/cli.cpp
-	g++ *.o -o owlscript
+	g++ *.o -o owlscript -lreadline
 	rm *.o
 
 debug:
@@ -39,7 +39,7 @@ debug:
 	g++ --std=c++17 -g -c src/interpreter/interpreter.cpp
 	g++ --std=c++17 -g -c src/interpreter/repl.cpp
 	g++ --std=c++17 -g -c src/cli.cpp
-	g++ *.o -o owlscript
+	g++ *.o -o owlscript -lreadline
 	mv *.o build/
 
 
