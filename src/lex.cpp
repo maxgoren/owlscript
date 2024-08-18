@@ -26,8 +26,15 @@ Lexer::Lexer(bool debug) {
     state = DONE;
 }
 
-vector<Token> Lexer::lex(string str) {
+void Lexer::init(string str) {
     sb.init(str);
+}
+
+void Lexer::init(vector<string> lines) {
+    sb.init(lines);
+}
+
+vector<Token> Lexer::lex() {
     vector<Token> result;
     state = START;
     Token next;
@@ -40,6 +47,7 @@ vector<Token> Lexer::lex(string str) {
         if (state == START || state == SCANNING) {
             if (loud)
                 cout<<"Scanning from "<<sb.get()<<endl;
+
             if (isdigit(sb.get())) {
                 state = IN_NUM;
                 next = extractNumber();
@@ -53,7 +61,7 @@ vector<Token> Lexer::lex(string str) {
             } else {
                 state = IN_SPECIAL;
                 next = checkSpecials();
-                sb.advance();
+                sb.advance(); 
             }
             if (loud)
                 cout<<"State: "<<dfastate[state]<<endl;
@@ -77,7 +85,8 @@ vector<Token> Lexer::lex(string str) {
                 cout<<"State: "<<dfastate[state]<<endl;
         }
         if (sb.done()) {
-            cout<<"Input Stream Exhausted."<<endl;
+            if (loud) 
+                cout<<"Input Stream Exhausted."<<endl;
             state = DONE;
         }
     }
@@ -88,7 +97,7 @@ vector<Token> Lexer::lex(string str) {
 Token Lexer::extractNumber() {
     string num;
     bool is_real = false;
-    while (isdigit(sb.get()) || sb.get() == '.') {
+    while (!sb.done() && (isdigit(sb.get()) || sb.get() == '.')) {
         num.push_back(sb.get());
         if (sb.get() == '.')
             is_real = true;
@@ -99,7 +108,7 @@ Token Lexer::extractNumber() {
 
 Token Lexer::extractIdentifier() {
     string id;
-    while (isalpha(sb.get()) || isdigit(sb.get())) {
+    while (!sb.done() && (isalpha(sb.get()) || isdigit(sb.get()))) {
         id.push_back(sb.get());
         sb.advance();
     }

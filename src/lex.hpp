@@ -27,7 +27,9 @@ class Lexer {
         bool loud;
     public:
         Lexer(bool debug = false);
-        vector<Token> lex(string str);
+        void init(string str);
+        void init(vector<string> lines);
+        vector<Token> lex();
 };
 
 #endif

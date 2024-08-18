@@ -27,7 +27,7 @@ bool Parser::match(Symbol s) {
         advance();
         return true;
     }
-    cout<<"Unexpected Token: "<<symbolAsString[s]<<" - "<<current.strval<<endl;
+    cout<<"Unexpected Token: "<<symbolAsString[s]<<", was Expecting: "<<symbolAsString[current.symbol]<<endl;
     return false;
 }
 
@@ -132,8 +132,6 @@ astnode* Parser::paramList() {
                 c = c->next;
             }
         }  while (currSym() != TK_RPAREN && currSym() == TK_COMMA);
-        if (currSym() == TK_RPAREN) 
-            match(TK_RPAREN);
     }
     return m;
 }
@@ -352,7 +350,8 @@ astnode* Parser::factor() {
             match(TK_ID);
         }
         match(TK_LPAREN);
-        m->child[1] = paramList();
+        if (currSym() != TK_RPAREN)
+            m->child[1] = paramList();
         match(TK_RPAREN);
         if (currSym() == TK_LCURLY) {
             match(TK_LCURLY);

@@ -1,7 +1,7 @@
 #ifndef repl_hpp
 #define repl_hpp
 #include <iostream>
-#include "eval.hpp"
+#include "ast_interpreter.hpp"
 #include "ast_builder.hpp"
 using namespace std;
 
@@ -22,18 +22,30 @@ class REPL {
     private:
         bool loud;
         ASTBuilder builder;
+        ASTInterpreter interpreter;
     public:
         REPL(bool debug = false) {
             loud = debug;
             builder = ASTBuilder(loud);
+            interpreter = ASTInterpreter(loud);
         }
         void start() {
             bool running = true;
             string input;
-            execute(builder.build("let tl := [11,24,86,42,13]"));
+            int lno = 0;
+            interpreter.execAST(builder.build("let C := &(i) -> i;"));
+            interpreter.execAST(builder.build("def a(k, x1, x2, x3, x4, x5) { def b() { println \"in b\"; k := k - 1; println \"k is \" + k; println \"calling a\"; return a(k, C(b), x1, x2, x3, x4); }; println \"in a, k is \" + k;  if (k <= 0) { println \"adding x4 and x5\"; return x4() + x5(); } else { println \"calling b\"; return b(); } }"));
             while (running) {
-                cout<<"Owlscript> ";
+                cout<<"Owlscript("<<lno++<<")> ";
                 getline(cin, input);
+                if (input == "quit") {
+                    running = false;
+                    continue;
+                } else if (input == "clear") {
+                    for (int i = 0; i < 120; i++) 
+                        cout<<"\n";
+                    continue;
+                }
                 if (!input.empty()) {
                     auto ast = builder.build(input);
                     if (loud) {
@@ -41,9 +53,9 @@ class REPL {
                         cout<<"----------------------------"<<endl;
                     }
                     if (input.substr(0, 5) == "print")
-                        execute(ast);
+                        interpreter.execAST(ast);
                     else
-                        cout<<" -> "<<toString(execute(ast))<<endl;
+                        cout<<" -> "<<toString(interpreter.execAST(ast))<<endl;
                 }
             }
         }

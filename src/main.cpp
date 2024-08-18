@@ -2,8 +2,38 @@
 #include "repl.hpp"
 using namespace std;
 
-int main() {
-    REPL repl(true);
-    repl.start();
+void start_owlscript(bool debug);
+void exec_file(string filename);
+
+int main(int argc, char* argv[]) {
+    
+    if (argc < 2) {
+        start_owlscript(false);
+    } else {
+        switch (argv[1][1]) {
+            case 'v':
+                start_owlscript(true);
+                break;
+            case 'f':
+                exec_file(argv[2]);
+                break;
+            default:
+                cout<<"Invalid option '"<<argv[1]<<"'"<<endl;  
+                break;
+        }
+    }
     return 0;
+}
+
+void start_owlscript(bool debug) {
+    REPL repl(debug);
+    repl.start();
+}
+
+void exec_file(string filename) {
+    ASTBuilder builder(true);
+    ASTInterpreter interpreter(false);
+    cout<<"Loading: "<<filename<<endl;
+    auto ast = builder.buildFromFile(filename);
+    interpreter.execAST(ast);
 }

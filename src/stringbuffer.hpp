@@ -20,7 +20,11 @@ class StringBuffer {
             return spos >= buff.size();
         }
         void init(vector<string> lns) {
-
+            lines.clear();
+            lines = lns;
+            spos = 0; 
+            lpos = 0;
+            buff = lines[lpos];
         }
         void init(string line) {
             lines.clear();

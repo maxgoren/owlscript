@@ -11,19 +11,9 @@ class ASTBuilder {
     private:
         bool loud;
     public:
-        ASTBuilder(bool debug = false) {
-            loud = debug;
-        }
-        astnode* build(string str) {
-            Lexer l(loud);
-            Parser p(loud);
-            auto m = l.lex(str);
-            if (loud) {
-                for (auto t : m)
-                    printToken(t);
-            }
-            return p.parse(m);
-        }
+        ASTBuilder(bool debug = false);
+        astnode* build(string str);
+        astnode* buildFromFile(string filename);
 };
 
 #endif
