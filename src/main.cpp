@@ -1,5 +1,7 @@
 #include <iostream>
 #include "repl.hpp"
+#include "ast_builder.hpp"
+#include "ast_interpreter.hpp"
 using namespace std;
 
 void start_owlscript(bool debug);

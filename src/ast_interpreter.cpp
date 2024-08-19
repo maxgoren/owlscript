@@ -178,18 +178,24 @@ Object ASTInterpreter::performAssignment(astnode* node) {
     if (node->child[0]->attributes.symbol == TK_LSQUARE) {
         id = node->child[0]->child[0]->attributes.strval;
         m = getObjectByID(id);
-        Object subm = execExpression(node->child[0]->child[1]);
-        int sub = atoi(toString(subm).c_str());
-        if (sub > getList(m)->length) {
-            cout<<"Error: subscript out of range"<<endl;
-            leave();
-            return makeNilObject();
+        if (typeOf(m) == AS_LIST) {
+            Object subm = execExpression(node->child[0]->child[1]);
+            int sub = atoi(toString(subm).c_str());
+            if (sub > getList(m)->length) {
+                cout<<"Error: subscript out of range"<<endl;
+                leave();
+                return makeNilObject();
+            }
+            ListNode* it = getList(m)->head;
+            for (int i = 0; i < sub; i++) {
+                it = it->next;
+            }
+            it->info = execExpression(node->child[1]);
+        } else {
+            string vname = node->child[0]->child[1]->attributes.strval;
+            StructObj* st = getStruct(m);
+            st->bindings[vname] = execExpression(node->child[1]);
         }
-        ListNode* it = getList(m)->head;
-        for (int i = 0; i < sub; i++) {
-            it = it->next;
-        }
-        it->info = execExpression(node->child[1]);
     } else {
         id = node->child[0]->attributes.strval;
         m = execExpression(node->child[1]);
@@ -212,6 +218,19 @@ Object ASTInterpreter::performFunctionCall(astnode* node) {
     addToContext(id, lmbd);
     leave();
     return m;
+}
+
+Object ASTInterpreter::performBlessExpression(astnode* node) {
+    enter("instantiate struct");
+    string id = node->child[0]->attributes.strval;
+    Object master = getObjectByID(id);
+    StructObj* og = getStruct(master);
+    StructObj* ninst = makeStructObj();
+    ninst->blessed = true;
+    for (auto m : og->bindings) {
+        ninst->bindings[m.first] = m.second;
+    }
+    return makeStructObject(ninst);
 }
 
 Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
@@ -344,18 +363,29 @@ Object ASTInterpreter::execSubscriptExpression(astnode* node) {
     string id;
     Object m;
     resolveListForExpression(node, id, m);
-    ListObj* list = getList(m);
-    Object subm = execExpression(node->child[1]);
-    int subscript = atoi(toString(subm).c_str());
-    if (subscript > list->length || list->length == 0) {
-        cout<<"Error: Subscript out of range."<<endl;
-        return makeNilObject();
+    if (typeOf(m) == AS_LIST) {
+        Object subm = execExpression(node->child[1]);
+        ListObj* list = getList(m);
+        int subscript = atoi(toString(subm).c_str());
+        if (subscript > list->length || list->length == 0) {
+            cout<<"Error: Subscript out of range."<<endl;
+            return makeNilObject();
+        }
+        ListNode* it = list->head;
+        for (int i = 0; i < subscript; i++) {
+            it = it->next;
+        }
+        m = it->info;
+    } else {
+        StructObj* sobj = getStruct(m);
+        string vname = node->child[1]->attributes.strval;
+        if (sobj->bindings.find(vname) == sobj->bindings.end()) {
+            cout<<"Struct '"<<id<<"' has no such property '"<<vname<<"'."<<endl;
+            return makeNilObject();
+        }
+        m = sobj->bindings[vname];
     }
-    ListNode* it = list->head;
-    for (int i = 0; i < subscript; i++) {
-        it = it->next;
-    }
-    return it->info;
+    return m;
 }
 
 Object ASTInterpreter::execSortList(astnode* node) {
@@ -525,10 +555,12 @@ Object ASTInterpreter::performDefStatement(astnode* node) {
 Object ASTInterpreter::performIfStatement(astnode* node) {
     enter("If statement");
     Object m;
-    if (execExpression(node->child[0]).boolval) {
-        m = exec(node->child[1]);
-    } else {
-        m = exec(node->child[2]);
+    if (node->child[1] && node->child[2]) {
+        if (execExpression(node->child[0]).boolval) {
+            m = exec(node->child[1]);
+        } else {
+            m = exec(node->child[2]);
+        }
     }
     leave();
     return m;
@@ -539,6 +571,17 @@ Object ASTInterpreter::performPrintStatement(astnode* node) {
     cout<<toString(m);
     if (node->attributes.strval == "println") cout<<endl;
     return m;
+}
+
+Object ASTInterpreter::performStructStatement(astnode* node) {
+    string id = node->attributes.strval;
+    StructObj* sobj = makeStructObj();
+    for (astnode* it = node->child[0]; it != nullptr; it = it->next) {
+        string vname = it->child[0]->attributes.strval;
+        sobj->bindings[vname] = makeIntObject(0);
+    }
+    cxt.globals[id] = makeStructObject(sobj);
+    return makeNilObject();
 }
 
 Object ASTInterpreter::execStatement(astnode* node) {
@@ -568,6 +611,9 @@ Object ASTInterpreter::execStatement(astnode* node) {
             break;
         case RETURN_STMT: 
             m = execExpression(node->child[0]);
+            break;
+        case STRUCT_STMT:
+            m = performStructStatement(node);
             break;
         default:
             break;
@@ -610,6 +656,10 @@ Object ASTInterpreter::execExpression(astnode* node) {
         case LIST_EXPR:
         case SUBSCRIPT_EXPR:
             m = execListExpression(node);
+            break;
+        case BLESS_EXPR:
+            m = performBlessExpression(node);
+            break;
         default:
             break;
     }

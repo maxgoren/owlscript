@@ -59,3 +59,16 @@ void printNode(astnode* n) {
 void nullFunc(astnode* x) {
     ;
 }
+
+int rd = 0;
+void traverse(astnode* node, void (*pre)(astnode* x), void (*post)(astnode* x)) {
+    rd++;
+    if (node != nullptr) {
+        pre(node);
+        for (int i = 0; i < 3; i++)
+            traverse(node->child[i], pre, post);
+        post(node);
+        traverse(node->next, pre, post);
+    }
+    rd--;
+}

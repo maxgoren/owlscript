@@ -5,11 +5,11 @@
 using namespace std;
 
 enum ObjectType {
-    AS_INT, AS_REAL, AS_BOOL, AS_STR, AS_LIST, AS_LAMBDA, AS_CLASS, AS_NIL
+    AS_INT, AS_REAL, AS_BOOL, AS_STR, AS_LIST, AS_LAMBDA, AS_STRUCT, AS_NIL
 };
 
 enum ObjType {
-    OT_STR, OT_LIST, OT_LAMBDA, OT_CLASS
+    OT_STR, OT_LIST, OT_LAMBDA, OT_STRUCT
 };
 
 struct StringObj {
@@ -32,9 +32,7 @@ struct ListObj {
 };
 
 
-struct ClassObj {
-    
-};
+struct StructObj;
 
 struct ObjBase {
     ObjType type;
@@ -42,7 +40,7 @@ struct ObjBase {
         ListObj* listObj;
         StringObj* stringObj;
         LambdaObj* lambdaObj;
-        ClassObj* classObj;
+        StructObj* structObj;
     };
 };
 
@@ -66,7 +64,7 @@ struct Object {
             case AS_STR: { objval = ob.objval; } break;
             case AS_LIST: { objval = ob.objval; } break;
             case AS_LAMBDA: { objval = ob.objval; } break;
-            case AS_CLASS: { objval = ob.objval; } break;
+            case AS_STRUCT: { objval = ob.objval; } break;
             case AS_NIL: intval = 0; break;
             default: 
                 break;
@@ -82,7 +80,7 @@ struct Object {
             case AS_STR: {  objval = ob.objval; } break;
             case AS_LIST: { objval = ob.objval; } break;
             case AS_LAMBDA: { objval = ob.objval; } break;
-            case AS_CLASS: { objval = ob.objval; } break;
+            case AS_STRUCT: { objval = ob.objval; } break;
             case AS_NIL: intval = 0; break;
             default: 
                 break;
@@ -102,6 +100,13 @@ struct ListNode {
     ListNode* next;
 };
 
+struct StructObj {
+    string name;
+    unordered_map<string, Object> bindings;
+    bool blessed;
+};
+
+StructObj* makeStructObj();
 LambdaObj* makeLambdaObj(astnode* body, astnode* params);
 StringObj* makeStringObj(string str);
 ListObj*   makeListObj();
@@ -115,10 +120,12 @@ Object makeBoolObject(bool val);
 Object makeStringObject(string val);
 Object makeLambdaObject(LambdaObj* lambda);
 Object makeListObject(ListObj* list);
+Object makeStructObject(StructObj* structobj);
 Object makeNilObject();
 
 ListObj* getList(Object m);
 LambdaObj* getLambda(Object m);
+StructObj* getStruct(Object m);
 double getAsReal(Object m);
 
 bool comparesAsOrdinal(Object m);

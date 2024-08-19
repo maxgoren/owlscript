@@ -35,6 +35,7 @@ class ASTInterpreter {
         Object performDefStatement(astnode* node);
         Object performIfStatement(astnode* node);
         Object performPrintStatement(astnode* node);
+        Object performStructStatement(astnode* node);
 
         Object evalRelop(astnode* node, Object& lhn, Object& rhn);
         Object evalBinOp(astnode* node, Object& lhn, Object& rhn);
@@ -44,6 +45,7 @@ class ASTInterpreter {
         Object performAssignment(astnode* node);
         Object performCreateLambda(astnode* node);
         Object performFunctionCall(astnode* node);
+        Object performBlessExpression(astnode* node);
         Object executeFunction(LambdaObj* lambdaObj, astnode* args);
 
 //List operations

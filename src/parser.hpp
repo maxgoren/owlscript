@@ -27,6 +27,7 @@ class Parser {
         astnode* makeForStatement();
         astnode* makeIfStatement();
         astnode* makeReturnStatement();
+        astnode* makeStructStatement();
         astnode* paramList();
         astnode* argsList();
         astnode* makeDefStatement();

@@ -17,6 +17,11 @@ StringObj* makeStringObj(string str) {
     return s;
 }
 
+StructObj* makeStructObj() {
+    StructObj* so = new StructObj;
+    return so;
+}
+
 LambdaObj* makeLambdaObj(astnode* body, astnode* params) {
     LambdaObj* lam = new LambdaObj;
     lam->body = body;
@@ -75,6 +80,13 @@ Object makeListObject(ListObj* list) {
     Object o(AS_LIST);
     o.objval = makeObjBase(OT_LIST);
     o.objval->listObj = list;
+    return o;
+}
+
+Object makeStructObject(StructObj* sobj) {
+    Object o(AS_STRUCT);
+    o.objval = makeObjBase(OT_STRUCT);
+    o.objval->structObj = sobj;
     return o;
 }
 
@@ -234,4 +246,8 @@ ListNode* mergesort(ListNode* list) {
     ListNode* front = list, *back = slow->next;
     slow->next = nullptr;
     return merge(mergesort(front), mergesort(back));
+}
+
+StructObj* getStruct(Object m) {
+    return m.objval->structObj;
 }

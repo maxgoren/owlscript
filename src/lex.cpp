@@ -10,6 +10,7 @@ Lexer::Lexer(bool debug) {
     reserved["else"] = TK_ELSE;
     reserved["let"] = TK_LET;
     reserved["def"] = TK_DEF;
+    reserved["struct"] = TK_STRUCT;
     reserved["return"] = TK_RETURN;
     reserved["true"] = TK_TRUE;
     reserved["false"] = TK_FALSE;
@@ -23,6 +24,8 @@ Lexer::Lexer(bool debug) {
     reserved["rest"] = TK_REST;
     reserved["map"] = TK_MAP;
     reserved["empty"] = TK_EMPTY;
+    reserved["var"] = TK_VAR;
+    reserved["make"] = TK_MAKE;
     state = DONE;
 }
 

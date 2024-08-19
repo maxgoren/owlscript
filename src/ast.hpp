@@ -11,11 +11,12 @@ enum NodeType {
 
 enum ExprType {
     CONST_EXPR, ID_EXPR, BINARYOP_EXPR, UNARYOP_EXPR, RELOP_EXPR, ASSIGN_EXPR, 
-    FUNC_EXPR, LAMBDA_EXPR, LIST_EXPR, SUBSCRIPT_EXPR
+    FUNC_EXPR, LAMBDA_EXPR, LIST_EXPR, SUBSCRIPT_EXPR, BLESS_EXPR
 };
 
 enum StmtType {
-    WHILE_STMT, FOR_STMT, PRINT_STMT, LET_STMT, IF_STMT, EXPR_STMT, DEF_STMT, RETURN_STMT
+    WHILE_STMT, FOR_STMT, PRINT_STMT, LET_STMT, IF_STMT, 
+    EXPR_STMT, DEF_STMT, RETURN_STMT, STRUCT_STMT
 };
 
 struct astnode {
@@ -33,6 +34,7 @@ astnode* makeExprNode(ExprType type, Token data);
 astnode* makeStmtNode(StmtType type, Token data);
 void printToken(Token m);
 void printNode(astnode* n);
+void traverse(astnode* node, void (*pre)(astnode* x), void (*post)(astnode* x));
 void nullFunc(astnode* x);
 
 #endif
