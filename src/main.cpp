@@ -33,9 +33,10 @@ void start_owlscript(bool debug) {
 }
 
 void exec_file(string filename) {
-    ASTBuilder builder(true);
+    ASTBuilder builder(false);
     ASTInterpreter interpreter(false);
     cout<<"Loading: "<<filename<<endl;
     auto ast = builder.buildFromFile(filename);
     interpreter.execAST(ast);
+    interpreter.execAST(builder.build("main();"));
 }

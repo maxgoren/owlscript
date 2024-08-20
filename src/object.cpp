@@ -191,7 +191,7 @@ string toString(Object obj) {
         case AS_STR:    return string(obj.objval->stringObj->str);
         case AS_LIST: {
                 string liststr = "[ ";
-                for (auto it = obj.objval->listObj->head; it != nullptr; it = it->next) {
+                for (auto it = getList(obj)->head; it != nullptr; it = it->next) {
                     liststr += toString(it->info);
                     if (it->next != nullptr)
                         liststr += ", ";
@@ -200,6 +200,10 @@ string toString(Object obj) {
                 return liststr;
             }
         case AS_LAMBDA: return "(lambda)";
+        case AS_STRUCT: {
+                StructObj* sobj = getStruct(obj);
+            return "(struct)";
+            }
         case AS_NIL:  
         default: 
             break;

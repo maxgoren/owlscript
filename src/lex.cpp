@@ -26,6 +26,7 @@ Lexer::Lexer(bool debug) {
     reserved["empty"] = TK_EMPTY;
     reserved["var"] = TK_VAR;
     reserved["make"] = TK_MAKE;
+    reserved["nil"] = TK_NIL;
     state = DONE;
 }
 
@@ -189,6 +190,19 @@ Token Lexer::checkSpecials() {
         sb.reverse();
         return Token(TK_SUB, "-");
     }
+    if (sb.get() == '&') {
+        if (sb.advance() == '&') {
+            return Token(TK_LOGIC_AND, "&&");
+        }
+        sb.reverse();
+        return Token(TK_AMPER, "&");
+    }
+    if (sb.get() == '|') {
+        if (sb.advance() == '|') {
+            return Token(TK_LOGIC_OR, "||");
+        }
+        return Token(TK_PIPE, "|");
+    }
     if (sb.get() == '+') return Token(TK_ADD, "+");
     if (sb.get() == '(') return Token(TK_LPAREN, "(");
     if (sb.get() == ')') return Token(TK_RPAREN, ")");
@@ -199,7 +213,6 @@ Token Lexer::checkSpecials() {
     if (sb.get() == '.') return Token(TK_PERIOD, ".");
     if (sb.get() == ',') return Token(TK_COMMA, ",");
     if (sb.get() == ';') return Token(TK_SEMI, ";");
-    if (sb.get() == '&') return Token(TK_AMPER, "&");
     state = ERROR;
     return Token(TK_ERROR, "<error>");
 }

@@ -111,6 +111,8 @@ astnode* Parser::makeIfStatement() {
         match(TK_LCURLY);
         m->child[2] = statementList();
         match(TK_RCURLY);
+    } else {
+        m->child[2] = nullptr;
     }
     return m;
 }
@@ -340,6 +342,11 @@ astnode* Parser::factor() {
             }
         }
         return m; 
+    }
+    if (currSym() == TK_NIL) {
+        astnode* m = makeExprNode(CONST_EXPR, current);
+        match(TK_NIL);
+        return m;
     }
     if (currSym() == TK_STRING) {
         astnode* m = makeExprNode(CONST_EXPR, current);

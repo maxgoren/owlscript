@@ -8,6 +8,8 @@ bool isRelOp(Symbol s) {
         case TK_GTE:
         case TK_EQU:
         case TK_NOTEQU:
+        case TK_LOGIC_AND:
+        case TK_LOGIC_OR:
             return true;
     }
     return false;

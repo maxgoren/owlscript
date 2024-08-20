@@ -42,14 +42,25 @@ Object ASTInterpreter::evalRelop(astnode* node, Object& lhn, Object& rhn) {
             case TK_LTE: return makeBoolObject(lhs <= rhs);
             case TK_EQU: return makeBoolObject(lhs == rhs);
             case TK_NOTEQU: return makeBoolObject(lhs != rhs);
+            case TK_LOGIC_AND: return makeBoolObject(lhs && rhs);
+            case TK_LOGIC_OR:  return makeBoolObject(lhs || rhs);
             default:
                 break;
         }
     }
     string lst = toString(lhn);
     string rst = toString(rhn);
-    cout<<"Compring "<<lst<<" and "<<rst<<endl;
-    return makeBoolObject(lst == rst);
+    switch (node->attributes.symbol) {
+        case TK_LT: return makeBoolObject(lst < rst);
+        case TK_GT: return makeBoolObject(lst > rst);
+        case TK_GTE: return makeBoolObject(lst >= rst);
+        case TK_LTE: return makeBoolObject(lst <= rst);
+        case TK_EQU: return makeBoolObject(lst == rst);
+        case TK_NOTEQU: return makeBoolObject(lst != rst);
+        default:
+            break;
+    }
+    return makeBoolObject(false);
 }
 
 Object ASTInterpreter::evalBinOp(astnode* node, Object& lhn, Object& rhn) {
@@ -134,16 +145,26 @@ Object ASTInterpreter::evalUnaryOp(astnode* node) {
 Object ASTInterpreter::getConstValue(astnode* node) {
     Object m;
     enter("get const value");
-    if (node->attributes.symbol == TK_NUM)
-        m = makeIntObject(atoi(node->attributes.strval.c_str()));
-    else if (node->attributes.symbol == TK_REALNUM)
-        m = makeRealObject(stod(node->attributes.strval));
-    else if (node->attributes.symbol == TK_TRUE || node->attributes.symbol == TK_FALSE)
-        m = makeBoolObject(node->attributes.strval == "true" ? true:false);
-    else if (node->attributes.symbol == TK_ID || node->attributes.symbol == TK_STRING)
-        m = makeStringObject(node->attributes.strval);
-    else
-        m = makeNilObject();
+    switch (node->attributes.symbol) {
+        case TK_NUM:
+            m = makeIntObject(atoi(node->attributes.strval.c_str()));
+            break;
+        case TK_REALNUM:
+            m = makeRealObject(stod(node->attributes.strval));
+            break;
+        case TK_TRUE:
+        case TK_FALSE:
+            m = makeBoolObject(node->attributes.strval == "true" ? true:false);
+            break;
+        case TK_ID:
+        case TK_STRING:
+            m = makeStringObject(node->attributes.strval);
+            break;
+        case TK_NIL:
+        default:
+            m = makeNilObject();
+            break;
+    }
     leave();
     return m;
 }
@@ -194,7 +215,13 @@ Object ASTInterpreter::performAssignment(astnode* node) {
         } else {
             string vname = node->child[0]->child[1]->attributes.strval;
             StructObj* st = getStruct(m);
-            st->bindings[vname] = execExpression(node->child[1]);
+            if (st->blessed) {
+                st->bindings[vname] = execExpression(node->child[1]);
+            } else {
+                cout<<"Structs must be instantiated before use."<<endl;
+                leave();
+                return makeNilObject();
+            }
         }
     } else {
         id = node->child[0]->attributes.strval;
@@ -555,12 +582,10 @@ Object ASTInterpreter::performDefStatement(astnode* node) {
 Object ASTInterpreter::performIfStatement(astnode* node) {
     enter("If statement");
     Object m;
-    if (node->child[1] && node->child[2]) {
-        if (execExpression(node->child[0]).boolval) {
-            m = exec(node->child[1]);
-        } else {
-            m = exec(node->child[2]);
-        }
+    if (execExpression(node->child[0]).boolval) {
+        m = exec(node->child[1]);
+    } else {
+        m = exec(node->child[2]);
     }
     leave();
     return m;
@@ -580,6 +605,7 @@ Object ASTInterpreter::performStructStatement(astnode* node) {
         string vname = it->child[0]->attributes.strval;
         sobj->bindings[vname] = makeIntObject(0);
     }
+    sobj->blessed = false;
     cxt.globals[id] = makeStructObject(sobj);
     return makeNilObject();
 }
