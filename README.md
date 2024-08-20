@@ -36,7 +36,27 @@ While owlscript does not have support for nested procedures, it _does_ have clos
         let c := counter();
         println c();
 
-    
+Thanks to owlscripts simple struct types, implementing ADT's like binary search trees is a breeze:
 
+       struct tnode {
+          var key;
+          var left;
+          var right;
+      }
 
+      def insert(var tree, var v) {
+          if (tree == nil) {
+             tree := make tnode;
+             tree[key] := v;
+             tree[left] := nil;
+             tree[right] := nil;
+          } else {
+             if (v < tree[key]) {
+                tree[left] := insert(tree[left], v);
+             } else {
+               tree[right] := insert(tree[right], v);
+             }
+         }
+         return tree;
+      }
       
