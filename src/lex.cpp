@@ -14,6 +14,7 @@ Lexer::Lexer(bool debug) {
     reserved["return"] = TK_RETURN;
     reserved["true"] = TK_TRUE;
     reserved["false"] = TK_FALSE;
+    reserved["sqrt"] = TK_SQRT;
     reserved["lambda"] = TK_LAMBDA;
     reserved["append"] = TK_APPEND;
     reserved["push"] = TK_PUSH;
@@ -74,13 +75,14 @@ vector<Token> Lexer::lex() {
                     if (loud)
                         cout<<"Extracted: "<<next.strval<<endl;
                     result.push_back(next);
+                    result.back().lineNumber = sb.lineNo()+1;
                     state = SCANNING;
                 }
                 if (next.symbol == TK_CLOSE_COMMENT) {
                     state = SCANNING;
                 }
             } else {
-                cout<<"An Error Occured during lexing."<<endl;
+                cout<<"An Error Occured on line "<<sb.lineNo()<<" during lexing."<<endl;
                 result.clear();
                 state = DONE;
             }
@@ -166,7 +168,7 @@ Token Lexer::checkSpecials() {
         if (sb.advance() == '=') 
             return Token(TK_NOTEQU, "!=");
         else sb.reverse();
-        return Token(TK_BANG, "!");
+        return Token(TK_LOGIC_NOT, "!");
     }
     if (sb.get() == '/') {
         if (sb.advance() == '*') {
@@ -203,6 +205,8 @@ Token Lexer::checkSpecials() {
         }
         return Token(TK_PIPE, "|");
     }
+    if (sb.get() == '%') return Token(TK_MOD, "%");
+    if (sb.get() == '^') return Token(TK_POW, "^");
     if (sb.get() == '+') return Token(TK_ADD, "+");
     if (sb.get() == '(') return Token(TK_LPAREN, "(");
     if (sb.get() == ')') return Token(TK_RPAREN, ")");

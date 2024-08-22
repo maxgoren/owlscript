@@ -183,27 +183,41 @@ Object popList(ListObj* list) {
     return m;
 }
 
+string listToString(Object obj) {
+    string liststr = "[ ";
+    for (auto it = getList(obj)->head; it != nullptr; it = it->next) {
+        liststr += toString(it->info);
+        if (it->next != nullptr)
+            liststr += ", ";
+    }
+    liststr += "]";
+    return liststr;
+}
+
+string structToString(Object obj) {
+    StructObj* sobj = getStruct(obj);
+    string ret = "\n{\n";
+    int i = 0;
+    for (auto np : sobj->bindings) {
+        ret += "\t" + np.first + ": " + toString(np.second);
+        if (i+1 < sobj->bindings.size()) {
+            ret += ",\n";
+            i++;
+        }
+    }
+    ret += "\n}";
+    return ret;
+}
+
 string toString(Object obj) {
     switch (obj.type) {
         case AS_INT:    return to_string(obj.intval); 
         case AS_REAL:   return to_string(obj.realval);
         case AS_BOOL:   return obj.boolval ? "true":"false";
         case AS_STR:    return string(obj.objval->stringObj->str);
-        case AS_LIST: {
-                string liststr = "[ ";
-                for (auto it = getList(obj)->head; it != nullptr; it = it->next) {
-                    liststr += toString(it->info);
-                    if (it->next != nullptr)
-                        liststr += ", ";
-                }
-                liststr += "]";
-                return liststr;
-            }
+        case AS_LIST:   return listToString(obj);
         case AS_LAMBDA: return "(lambda)";
-        case AS_STRUCT: {
-                StructObj* sobj = getStruct(obj);
-            return "(struct)";
-            }
+        case AS_STRUCT: return structToString(obj);
         case AS_NIL:  
         default: 
             break;

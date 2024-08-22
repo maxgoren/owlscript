@@ -15,7 +15,7 @@ class Parser {
         vector<Token> tokens;
         int tpos;
         Token current;
-        Symbol currSym();
+        inline Symbol currSym();
         Symbol lookahead();
         bool match(Symbol s);
         void advance();
@@ -38,6 +38,9 @@ class Parser {
         astnode* expr();
         astnode* term();
         astnode* factor();
+        astnode* var();
+        astnode* makeIDExpr();
+        astnode* makeConstExpr();
         astnode* makeListExpr();
     public:
         Parser(bool debug = false);

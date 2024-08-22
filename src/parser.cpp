@@ -10,7 +10,7 @@ astnode* Parser::parse(vector<Token> in) {
     return program();
 }
 
-Symbol Parser::currSym() {
+inline Symbol Parser::currSym() {
     return current.symbol;
 }
 
@@ -27,7 +27,7 @@ bool Parser::match(Symbol s) {
         advance();
         return true;
     }
-    cout<<"Unexpected Token: "<<symbolAsString[s]<<", was Expecting: "<<symbolAsString[current.symbol]<<endl;
+    cout<<"Unexpected Token on line "<<current.lineNumber<<": "<<symbolAsString[s]<<", was Expecting: "<<symbolAsString[current.symbol]<<endl;
     return false;
 }
 
@@ -111,8 +111,6 @@ astnode* Parser::makeIfStatement() {
         match(TK_LCURLY);
         m->child[2] = statementList();
         match(TK_RCURLY);
-    } else {
-        m->child[2] = nullptr;
     }
     return m;
 }
@@ -287,7 +285,7 @@ astnode* Parser::expr() {
 
 astnode* Parser::term() {
     astnode* node = factor();
-    while (currSym() == TK_MUL || currSym() == TK_DIV) {
+    while (currSym() == TK_MUL || currSym() == TK_DIV || currSym() == TK_MOD) {
         astnode* m = makeExprNode(BINARYOP_EXPR, current);
         match(currSym());
         m->child[0] = node;
@@ -297,70 +295,44 @@ astnode* Parser::term() {
     return node;
 }
 
+//right associative, so right recursive instead of loop.
 astnode* Parser::factor() {
+     if (currSym() == TK_SQRT) {
+        astnode* m = makeExprNode(UNARYOP_EXPR, current);
+        match(TK_SQRT);
+        m->child[0] = factor();
+        return m;
+    }
+    astnode* node = var();
+    if (currSym() == TK_POW) {
+        astnode* m = makeExprNode(BINARYOP_EXPR, current);
+        match(TK_POW);
+        m->child[0] = node;
+        m->child[1] = factor();
+        return m;
+    }
+    return node;
+}
+
+astnode* Parser::var() {
+    
+    if (currSym() == TK_ID) {
+        return makeIDExpr();
+    }
+    if ((currSym() == TK_NIL) || (currSym() == TK_STRING) ||
+        (currSym() == TK_NUM) || (currSym() == TK_REALNUM)) {
+        return makeConstExpr();
+    }
     if (currSym() == TK_SUB) {
         astnode* m = makeExprNode(UNARYOP_EXPR, current);
         match(TK_SUB);
         m->child[0] = simpleExpr();
         return m;
     }
-    if (currSym() == TK_BANG) {
+    if (currSym() == TK_LOGIC_NOT) {
         astnode* m = makeExprNode(UNARYOP_EXPR, current);
-        match(TK_BANG);
+        match(TK_LOGIC_NOT);
         m->child[0] = simpleExpr();
-        return m;
-    }
-    if (currSym() == TK_ID) {
-        astnode* m = makeExprNode(ID_EXPR, current);
-        match(TK_ID);
-        if (currSym() == TK_LSQUARE) {
-            astnode* t = makeExprNode(SUBSCRIPT_EXPR, current);
-            match(TK_LSQUARE);
-            t->child[0] = m;
-            m = t;
-            m->child[1] = simpleExpr();
-            match(TK_RSQUARE);
-        }
-        if (currSym() == TK_ASSIGN) {
-            astnode* t = makeExprNode(ASSIGN_EXPR, current);
-            match(TK_ASSIGN);
-            t->child[0] = m;
-            m = t;
-            m->child[1] = simpleExpr();
-        } else if (currSym() == TK_LPAREN) {
-            astnode* t = makeExprNode(FUNC_EXPR, current);
-            t->attributes = m->attributes;
-            t->child[0] = m;
-            m = t;
-            match(TK_LPAREN);
-            if (currSym() == TK_RPAREN) {
-                match(TK_RPAREN);
-                return m;
-            } else {
-                m->child[1] = argsList();
-                match(TK_RPAREN);
-            }
-        }
-        return m; 
-    }
-    if (currSym() == TK_NIL) {
-        astnode* m = makeExprNode(CONST_EXPR, current);
-        match(TK_NIL);
-        return m;
-    }
-    if (currSym() == TK_STRING) {
-        astnode* m = makeExprNode(CONST_EXPR, current);
-        match(TK_STRING);
-        return m;
-    }
-    if (currSym() == TK_NUM) {
-        astnode* m = makeExprNode(CONST_EXPR, current);
-        match(TK_NUM);
-        return m;
-    }
-    if (currSym() == TK_REALNUM) {
-        astnode* m = makeExprNode(CONST_EXPR, current);
-        match(TK_REALNUM);
         return m;
     }
     if (currSym() == TK_LPAREN) {
@@ -401,6 +373,69 @@ astnode* Parser::factor() {
     }
     
     return nullptr;
+}
+
+astnode* Parser::makeIDExpr() {
+    astnode* m = makeExprNode(ID_EXPR, current);
+    match(TK_ID);
+    if (currSym() == TK_LSQUARE) {
+        astnode* t = makeExprNode(SUBSCRIPT_EXPR, current);
+        match(TK_LSQUARE);
+        t->child[0] = m;
+        m = t;
+        m->child[1] = simpleExpr();
+        match(TK_RSQUARE);
+    }
+    if (currSym() == TK_ASSIGN) {
+        astnode* t = makeExprNode(ASSIGN_EXPR, current);
+        match(TK_ASSIGN);
+        t->child[0] = m;
+        m = t;
+        m->child[1] = simpleExpr();
+    } else if (currSym() == TK_LPAREN) {
+        astnode* t = makeExprNode(FUNC_EXPR, current);
+        t->attributes = m->attributes;
+        t->child[0] = m;
+        m = t;
+        match(TK_LPAREN);
+        if (currSym() == TK_RPAREN) {
+            match(TK_RPAREN);
+            return m;
+        } else {
+            m->child[1] = argsList();
+            match(TK_RPAREN);
+        }
+    }
+    return m; 
+}
+
+astnode* Parser::makeConstExpr() {
+    astnode* m;
+    switch (currSym()) {
+        case TK_NIL: {
+            m = makeExprNode(CONST_EXPR, current);
+            match(TK_NIL);
+        }
+        break;
+        case TK_STRING: {
+            m = makeExprNode(CONST_EXPR, current);
+            match(TK_STRING);
+        }
+        break;
+        case TK_NUM: {
+            m = makeExprNode(CONST_EXPR, current);
+            match(TK_NUM);
+        }
+        break;
+        case TK_REALNUM: {
+            m = makeExprNode(CONST_EXPR, current);
+            match(TK_REALNUM);
+        }
+        break;
+        default:
+            break;
+    }
+    return m;
 }
 
 astnode* Parser::makeListExpr() {

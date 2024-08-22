@@ -6,8 +6,8 @@ using namespace std;
 enum Symbol {
     TK_NONE, TK_NUM, TK_REALNUM, TK_ID, TK_STRING, TK_TRUE, TK_FALSE, TK_STRUCT, TK_MAKE,
     TK_LPAREN, TK_RPAREN, TK_LCURLY, TK_RCURLY, TK_LSQUARE, TK_RSQUARE,
-    TK_PERIOD, TK_COMMA, TK_QUOTE, TK_BANG, TK_AMPER, TK_LAMBDA, TK_PRODUCE,
-    TK_ADD, TK_SUB, TK_MUL, TK_DIV, TK_LOGIC_AND, TK_LOGIC_OR,
+    TK_PERIOD, TK_COMMA, TK_QUOTE, TK_LOGIC_NOT, TK_AMPER, TK_LAMBDA, TK_PRODUCE,
+    TK_ADD, TK_SUB, TK_MUL, TK_DIV, TK_MOD, TK_POW, TK_SQRT, TK_LOGIC_AND, TK_LOGIC_OR,
     TK_LT, TK_GT, TK_LTE, TK_GTE, TK_EQU, TK_NOTEQU,
     TK_ASSIGN, TK_SEMI, TK_COLON,
     TK_LET, TK_DEF, TK_RETURN, TK_WHILE, TK_FOR, TK_VAR,
@@ -21,8 +21,8 @@ enum Symbol {
 inline string symbolAsString[] = {
     "TK_NONE", "TK_NUM", "TK_REALNUM", "TK_ID", "TK_STRING", "TK_TRUE", "TK_FALSE", "TK_STRUCT", "TK_MAKE",
     "TK_LPAREN", "TK_RPAREN", "TK_LCURLY", "TK_RCURLY", "TK_LSQUARE", "TK_RSQUARE",
-    "TK_PERIOD", "TK_COMMA", "TK_QUOTE", "TK_BANG", "TK_AMPER", "TK_LAMBDA", "TK_PRODUCE",
-    "TK_ADD", "TK_SUB", "TK_MUL", "TK_DIV", "TK_LOGIC_AND", "TK_LOGIC_OR",
+    "TK_PERIOD", "TK_COMMA", "TK_QUOTE", "TK_LOGIC_NOT", "TK_AMPER", "TK_LAMBDA", "TK_PRODUCE",
+    "TK_ADD", "TK_SUB", "TK_MUL", "TK_DIV", "TK_MOD", "TK_POW", "TK_SQRT","TK_LOGIC_AND", "TK_LOGIC_OR",
     "TK_LT", "TK_GT", "TK_LTE", "TK_GTE", "TK_EQU", "TK_NOTEQU",
     "TK_ASSIGN", "TK_SEMI", "TK_COLON",
     "TK_LET", "TK_DEF", "TK_RETURN", "TK_WHILE", "TK_FOR", "TK_VAR",
@@ -34,10 +34,12 @@ inline string symbolAsString[] = {
 
 struct Token {
     Symbol symbol;
-    string strval;  
+    string strval;
+    int lineNumber;  
     Token(Symbol s = TK_NONE, string st = " ") {
         symbol = s;
         strval = st;
+        lineNumber = 0;
     }
 };
 

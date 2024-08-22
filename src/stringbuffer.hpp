@@ -33,6 +33,9 @@ class StringBuffer {
             lpos = 0;
             buff = lines[lpos];
         }
+        int lineNo() {
+            return lpos;
+        }
         char get() {
             if (spos >= buff.length() && lpos >= lines.size()) {
                     return eosChar; 
