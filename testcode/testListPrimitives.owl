@@ -1,6 +1,0 @@
-list := [13, 42, 86, 37, 24, 11];
-println list;
-mutated := map(lambda(x) { return x*2;}, list);
-println mutated;
-println first(list);
-println rest(list);

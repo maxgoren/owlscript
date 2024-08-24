@@ -1,6 +1,0 @@
-if (24/6 == 5) {
-    println "ok";
-} else {
-    println "mia!";
-}
-println "poof";

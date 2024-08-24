@@ -1,0 +1,28 @@
+struct node { 
+    var info; 
+    var next; 
+}
+
+def printR(var l) { 
+    if (l != nil) { 
+        print l[info] + " "; 
+        printR(l[next]); 
+    } else { 
+        println " "; 
+    } 
+}
+
+def main() {
+    let head := make node;
+    head[info] := 13;
+    head[next] := nil;
+    let i := 0;
+    let t := head;
+    for (i := 1; i <= 10; i := i + 1) { 
+        t[next] := make node;
+        t := t[next];
+        t[info] := i; 
+        t[next] := nil; 
+    }
+    printR(head);
+}

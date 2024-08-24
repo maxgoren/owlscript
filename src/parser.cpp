@@ -69,15 +69,26 @@ astnode* Parser::makeExprStatement() {
     return m;
 }
 
+astnode* Parser::makeBlockStatement() {
+    astnode* m = makeStmtNode(BLOCK_STMT, current);
+    m->child[0] = makeBlock();
+    return m;
+}
+
+astnode* Parser::makeBlock() {
+    match(TK_LCURLY);
+    astnode* m = statementList();
+    match(TK_RCURLY);
+    return m;
+}
+
 astnode* Parser::makeWhileStatement() {
     astnode* m = makeStmtNode(WHILE_STMT, current);
     match(TK_WHILE);
     match(TK_LPAREN);
     m->child[0] = simpleExpr();
     match(TK_RPAREN);
-    match(TK_LCURLY);
-    m->child[1] = statementList();
-    match(TK_RCURLY);
+    m->child[1] = makeBlock();    
     return m;
 }
 
@@ -91,9 +102,7 @@ astnode* Parser::makeForStatement() {
     match(TK_SEMI);
     m->child[0]->next->next = simpleExpr();
     match(TK_RPAREN);
-    match(TK_LCURLY);
-    m->child[1] = statementList();
-    match(TK_RCURLY);
+    m->child[1] = makeBlock();
     return m;
 }
 
@@ -103,14 +112,10 @@ astnode* Parser::makeIfStatement() {
     match(TK_LPAREN);
     m->child[0] = simpleExpr();
     match(TK_RPAREN);
-    match(TK_LCURLY);
-    m->child[1] = statementList();
-    match(TK_RCURLY);
+   m->child[1] = makeBlock();
     if (currSym() == TK_ELSE) {
         match(TK_ELSE);
-        match(TK_LCURLY);
-        m->child[2] = statementList();
-        match(TK_RCURLY);
+        m->child[2] = makeBlock();
     }
     return m;
 }
@@ -162,9 +167,7 @@ astnode* Parser::makeDefStatement() {
     if (currSym() != TK_RPAREN)
         m->child[1] = paramList();
     match(TK_RPAREN);
-    match(TK_LCURLY);
-    m->child[0] = statementList();
-    match(TK_RCURLY);
+    m->child[0] = makeBlock();
     return m;
 }
 
@@ -173,9 +176,7 @@ astnode* Parser::makeStructStatement() {
     match(TK_STRUCT);
     m->attributes.strval = current.strval;
     match(TK_ID);
-    match(TK_LCURLY);
-    m->child[0] = statementList();
-    match(TK_RCURLY);
+    m->child[0] = makeBlock();
     return m;
 }
 
@@ -217,6 +218,9 @@ astnode* Parser::statement() {
             return m;
         case TK_LPAREN:
             m = makeExprStatement();
+            return m;
+        case TK_LCURLY:
+            m = makeBlockStatement();
             return m;
         case TK_NUM:
             m = makeExprStatement();
@@ -315,7 +319,6 @@ astnode* Parser::factor() {
 }
 
 astnode* Parser::var() {
-    
     if (currSym() == TK_ID) {
         return makeIDExpr();
     }
@@ -353,9 +356,7 @@ astnode* Parser::var() {
             m->child[1] = argsList();
         match(TK_RPAREN);
         if (currSym() == TK_LCURLY) {
-            match(TK_LCURLY);
-            m->child[0] = statementList();
-            match(TK_RCURLY);
+            m->child[0] = makeBlock();
         } else if (currSym() == TK_PRODUCE) {
             match(TK_PRODUCE);
             m->child[0] = statement();

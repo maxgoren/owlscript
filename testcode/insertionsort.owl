@@ -1,0 +1,23 @@
+def inssort(var list) {
+    let i := 0;
+    let j := 0;
+    for (i := 0; i < length(list); i := i + 1) {
+        for (j := length(list)-1; j > i; j := j-1) {
+            if (list[j] < list[i]) {
+                let tmp := list[j];
+                list[j] := list[i];
+                list[i] := tmp;
+            } else {
+                ;
+            }
+        }
+    }
+    return list;
+}
+
+def main() {
+    let g := [13,11,24,2,86,69,42,100];
+    println g;
+    g := inssort(g);
+    println g;
+}

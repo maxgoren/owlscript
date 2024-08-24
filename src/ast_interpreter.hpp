@@ -8,9 +8,43 @@
 #include "object.hpp"
 using namespace std;
 
+
+typedef unordered_map<string, Object> Environment;
+
+struct ActivationRecord {
+    Environment localcxt;
+    ActivationRecord* staticLink;
+    ActivationRecord* dynamicLink;
+};
+
+class CallStack {
+    private:
+        ActivationRecord stack[1024];
+        int n;
+    public:
+        CallStack() {
+            n = 0;
+        }
+        int size() const {
+            return n;
+        }
+        bool empty() const {
+            return n == 0;
+        }
+        void push(ActivationRecord ar) {
+            stack[n++] = ar;
+        }
+        ActivationRecord& top() {
+            return stack[n-1];
+        }
+        ActivationRecord pop() {
+            return stack[--n];
+        }
+};
+
 struct Context {
-    unordered_map<string, Object> globals;
-    stack<unordered_map<string, Object>> scoped;
+    Environment globals;
+    stack<Environment> scoped;
 };
 
 
@@ -44,6 +78,7 @@ class ASTInterpreter {
         Object performDefStatement(astnode* node);
         Object performCreateLambda(astnode* node);
         Object performFunctionCall(astnode* node);
+        Object performBlockStatement(astnode* node);
         Object performWhileStatement(astnode* node);
         Object performPrintStatement(astnode* node);
         Object performListAssignment(astnode* node, Object& m);

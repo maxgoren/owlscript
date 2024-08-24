@@ -1,9 +1,0 @@
-i := [13, 42, "yo dag", 6.66, 341];
-m := 0;
-loop (m < length(i)) {
-	print (i[m] + " ");
-	m := m + 1;
-}
-print "\n";
-println first(i);
-println rest(i);

@@ -1,9 +1,0 @@
-m := [11, 24, 86];
-def printRec(list, i) {
-    if (i < length(list)) {
-        println list[i];
-        i := i + 1;
-        printRec(list, i);
-    }
-}
-printRec(m, 1);

@@ -21,6 +21,8 @@ class Parser {
         void advance();
         void init(vector<Token> in);
         astnode* makeLetStatement();
+        astnode* makeBlock();
+        astnode* makeBlockStatement();
         astnode* makePrintStatement();
         astnode* makeExprStatement();
         astnode* makeWhileStatement();

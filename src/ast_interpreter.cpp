@@ -253,6 +253,7 @@ Object ASTInterpreter::performFunctionCall(astnode* node) {
     Object lmbd = getObjectByID(id);
     if (lmbd.type != AS_LAMBDA) {
         leave();
+        cout<<"Error: No function '"<<id<<"' coult be found."<<endl;
         return makeNilObject();
     }
     Object m = executeFunction(getLambda(lmbd), node->child[1]);
@@ -625,6 +626,14 @@ Object ASTInterpreter::performStructDefStatement(astnode* node) {
     cxt.globals[id] = makeStructObject(sobj);
     return makeNilObject();
 }
+ 
+Object ASTInterpreter::performBlockStatement(astnode* node) {
+    Environment env;
+    cxt.scoped.push(env);
+    exec(node->child[0]);
+    cxt.scoped.pop();
+    return makeNilObject();
+}
 
 Object ASTInterpreter::execStatement(astnode* node) {
     enter("[statement]");
@@ -638,6 +647,9 @@ Object ASTInterpreter::execStatement(astnode* node) {
             break;
         case IF_STMT:
             m = performIfStatement(node);
+            break;
+        case BLOCK_STMT:
+            m = performBlockStatement(node);
             break;
         case DEF_STMT:
             m = performDefStatement(node);

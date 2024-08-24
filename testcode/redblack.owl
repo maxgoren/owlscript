@@ -1,0 +1,108 @@
+struct tnode {
+    var info;
+    var left;
+    var right;
+}
+
+def isRed(var tree) {
+    if (tree == nil) {
+        return 0;
+    } else {
+        return tree[color];
+    }
+}
+
+def rotL(var tree) {
+    let x := tree[right];
+    tree[right] := x[left];
+    x[left] := tree;
+    x[color] := tree[color];
+    tree[color] := 1;
+    return x;
+}
+
+def rotR(var tree) {
+    let x := tree[left];
+    tree[left] := x[right];
+    x[right] := tree;
+    x[color] := tree[color];
+    tree[color] := 1;
+    return x;
+}
+
+def colorFlip(var tree) {
+    tree[color] := 1;
+    var t := tree[left];
+    t[color] := 0;
+    t := tree[right];
+    t[color] := 0;
+    return tree;
+}
+
+def balance(var tree) {
+    if (isRed(tree[right])) {
+        println "single red";
+        tree := rotL(tree);
+    } else {
+        ;
+    }
+    let t := tree[left];
+    if (isRed(tree[left]) && isRed(t[left])) {
+            println "double red";
+            tree := rotR(tree);
+    } else {
+        ;
+    }
+    if (isRed(tree[left]) && isRed(tree[right])) {
+        println "color flip";
+        tree := colorFlip(tree);
+    } else { 
+        ; 
+    }
+    return tree;
+}
+
+def insert(var tree, var v) {
+    if (tree == nil) {
+        tree := make tnode;
+        tree[info] := v;
+        tree[color] := 1;
+        tree[left] := nil;
+        tree[right] := nil;
+        println "base case, creating node for " + v;
+    } else {
+        println v + " < " + tree[info] + "?";
+        if (v < tree[info]) {
+            println "go left";
+            tree[left] := insert(tree[left], v);
+        } else {
+            println "go right";
+            tree[right] := insert(tree[right], v);
+        }
+    }
+    return balance(tree);
+}
+
+def visit(var tree) {
+    if (tree != nil) {
+        print tree[info] + " ";
+        visit(tree[left]);
+        visit(tree[right]);
+    } else {
+        ;
+    }
+}
+
+def main() {
+    let vals := ["a", "s", "e", "a", "r", "c", "h", "i", "n", "g", "e", "x", "a", "m", "p", "l", "e"];
+    let root := nil;
+    let i := 0;
+    while (i < length(vals)) {
+        println "inserting " + vals[i];
+        root := insert(root, vals[i]);
+        root[color] := 0;
+        i := i + 1;
+    }
+    visit(root);
+    println " ";
+}

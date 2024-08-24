@@ -1,8 +1,0 @@
-i := "several places at once";
-m := "so can we";
-p := 32;
-z := 6.66;
-println (i + "\n" + m);
-println (p);
-println (z);
-println (z + " " + p);
