@@ -1,0 +1,15 @@
+def ok(var m) {
+        let t := m + 1;
+	def in(var k) {
+		return m+k;
+        }
+    return in(t);
+}
+def main() {
+	let i := 0;
+	while (i < 20) { 
+		println i + ok(i);
+		i := i + 1;
+	}
+	println "le fin.";
+}

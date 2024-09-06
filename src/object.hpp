@@ -17,14 +17,16 @@ struct StringObj {
     int length;
 };
 
-struct VarList;
+struct VarList; //Not sure why I decided to go this route.
+
 struct LambdaObj {
-    VarList* freeVars;
+    VarList* freeVars; //Seriously, why?
     astnode* params;
     astnode* body;
 };
 
 struct ListNode;
+
 struct ListObj {
     ListNode* head;
     ListNode* tail;
@@ -42,6 +44,7 @@ struct ObjBase {
         LambdaObj* lambdaObj;
         StructObj* structObj;
     };
+    bool in_use;
 };
 
 struct Object {
@@ -114,6 +117,7 @@ ObjBase*   makeObjBase(ObjType ot);
 ListNode*  makeListNode(Object& m);
 VarList*   makeVarList(string key, Object val, VarList* list);
 
+bool isRealAnInteger(double);
 Object makeIntObject(int intVal);
 Object makeRealObject(double val);
 Object makeBoolObject(bool val);
@@ -126,6 +130,7 @@ Object makeNilObject();
 ListObj* getList(Object m);
 LambdaObj* getLambda(Object m);
 StructObj* getStruct(Object m);
+StringObj* getString(Object m);
 double getAsReal(Object m);
 
 bool comparesAsOrdinal(Object m);
@@ -143,5 +148,7 @@ ListNode* mergesort(ListNode* list);
 
 std::ostream& operator<<(std::ostream& out, const StringObj& str);
 std::ostream& operator<<(std::ostream& out, const Object& obj);
+bool operator==(const Object& a, const Object b);
+bool operator!=(const Object& a, const Object b);
 
 #endif

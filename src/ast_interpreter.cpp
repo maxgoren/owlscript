@@ -8,9 +8,16 @@ ASTInterpreter::ASTInterpreter(bool loud) {
 }
 
 //This is the entry point for evaluating owlscript programs.
-Object ASTInterpreter::execAST(astnode* node) {
+Object ASTInterpreter::execAST(Context& context, astnode* node) {
     recDepth = 0;
-    return exec(node);
+    cxt = context;
+    Object m = exec(node);
+    context = cxt;
+    return m;
+}
+
+void ASTInterpreter::refreshContext(Context& context) {
+    context = cxt;
 }
 
 Object ASTInterpreter::evalRelop(astnode* node, Object& lhn, Object& rhn) {
@@ -48,7 +55,7 @@ Object ASTInterpreter::evalRelop(astnode* node, Object& lhn, Object& rhn) {
 }
 
 Object ASTInterpreter::evalBinOp(astnode* node, Object& lhn, Object& rhn) {
-    enter("eval binary op");
+    enter("eval binary op: " + node->attributes.strval);
     if (comparesAsOrdinal(lhn) && comparesAsOrdinal(rhn)) {
         double lhs = getAsReal(lhn);
         double rhs = getAsReal(rhn);
@@ -142,7 +149,7 @@ Object ASTInterpreter::evalUnaryOp(astnode* node) {
 
 Object ASTInterpreter::getConstValue(astnode* node) {
     Object m;
-    enter("get const value");
+    enter("[get const value: " + node->attributes.strval +"]");
     switch (node->attributes.symbol) {
         case TK_NUM:
             m = makeIntObject(atoi(node->attributes.strval.c_str()));
@@ -167,28 +174,48 @@ Object ASTInterpreter::getConstValue(astnode* node) {
     return m;
 }
 
-Object ASTInterpreter::getObjectByID(string id) {
+Object ASTInterpreter::getObjectByID(string id, int scope) {
     Object m;
-    enter("Get object by ID: " + id);
-    if (!cxt.scoped.empty() && cxt.scoped.top().find(id) != cxt.scoped.top().end()) {
-        m = cxt.scoped.top()[id];
-    } else if (cxt.globals.find(id) != cxt.globals.end()) {
-        m = cxt.globals[id];
-    } else {
-        cout<<"Unknown Identifier: "<<id<<endl;
-        m = makeNilObject();
+    enter("[Get object by ID: " + id + "]");
+    bool resolved_in_scoped = false;
+    if (!cxt.scoped.empty() && scope > -1) { 
+        Environment env = cxt.scoped.get(scope).env;
+        if (env.find(id) != env.end()) {
+            m = env[id];
+            resolved_in_scoped = true;
+        }
     }
+    if (!resolved_in_scoped) {
+        if (cxt.globals.find(id) != cxt.globals.end()) {
+            say("[Resolved " + id + " from global scope.]");
+            m = cxt.globals[id];
+        } else {
+            cout<<"Unknown Identifier: "<<id<<endl;
+            m = makeNilObject();
+        }
+    }
+    say("[Resolved " + id + " to " + toString(m) + "]");
     leave();
     return m;
 }
 
 
-void ASTInterpreter::addToContext(string id, Object m) {
-    if (cxt.scoped.empty()) {
-        cxt.globals[id] = m;
-    } else {
-        cxt.scoped.top()[id] = m;
+void ASTInterpreter::addToContext(string id, Object m, int scope) {
+    if (!cxt.scoped.empty() && scope > -1) {
+        /*int i = cxt.scoped.size() - 1; 
+        do {
+            Environment env = cxt.scoped.get(i).env;
+            if (env.find(id) != env.end()) {
+                cxt.scoped.get(i).env[id] = m;
+                return;
+            }
+            i--;
+        } while (i >= 0);
+        cxt.scoped.top().env[id] = m;*/
+        cxt.scoped.get(scope).env[id] = m;
+        return; 
     }
+    cxt.globals[id] = m;    
 }
 
 Object ASTInterpreter::performListAssignment(astnode* node, Object& m) {
@@ -226,46 +253,52 @@ Object ASTInterpreter::performStructFieldAssignment(astnode* node, Object& m) {
 Object ASTInterpreter::performAssignment(astnode* node) {
     Object m;
     string id;
-    enter("assignment");
+    int scope;
+    enter("[assignment]");
     if (node->child[0]->attributes.symbol == TK_LSQUARE) {
         id = node->child[0]->child[0]->attributes.strval;
-        m = getObjectByID(id);
+        int scope = node->child[0]->child[0]->attributes.nestLevel;
+        cout<<"Looking for : "<<id<<" in "<<scope<<endl;
+        m = getObjectByID(id, scope);
         if (typeOf(m) == AS_LIST) {
             m = performListAssignment(node, m);
         } else if (typeOf(m) == AS_STRUCT) {
             m = performStructFieldAssignment(node, m);
         } else {
-            cout<<"That type does not support subscript access."<<endl;
+            cout<<"That type does not support subscript access: "<<toString(m)<<endl;
             return makeNilObject();
         }
     } else {
         id = node->child[0]->attributes.strval;
+        scope = node->child[0]->attributes.nestLevel;
         m = execExpression(node->child[1]);
     }
-    addToContext(id, m);
+    addToContext(id,  m, scope);
     leave();
     return m;
 }
 
 Object ASTInterpreter::performFunctionCall(astnode* node) {
-    enter("function call");
+    enter("[function call]");
     string id = node->attributes.strval;
-    Object lmbd = getObjectByID(id);
+    int scope = node->attributes.nestLevel;
+    Object lmbd = getObjectByID(id, scope);
     if (lmbd.type != AS_LAMBDA) {
         leave();
         cout<<"Error: No function '"<<id<<"' coult be found."<<endl;
         return makeNilObject();
     }
     Object m = executeFunction(getLambda(lmbd), node->child[1]);
-    addToContext(id, lmbd);
+    addToContext(id, lmbd, scope);
     leave();
     return m;
 }
 
 Object ASTInterpreter::performBlessExpression(astnode* node) {
-    enter("bless struct");
+    enter("[bless struct]");
     string id = node->child[0]->attributes.strval;
-    Object master = getObjectByID(id);
+    int scope = node->child[0]->attributes.nestLevel;
+    Object master = getObjectByID(id, scope);
     StructObj* og = getStruct(master);
     StructObj* ninst = makeStructObj();
     ninst->blessed = true;
@@ -276,7 +309,7 @@ Object ASTInterpreter::performBlessExpression(astnode* node) {
 }
 
 Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
-    enter("execute lambda");
+    enter("[execute lambda]");
     unordered_map<string,Object> localcxt;
     astnode* params = lambdaObj->body;
     VarList* freeVars = lambdaObj->freeVars;
@@ -293,12 +326,15 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
         params = params->next;
         args = args->next;
     }
-    cxt.scoped.push(localcxt);
+    ActivationRecord ar;
+    ar.env = localcxt;
+    ar.staticLink = cxt.scoped.empty() ? nullptr:&cxt.scoped.top();
+    cxt.scoped.push(ar);
     Object m = exec(lambdaObj->params);
     if (freeVars != nullptr) {
         //update any closed-over variables before exiting.
         for (VarList* it = freeVars; it != nullptr; it = it->next) {
-            it->value = cxt.scoped.top()[it->key];
+            it->value = cxt.scoped.top().env[it->key];
         }
         lambdaObj->freeVars = freeVars;
     }
@@ -308,10 +344,10 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
 }
 
 Object ASTInterpreter::performCreateLambda(astnode* node) {
-    enter("create lambda");
+    enter("[create lambda]");
     LambdaObj* lm = makeLambdaObj(node->child[1], node->child[0]);
     if (!cxt.scoped.empty()) {
-        for (auto frv : cxt.scoped.top()) {
+        for (auto frv : cxt.scoped.top().env) {
             lm->freeVars = makeVarList(frv.first, frv.second, lm->freeVars);
         }
     }
@@ -322,7 +358,7 @@ Object ASTInterpreter::performCreateLambda(astnode* node) {
 
 
 Object ASTInterpreter::execCreateUnNamedList(astnode* node) {
-    enter("unnamed list");
+    enter("[unnamed list]");
     ListObj* list = makeListObj();
     for (astnode* it = node->child[0]; it != nullptr; it = it->next) {
         Object m = execExpression(it);
@@ -333,9 +369,10 @@ Object ASTInterpreter::execCreateUnNamedList(astnode* node) {
 }
 
 void ASTInterpreter::resolveObjForExpression(astnode* node, string& id, Object& m) {
-    if (node->child[0]->attributes.symbol ==  TK_ID) {
+    if (node->child[0]->attributes.symbol == TK_ID) {
         id = node->child[0]->attributes.strval;
-        m = getObjectByID(id);
+        int scope = node->child[0]->attributes.nestLevel;
+        m = getObjectByID(id, scope);
     } else if (node->child[0]->attributes.symbol == TK_LSQUARE) {
         m = execCreateUnNamedList(node->child[0]);
     }  else if (node->child[0]->type == EXPR_NODE) {
@@ -352,7 +389,7 @@ Object ASTInterpreter::execAppendList(astnode* node) {
     resolveObjForExpression(node, id, m);
     Object t = execExpression(node->child[1]);
     appendToList(getList(m), t);
-    addToContext(id, m);
+    addToContext(id, m, node->child[0]->attributes.nestLevel);
     leave();
     return t;
 }
@@ -364,7 +401,7 @@ Object ASTInterpreter::execPushList(astnode* node) {
     resolveObjForExpression(node, id, m);
     Object t = execExpression(node->child[1]);
     pushToList(getList(m), t);
-    addToContext(id, m);
+    addToContext(id, m, node->child[0]->attributes.nestLevel);
     leave();
     return t;
 }
@@ -375,7 +412,7 @@ Object ASTInterpreter::execPopList(astnode* node) {
     Object m;
     resolveObjForExpression(node, id, m);
     popList(getList(m));
-    addToContext(id, m);
+    addToContext(id, m, node->child[0]->attributes.nestLevel);
     leave();
     return m;
 }
@@ -443,7 +480,7 @@ Object ASTInterpreter::execSortList(astnode* node) {
     list->tail = tail;
     m.objval->listObj = list;
     if (!id.empty())
-        addToContext(id, m);
+        addToContext(id, m, node->child[0]->attributes.nestLevel);
     leave();
     return m;
 }
@@ -585,7 +622,7 @@ Object ASTInterpreter::performDefStatement(astnode* node) {
     string id = node->attributes.strval;
     Object m = performCreateLambda(node);
     if (!cxt.scoped.empty()) {
-        cxt.scoped.top()[id] = m;
+        cxt.scoped.top().env[id] = m;
     } else {
         cxt.globals[id] = m;
     }
@@ -629,7 +666,10 @@ Object ASTInterpreter::performStructDefStatement(astnode* node) {
  
 Object ASTInterpreter::performBlockStatement(astnode* node) {
     Environment env;
-    cxt.scoped.push(env);
+    ActivationRecord ar;
+    ar.env = env;
+    ar.staticLink = cxt.scoped.empty() ? nullptr:&cxt.scoped.top();
+    cxt.scoped.push(ar);
     exec(node->child[0]);
     cxt.scoped.pop();
     return makeNilObject();
@@ -687,7 +727,7 @@ Object ASTInterpreter::execExpression(astnode* node) {
             m = getConstValue(node);  
             break;
         case ID_EXPR:
-            m = getObjectByID(node->attributes.strval);
+            m = getObjectByID(node->attributes.strval, node->attributes.nestLevel);
             break;
         case BINARYOP_EXPR:
             m = eval(node);

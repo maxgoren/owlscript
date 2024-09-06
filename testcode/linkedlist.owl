@@ -13,13 +13,13 @@ def printR(var l) {
 }
 
 def main() {
-    let head := make node;
+    let head := bless node;
     head[info] := 13;
     head[next] := nil;
     let i := 0;
     let t := head;
     for (i := 1; i <= 10; i := i + 1) { 
-        t[next] := make node;
+        t[next] := bless node;
         t := t[next];
         t[info] := i; 
         t[next] := nil; 

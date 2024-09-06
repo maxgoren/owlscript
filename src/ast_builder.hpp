@@ -3,17 +3,21 @@
 #include <iostream>
 #include <vector>
 #include "lex.hpp"
+#include <unordered_map>
 #include "parser.hpp"
 #include "ast.hpp"
+#include "context.hpp"
+#include "resolve.hpp"
 using namespace std;
 
 class ASTBuilder {
     private:
         bool loud;
+        Resolve resolver;
     public:
         ASTBuilder(bool debug = false);
-        astnode* build(string str);
-        astnode* buildFromFile(string filename);
+        astnode* build(Context& cxt, string str);
+        astnode* buildFromFile(Context& cxt, string filename);
 };
 
 #endif

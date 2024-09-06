@@ -25,8 +25,9 @@ astnode* makeStmtNode(StmtType type, Token data) {
 void printToken(Token m) {
     cout<<"["<<symbolAsString[m.symbol]<<", "<<m.strval<<"]"<<endl;
 }
-
+int rd = 0;
 void printNode(astnode* n) {
+    for (int i = 0; i < rd; i++) cout<<"  ";
     if (n->type == EXPR_NODE) {
         switch (n->exprType) {
             case ID_EXPR: cout<<"[id expr]"; break;
@@ -53,6 +54,7 @@ void printNode(astnode* n) {
                 break;
         }
     }
+    cout<<"[Scope: "<<(n->attributes.nestLevel == -1 ? "global":"level " + to_string(n->attributes.nestLevel))<<"]";
     printToken(n->attributes);
 }
 
@@ -60,7 +62,7 @@ void nullFunc(astnode* x) {
     ;
 }
 
-int rd = 0;
+
 void traverse(astnode* node, void (*pre)(astnode* x), void (*post)(astnode* x)) {
     rd++;
     if (node != nullptr) {

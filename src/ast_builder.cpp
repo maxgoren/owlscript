@@ -1,11 +1,10 @@
 #include "ast_builder.hpp"
 
-
 ASTBuilder::ASTBuilder(bool debug) : loud(debug) {
 
 }
 
-astnode* ASTBuilder::build(string str) {
+astnode* ASTBuilder::build(Context& cxt, string str) {
     Lexer l(loud);
     Parser p(loud);
     l.init(str);
@@ -14,10 +13,12 @@ astnode* ASTBuilder::build(string str) {
         for (auto t : m)
             printToken(t);
     }
-    return p.parse(m);
+    astnode* ast = p.parse(m);
+    resolver.doResolve(cxt, ast);
+    return ast;
 }
 
-astnode* ASTBuilder::buildFromFile(string filename) {
+astnode* ASTBuilder::buildFromFile(Context& cxt, string filename) {
     FileBuffer fb;
     Lexer l;
     Parser p;
@@ -28,6 +29,7 @@ astnode* ASTBuilder::buildFromFile(string filename) {
         for (auto t : m)
             printToken(t);
     }
-    return p.parse(m);
-
+    auto ast = p.parse(m);
+    resolver.doResolve(cxt, ast);
+    return ast;
 }

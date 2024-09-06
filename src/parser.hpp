@@ -20,6 +20,7 @@ class Parser {
         bool match(Symbol s);
         void advance();
         void init(vector<Token> in);
+        Lexer lexer;
         astnode* makeLetStatement();
         astnode* makeBlock();
         astnode* makeBlockStatement();
@@ -44,6 +45,7 @@ class Parser {
         astnode* makeIDExpr();
         astnode* makeConstExpr();
         astnode* makeListExpr();
+        astnode* makeLambdaExpr();
     public:
         Parser(bool debug = false);
         astnode* parse(vector<Token> in);

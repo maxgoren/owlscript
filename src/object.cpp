@@ -1,5 +1,12 @@
 #include "object.hpp"
 
+bool operator==(const Object& a, const Object b) {
+    return toString(a) == toString(b);
+}
+bool operator!=(const Object& a, const Object b) {
+    return !(a == b);
+}
+
 std::ostream& operator<<(std::ostream& out, const StringObj& str) {
     out<<str.str;
     return out;
@@ -16,6 +23,10 @@ StringObj* makeStringObj(string str) {
     s->str[i] = '\0';
     return s;
 }
+
+ StringObj* getString(Object m) {
+    return m.objval->stringObj;
+ }
 
 StructObj* makeStructObj() {
     StructObj* so = new StructObj;
@@ -52,6 +63,11 @@ Object makeIntObject(int intVal) {
 
 Object makeRealObject(double val) {
     Object o(AS_REAL);
+    if (isRealAnInteger(val)) {
+        o.type = AS_INT;
+        o.intval = (int)val;
+        return o;
+    }
     o.realval = val;
     return o;
 }
@@ -99,6 +115,15 @@ Object makeNilObject() {
 ObjectType typeOf(Object obj) {
     return obj.type;
 }
+
+bool isRealAnInteger(double val) {
+    string num = to_string(val);
+    int i = 0;
+    while (i < num.size() && num[i++] != '.');
+    while (i < num.size() && num[i++] == '0');
+    return i == num.size();
+}
+
 
 bool comparesAsOrdinal(Object m) {
     switch (m.type) {
@@ -214,7 +239,7 @@ string toString(Object obj) {
         case AS_INT:    return to_string(obj.intval); 
         case AS_REAL:   return to_string(obj.realval);
         case AS_BOOL:   return obj.boolval ? "true":"false";
-        case AS_STR:    return string(obj.objval->stringObj->str);
+        case AS_STR:    return getString(obj)->str;
         case AS_LIST:   return listToString(obj);
         case AS_LAMBDA: return "(lambda)";
         case AS_STRUCT: return structToString(obj);

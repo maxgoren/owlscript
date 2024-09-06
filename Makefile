@@ -12,14 +12,14 @@ main:
 	rm *.o
 
 debug:
-	g++ --std=c++17 -c -g ast.cpp
-	g++ --std=c++17 -c -g ast_builder.cpp
-	g++ --std=c++17 -c -g ast_interpreter.cpp
-	g++ --std=c++17 -c -g lex.cpp
-	g++ --std=c++17 -c -g object.cpp
-	g++ --std=c++17 -c -g parser.cpp
-	g++ --std=c++17 -c -g repl.cpp
-	g++ --std=c++17 -c -g token.cpp
-	g++ --std=c++17 -c -g main.cpp
+	g++ --std=c++17 -c -g ./src/ast.cpp
+	g++ --std=c++17 -c -g ./src/ast_builder.cpp
+	g++ --std=c++17 -c -g ./src/ast_interpreter.cpp
+	g++ --std=c++17 -c -g ./src/lex.cpp
+	g++ --std=c++17 -c -g ./src/object.cpp
+	g++ --std=c++17 -c -g ./src/parser.cpp
+	g++ --std=c++17 -c -g ./src/repl.cpp
+	g++ --std=c++17 -c -g ./src/token.cpp
+	g++ --std=c++17 -c -g ./src/main.cpp
 	g++ --std=c++17 -g *.o -o owlscript
 	rm *.o

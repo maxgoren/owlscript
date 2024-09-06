@@ -27,23 +27,35 @@ Lexer::Lexer(bool debug) {
     reserved["empty"] = TK_EMPTY;
     reserved["var"] = TK_VAR;
     reserved["make"] = TK_MAKE;
+    reserved["bless"] = TK_MAKE;
     reserved["nil"] = TK_NIL;
     state = DONE;
 }
 
 void Lexer::init(string str) {
     sb.init(str);
+    state = START;
 }
 
 void Lexer::init(vector<string> lines) {
     sb.init(lines);
+    state = START;
 }
 
 vector<Token> Lexer::lex() {
     vector<Token> result;
-    state = START;
     Token next;
     while (state != DONE && state != ERROR) {
+        result.push_back(nextToken());
+        if (result.back().symbol == TK_EOF)
+            break;        
+    }
+    return result;
+}
+
+Token Lexer::nextToken() {
+    Token next;
+    if (state != DONE && state != ERROR) {
         if (loud)
             cout<<"State: "<<dfastate[state]<<endl;
         if (shouldSkip(sb.get()))
@@ -74,8 +86,7 @@ vector<Token> Lexer::lex() {
                 if (state != IN_COMMENT) {
                     if (loud)
                         cout<<"Extracted: "<<next.strval<<endl;
-                    result.push_back(next);
-                    result.back().lineNumber = sb.lineNo()+1;
+                    next.lineNumber = sb.lineNo()+1;
                     state = SCANNING;
                 }
                 if (next.symbol == TK_CLOSE_COMMENT) {
@@ -83,7 +94,7 @@ vector<Token> Lexer::lex() {
                 }
             } else {
                 cout<<"An Error Occured on line "<<sb.lineNo()<<" during lexing."<<endl;
-                result.clear();
+                next.symbol = TK_EOF;
                 state = DONE;
             }
         } else {
@@ -95,9 +106,10 @@ vector<Token> Lexer::lex() {
                 cout<<"Input Stream Exhausted."<<endl;
             state = DONE;
         }
+    } else {
+        return TK_EOF;
     }
-    result.push_back(Token(TK_EOF, "<eof>"));
-    return result;
+    return next;
 }
 
 Token Lexer::extractNumber() {

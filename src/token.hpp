@@ -36,10 +36,12 @@ struct Token {
     Symbol symbol;
     string strval;
     int lineNumber;  
+    int nestLevel;
     Token(Symbol s = TK_NONE, string st = " ") {
         symbol = s;
         strval = st;
         lineNumber = 0;
+        nestLevel = -1;
     }
 };
 

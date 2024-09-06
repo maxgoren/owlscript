@@ -24,6 +24,7 @@ class Lexer {
         Token checkSpecials();
         bool shouldSkip(char c);
         void skipWhiteSpace();
+        Token nextToken();
         bool loud;
     public:
         Lexer(bool debug = false);

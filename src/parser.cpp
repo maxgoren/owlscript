@@ -14,12 +14,6 @@ inline Symbol Parser::currSym() {
     return current.symbol;
 }
 
-Symbol Parser::lookahead() {
-    if (tpos+1 < tokens.size())
-        return tokens[tpos+1].symbol;
-    return TK_EOF;
-}
-
 bool Parser::match(Symbol s) {
     if (s == currSym()) {
         if (loud)
@@ -32,6 +26,7 @@ bool Parser::match(Symbol s) {
 }
 
 void Parser::advance() {
+    
     if (tpos+1 < tokens.size()) {
         tpos++;
         current = tokens[tpos];
@@ -323,7 +318,8 @@ astnode* Parser::var() {
         return makeIDExpr();
     }
     if ((currSym() == TK_NIL) || (currSym() == TK_STRING) ||
-        (currSym() == TK_NUM) || (currSym() == TK_REALNUM)) {
+        (currSym() == TK_NUM) || (currSym() == TK_REALNUM) || 
+        (currSym() == TK_TRUE) || (currSym() == TK_FALSE)) {
         return makeConstExpr();
     }
     if (currSym() == TK_SUB) {
@@ -345,23 +341,7 @@ astnode* Parser::var() {
         return m;
     }
     if (currSym() == TK_LAMBDA || currSym() == TK_AMPER) {
-        astnode* m = makeExprNode(LAMBDA_EXPR, current);
-        match(currSym());
-        if (currSym() == TK_ID) {
-            m->attributes.strval = current.strval;
-            match(TK_ID);
-        }
-        match(TK_LPAREN);
-        if (currSym() != TK_RPAREN)
-            m->child[1] = argsList();
-        match(TK_RPAREN);
-        if (currSym() == TK_LCURLY) {
-            m->child[0] = makeBlock();
-        } else if (currSym() == TK_PRODUCE) {
-            match(TK_PRODUCE);
-            m->child[0] = statement();
-        }
-        return m;
+        return makeLambdaExpr();
     }
     if (currSym() == TK_MAKE) {
         astnode* m = makeExprNode(BLESS_EXPR, current);
@@ -433,98 +413,132 @@ astnode* Parser::makeConstExpr() {
             match(TK_REALNUM);
         }
         break;
+        case TK_TRUE: {
+            m = makeExprNode(CONST_EXPR, current);
+            match(TK_TRUE);
+        }
+        break;
+        case TK_FALSE: {
+            m = makeExprNode(CONST_EXPR, current);
+            match(TK_FALSE);
+        }
+        break;
         default:
             break;
     }
     return m;
 }
 
+astnode* Parser::makeLambdaExpr() {
+    astnode* m = makeExprNode(LAMBDA_EXPR, current);
+    match(currSym());
+    if (currSym() == TK_ID) {
+        m->attributes.strval = current.strval;
+        match(TK_ID);
+    }
+    match(TK_LPAREN);
+    if (currSym() != TK_RPAREN)
+        m->child[1] = argsList();
+    match(TK_RPAREN);
+    if (currSym() == TK_LCURLY) {
+        m->child[0] = makeBlock();
+    } else if (currSym() == TK_PRODUCE) {
+        match(TK_PRODUCE);
+        m->child[0] = statement();
+    }
+    return m;
+}
+
 astnode* Parser::makeListExpr() {
     astnode* m;
-    if (currSym() == TK_LSQUARE) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_LSQUARE);
-        m->child[0] = argsList();
-        match(TK_RSQUARE);
-        return m;
-    }
-    if (currSym() == TK_APPEND) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_APPEND);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_COMMA);
-        m->child[1] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
-    }
-    if (currSym() == TK_PUSH) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_PUSH);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_COMMA);
-        m->child[1] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
-    }
-    if (currSym() == TK_POP) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_POP);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
-    }
-    if (currSym() == TK_LENGTH) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_LENGTH);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
-    }
-    if (currSym() == TK_EMPTY) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_EMPTY);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
-    }
-    if (currSym() == TK_SORT) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_SORT);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
-    }
-    if (currSym() == TK_FIRST) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_FIRST);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
-    }
-    if (currSym() == TK_REST) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_REST);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
-    }
-    if (currSym() == TK_MAP) {
-        m = makeExprNode(LIST_EXPR, current);
-        match(TK_MAP);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_COMMA);
-        m->child[1] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
+    switch (currSym()) {
+        case TK_LSQUARE: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_LSQUARE);
+            m->child[0] = argsList();
+            match(TK_RSQUARE);
+        }
+        break;
+        case TK_APPEND: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_APPEND);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_COMMA);
+            m->child[1] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        case TK_PUSH: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_PUSH);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_COMMA);
+            m->child[1] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        case TK_POP: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_POP);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        case TK_LENGTH: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_LENGTH);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        case TK_EMPTY: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_EMPTY);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        case TK_SORT: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_SORT);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        case TK_FIRST: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_FIRST);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        case TK_REST: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_REST);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        case TK_MAP: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_MAP);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_COMMA);
+            m->child[1] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        default:
+            break;
     }
     return m;
 }

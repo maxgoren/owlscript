@@ -6,60 +6,23 @@
 #include "lex.hpp"
 #include "ast.hpp"
 #include "object.hpp"
+#include "context.hpp"
 using namespace std;
-
-
-typedef unordered_map<string, Object> Environment;
-
-struct ActivationRecord {
-    Environment localcxt;
-    ActivationRecord* staticLink;
-    ActivationRecord* dynamicLink;
-};
-
-class CallStack {
-    private:
-        ActivationRecord stack[1024];
-        int n;
-    public:
-        CallStack() {
-            n = 0;
-        }
-        int size() const {
-            return n;
-        }
-        bool empty() const {
-            return n == 0;
-        }
-        void push(ActivationRecord ar) {
-            stack[n++] = ar;
-        }
-        ActivationRecord& top() {
-            return stack[n-1];
-        }
-        ActivationRecord pop() {
-            return stack[--n];
-        }
-};
-
-struct Context {
-    Environment globals;
-    stack<Environment> scoped;
-};
 
 
 class ASTInterpreter {
     public:
         ASTInterpreter(bool trace = false);
-        Object execAST(astnode* node);
+        Object execAST(Context& context, astnode* node);
+        void refreshContext(Context& context);
     private:
         Context cxt;
         bool traceEval;
         int recDepth;
         
-        void addToContext(string id, Object m);
+        void addToContext(string id, Object m, int scope);
         Object getConstValue(astnode* node);
-        Object getObjectByID(string id);
+        Object getObjectByID(string id, int scope);
         void resolveObjForExpression(astnode* node, string& id, Object& m);
         
         
