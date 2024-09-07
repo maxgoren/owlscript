@@ -40,13 +40,14 @@ def colorFlip(var tree) {
 }
 
 def balance(var tree) {
+    let t := tree[left];
     if (isRed(tree[right])) {
         println "single red";
         tree := rotL(tree);
+        t := tree[left];
     } else {
         ;
     }
-    let t := tree[left];
     if (isRed(tree[left]) && isRed(t[left])) {
             println "double red";
             tree := rotR(tree);

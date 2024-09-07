@@ -2,21 +2,21 @@ var a := "global";
 {
     def showA() {
       println a;
-    };
+    }
     showA();
     var a := "first";
     showA();
     {
         def showA() {
             println a;
-        };
+        }
         showA();
         var a := "second";
         showA();
         {
             def showA() {
                 println a;
-            };
+            }
             showA();
             var a := "third";
             showA();

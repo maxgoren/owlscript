@@ -271,6 +271,17 @@ Object ASTInterpreter::performAssignment(astnode* node) {
         scope = getNameAndScopeFromNode(node->child[0]).second;
         m = execExpression(node->child[1]);
     }
+    if (scope > -1) {
+        if (!cxt.scoped.empty() && cxt.getAt(scope).find(id) == cxt.getAt(scope).end()) {
+            cout<<"Undeclared Identifier: "<<id<<endl;
+            return makeNilObject();
+        } 
+    } else {
+        if (cxt.globals.find(id) == cxt.globals.end()) {
+            cout<<"Undeclared Identifier: "<<id<<endl;
+            return makeNilObject();
+        } 
+    }
     addToContext(id,  m, scope);
     leave();
     return m;
@@ -334,6 +345,7 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
         }
         lambdaObj->freeVars = freeVars;
     }
+    cxt.scoped.top().env.clear();
     cxt.scoped.pop();
     leave();
     return m;
@@ -658,13 +670,12 @@ Object ASTInterpreter::performStructDefStatement(astnode* node) {
 }
  
 Object ASTInterpreter::performBlockStatement(astnode* node) {
-    Environment env;
     ActivationRecord ar;
-    ar.env = env;
     ar.staticLink = cxt.scoped.empty() ? nullptr:&cxt.scoped.top();
     cxt.scoped.push(ar);
     exec(node->child[0]);
-    cxt.scoped.pop();
+    cxt.scoped.top().env.clear();
+    auto tmp = cxt.scoped.pop();
     return makeNilObject();
 }
 
@@ -686,6 +697,7 @@ Object ASTInterpreter::performLetStatement(astnode* node) {
             //cout<<"A global variable with that name has already been declared."<<endl;
             return makeNilObject();
         } else {
+            cxt.globals[id] = makeNilObject();
             m = execExpression(node->child[0]);
         }
     }
