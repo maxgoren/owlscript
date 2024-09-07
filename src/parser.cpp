@@ -1,7 +1,7 @@
 #include "parser.hpp"
 
 Parser::Parser(bool debug) {
-    loud = debug;
+    loud = false;
     listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_PUSH, TK_POP, TK_APPEND, TK_LSQUARE };
 }
 
@@ -374,10 +374,7 @@ astnode* Parser::makeIDExpr() {
         m = t;
         m->child[1] = simpleExpr();
     } else if (currSym() == TK_LPAREN) {
-        astnode* t = makeExprNode(FUNC_EXPR, current);
-        t->attributes = m->attributes;
-        t->child[0] = m;
-        m = t;
+        m->exprType = FUNC_EXPR;
         match(TK_LPAREN);
         if (currSym() == TK_RPAREN) {
             match(TK_RPAREN);

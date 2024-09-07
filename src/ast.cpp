@@ -74,3 +74,12 @@ void traverse(astnode* node, void (*pre)(astnode* x), void (*post)(astnode* x)) 
     }
     rd--;
 }
+
+void cleanup(astnode* x) {
+    if (x != nullptr) {
+        for (int i = 0; i < 3; i++)
+            cleanup(x->child[i]);
+        cleanup(x->next);
+        delete x;
+    }
+}

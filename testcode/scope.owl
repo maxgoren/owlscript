@@ -1,0 +1,9 @@
+def x(var n) {
+    def y(m) {
+        return  m + n;
+    };
+    return y(n);
+}
+def main() {
+    println x(1);
+}

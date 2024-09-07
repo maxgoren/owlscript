@@ -29,20 +29,23 @@ int main(int argc, char* argv[]) {
 
 void start_owlscript(bool debug) {
     REPL repl(debug);
+
     repl.start();
 }
 
 void exec_file(string filename) {
-    Context cxt;
-    ASTBuilder builder(false);
+    ASTBuilder builder(true);
     ASTInterpreter interpreter(false);
     cout<<"Loading: "<<filename<<endl;
-    auto ast = builder.buildFromFile(cxt, filename);
+    auto ast = builder.buildFromFile(filename);
     traverse(ast, &printNode, &nullFunc);
-                cout<<"----------------------------"<<endl;
-    interpreter.execAST(cxt, ast);
-    ast = builder.build(cxt, "main();");
-                traverse(ast, &printNode, &nullFunc);
-                cout<<"----------------------------"<<endl;
-    interpreter.execAST(cxt, ast);
+    cout<<"----------------------------"<<endl;
+    interpreter.execAST(ast);
+    if (interpreter.getContext().globals.find("main") != interpreter.getContext().globals.end()) {
+        ast = builder.build("main();");
+        traverse(ast, &printNode, &nullFunc);
+        cout<<"----------------------------"<<endl;
+        interpreter.execAST(ast);
+    }
+    cleanup(ast);
 }

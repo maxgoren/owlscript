@@ -13,8 +13,8 @@ using namespace std;
 class ASTInterpreter {
     public:
         ASTInterpreter(bool trace = false);
-        Object execAST(Context& context, astnode* node);
-        void refreshContext(Context& context);
+        Object execAST(astnode* node);
+        Context& getContext();
     private:
         Context cxt;
         bool traceEval;
@@ -23,6 +23,7 @@ class ASTInterpreter {
         void addToContext(string id, Object m, int scope);
         Object getConstValue(astnode* node);
         Object getObjectByID(string id, int scope);
+        pair<string,int> getNameAndScopeFromNode(astnode* node);
         void resolveObjForExpression(astnode* node, string& id, Object& m);
         
         
@@ -39,6 +40,7 @@ class ASTInterpreter {
         Object performIfStatement(astnode* node);
         Object performForStatement(astnode* node);
         Object performDefStatement(astnode* node);
+        Object performLetStatement(astnode* node);
         Object performCreateLambda(astnode* node);
         Object performFunctionCall(astnode* node);
         Object performBlockStatement(astnode* node);
@@ -47,6 +49,7 @@ class ASTInterpreter {
         Object performListAssignment(astnode* node, Object& m);
         Object performBlessExpression(astnode* node);
         Object performStructDefStatement(astnode* node);
+        Object performSubscriptAssignment(astnode* node, string id, int scope);
         Object performStructFieldAssignment(astnode* node, Object& m);
         //List operations
         Object execSubscriptExpression(astnode* node);

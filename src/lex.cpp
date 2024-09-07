@@ -1,7 +1,7 @@
 #include "lex.hpp"
 
 Lexer::Lexer(bool debug) {
-    loud = debug;
+    loud = false;
     reserved["println"] = TK_PRINT;
     reserved["print"] = TK_PRINT;
     reserved["while"] = TK_WHILE;

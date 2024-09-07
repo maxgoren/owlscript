@@ -45,7 +45,7 @@ class InspectableStack {
             return st[n-1];
         }
         Item& get(int i) {
-            return st[n-1-i];
+            return st[i];
         }
         Item pop() {
             return st[--n];

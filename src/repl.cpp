@@ -20,13 +20,13 @@ void REPL::start() {
             continue;
         }
         if (!input.empty()) {
-            auto ast = builder.build(ctx, input);
+            auto ast = builder.build(input);
             if (loud) {
                 traverse(ast, &printNode, &nullFunc);
                 cout<<"----------------------------"<<endl;
             }
-            interpreter.execAST(ctx, ast);
-            interpreter.refreshContext(ctx);
+            interpreter.execAST(ast);
+            cleanup(ast);
         }
     }
 }

@@ -36,5 +36,6 @@ void printToken(Token m);
 void printNode(astnode* n);
 void traverse(astnode* node, void (*pre)(astnode* x), void (*post)(astnode* x));
 void nullFunc(astnode* x);
+void cleanup(astnode* x);
 
 #endif

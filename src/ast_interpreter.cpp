@@ -8,16 +8,14 @@ ASTInterpreter::ASTInterpreter(bool loud) {
 }
 
 //This is the entry point for evaluating owlscript programs.
-Object ASTInterpreter::execAST(Context& context, astnode* node) {
+Object ASTInterpreter::execAST(astnode* node) {
     recDepth = 0;
-    cxt = context;
     Object m = exec(node);
-    context = cxt;
     return m;
 }
 
-void ASTInterpreter::refreshContext(Context& context) {
-    context = cxt;
+Context& ASTInterpreter::getContext() {
+    return cxt;
 }
 
 Object ASTInterpreter::evalRelop(astnode* node, Object& lhn, Object& rhn) {
@@ -179,10 +177,11 @@ Object ASTInterpreter::getObjectByID(string id, int scope) {
     enter("[Get object by ID: " + id + "]");
     bool resolved_in_scoped = false;
     if (!cxt.scoped.empty() && scope > -1) { 
-        Environment env = cxt.scoped.get(scope).env;
+        Environment env = cxt.getAt(scope);
         if (env.find(id) != env.end()) {
             m = env[id];
             resolved_in_scoped = true;
+            say("[Resolved " + id + " as " + toString(m) + " from scope level: " + to_string(scope)  +"]");
         }
     }
     if (!resolved_in_scoped) {
@@ -202,20 +201,10 @@ Object ASTInterpreter::getObjectByID(string id, int scope) {
 
 void ASTInterpreter::addToContext(string id, Object m, int scope) {
     if (!cxt.scoped.empty() && scope > -1) {
-        /*int i = cxt.scoped.size() - 1; 
-        do {
-            Environment env = cxt.scoped.get(i).env;
-            if (env.find(id) != env.end()) {
-                cxt.scoped.get(i).env[id] = m;
-                return;
-            }
-            i--;
-        } while (i >= 0);
-        cxt.scoped.top().env[id] = m;*/
-        cxt.scoped.get(scope).env[id] = m;
-        return; 
-    }
-    cxt.globals[id] = m;    
+        cxt.putAt(id, m, scope);
+    } else {
+        cxt.globals[id] = m;
+    }    
 }
 
 Object ASTInterpreter::performListAssignment(astnode* node, Object& m) {
@@ -250,27 +239,36 @@ Object ASTInterpreter::performStructFieldAssignment(astnode* node, Object& m) {
     return m;
 }
 
+pair<string,int> ASTInterpreter::getNameAndScopeFromNode(astnode* node) {
+    return make_pair(node->attributes.strval, node->attributes.nestLevel);
+}
+
+Object ASTInterpreter::performSubscriptAssignment(astnode* node, string id, int scope) {
+    Object m = getObjectByID(id, scope);
+    if (typeOf(m) == AS_LIST) {
+        m = performListAssignment(node, m);
+    } else if (typeOf(m) == AS_STRUCT) {
+        m = performStructFieldAssignment(node, m);
+    } else {
+        cout<<"That type does not support subscript access: "<<toString(m)<<endl;
+        return makeNilObject();
+    }
+    return m;
+}
+
 Object ASTInterpreter::performAssignment(astnode* node) {
     Object m;
     string id;
     int scope;
     enter("[assignment]");
     if (node->child[0]->attributes.symbol == TK_LSQUARE) {
-        id = node->child[0]->child[0]->attributes.strval;
-        int scope = node->child[0]->child[0]->attributes.nestLevel;
-        cout<<"Looking for : "<<id<<" in "<<scope<<endl;
-        m = getObjectByID(id, scope);
-        if (typeOf(m) == AS_LIST) {
-            m = performListAssignment(node, m);
-        } else if (typeOf(m) == AS_STRUCT) {
-            m = performStructFieldAssignment(node, m);
-        } else {
-            cout<<"That type does not support subscript access: "<<toString(m)<<endl;
-            return makeNilObject();
-        }
+        id = getNameAndScopeFromNode(node->child[0]->child[0]).first;
+        scope = getNameAndScopeFromNode(node->child[0]->child[0]).second;
+        //cout<<"Looking for  '"<<id<<"' in "<<scope<<endl;
+        m = performSubscriptAssignment(node, id, scope);
     } else {
-        id = node->child[0]->attributes.strval;
-        scope = node->child[0]->attributes.nestLevel;
+        id = getNameAndScopeFromNode(node->child[0]).first;
+        scope = getNameAndScopeFromNode(node->child[0]).second;
         m = execExpression(node->child[1]);
     }
     addToContext(id,  m, scope);
@@ -280,8 +278,8 @@ Object ASTInterpreter::performAssignment(astnode* node) {
 
 Object ASTInterpreter::performFunctionCall(astnode* node) {
     enter("[function call]");
-    string id = node->attributes.strval;
-    int scope = node->attributes.nestLevel;
+    string id = getNameAndScopeFromNode(node).first;
+    int scope = getNameAndScopeFromNode(node).second;
     Object lmbd = getObjectByID(id, scope);
     if (lmbd.type != AS_LAMBDA) {
         leave();
@@ -296,8 +294,8 @@ Object ASTInterpreter::performFunctionCall(astnode* node) {
 
 Object ASTInterpreter::performBlessExpression(astnode* node) {
     enter("[bless struct]");
-    string id = node->child[0]->attributes.strval;
-    int scope = node->child[0]->attributes.nestLevel;
+    string id = getNameAndScopeFromNode(node->child[0]).first;
+    int scope = getNameAndScopeFromNode(node->child[0]).second;
     Object master = getObjectByID(id, scope);
     StructObj* og = getStruct(master);
     StructObj* ninst = makeStructObj();
@@ -310,24 +308,22 @@ Object ASTInterpreter::performBlessExpression(astnode* node) {
 
 Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
     enter("[execute lambda]");
-    unordered_map<string,Object> localcxt;
+    ActivationRecord ar;
     astnode* params = lambdaObj->body;
     VarList* freeVars = lambdaObj->freeVars;
     if (freeVars != nullptr) {
         //Add captured variables to local context
         for (VarList* it = freeVars; it != nullptr; it = it->next) {
-            localcxt[it->key] = it->value;
+            ar.env[it->key] = it->value;
         }
     }
     while (params != nullptr && args != nullptr) {
         string vname = params->attributes.strval;
         string val = args->attributes.strval;
-        localcxt[vname] = execExpression(args);
+        ar.env[vname] = execExpression(args);
         params = params->next;
         args = args->next;
     }
-    ActivationRecord ar;
-    ar.env = localcxt;
     ar.staticLink = cxt.scoped.empty() ? nullptr:&cxt.scoped.top();
     cxt.scoped.push(ar);
     Object m = exec(lambdaObj->params);
@@ -370,8 +366,8 @@ Object ASTInterpreter::execCreateUnNamedList(astnode* node) {
 
 void ASTInterpreter::resolveObjForExpression(astnode* node, string& id, Object& m) {
     if (node->child[0]->attributes.symbol == TK_ID) {
-        id = node->child[0]->attributes.strval;
-        int scope = node->child[0]->attributes.nestLevel;
+        id = getNameAndScopeFromNode(node->child[0]).first;
+        int scope = getNameAndScopeFromNode(node->child[0]).second;
         m = getObjectByID(id, scope);
     } else if (node->child[0]->attributes.symbol == TK_LSQUARE) {
         m = execCreateUnNamedList(node->child[0]);
@@ -619,13 +615,10 @@ Object ASTInterpreter::performForStatement(astnode* node) {
 
 Object ASTInterpreter::performDefStatement(astnode* node) {
     enter("def statement");
-    string id = node->attributes.strval;
+    string id = getNameAndScopeFromNode(node).first;
+    int scope = getNameAndScopeFromNode(node).second;
     Object m = performCreateLambda(node);
-    if (!cxt.scoped.empty()) {
-        cxt.scoped.top().env[id] = m;
-    } else {
-        cxt.globals[id] = m;
-    }
+    addToContext(id, m, scope);
     leave();
     return m;
 }
@@ -675,6 +668,30 @@ Object ASTInterpreter::performBlockStatement(astnode* node) {
     return makeNilObject();
 }
 
+Object ASTInterpreter::performLetStatement(astnode* node) {
+    Object m;
+    string id = node->child[0]->child[0]->attributes.strval;
+    if (!cxt.scoped.empty()) {
+        Environment env = cxt.scoped.top().env;
+        if (env.find(id) != env.end()) {
+            cout<<"A variable with label '"<<id<<"' has already been declared in this scope."<<endl;
+            return makeNilObject();
+        } else {
+             cxt.scoped.top().env[id] = makeNilObject();
+             //cout<<"Assigned "<<m<<" to "<<id<<endl;
+             m = exec(node->child[0]);
+        }
+    } else {
+        if (cxt.globals.find(id) != cxt.globals.end()) {
+            //cout<<"A global variable with that name has already been declared."<<endl;
+            return makeNilObject();
+        } else {
+            m = execExpression(node->child[0]);
+        }
+    }
+    return m;
+}
+
 Object ASTInterpreter::execStatement(astnode* node) {
     enter("[statement]");
     Object m;
@@ -701,7 +718,7 @@ Object ASTInterpreter::execStatement(astnode* node) {
             m = execExpression(node->child[0]);
             break;
         case LET_STMT:
-            m = execExpression(node->child[0]);
+            m = performLetStatement(node);
             break;
         case RETURN_STMT: 
             m = execExpression(node->child[0]);
