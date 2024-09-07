@@ -21,15 +21,14 @@ typedef InspectableStack<ActivationRecord> CallStack;
 struct Context {
     Environment globals;
     CallStack scoped;
-    Environment& getAt(int scope) {
+    Environment& getAt(int depth) {
         //cout<<"getAt("<<scope<<")"<<endl;
-        ActivationRecord* ar = &scoped.get(scope);
-        return scoped.get(scoped.size() - 1 - scope).env;
+        ActivationRecord* ar = &scoped.get(depth);
+        return scoped.get(scoped.size() - 1 - depth).env;
     }
-    void putAt(string id, Object m, int scope) {
+    void putAt(string id, Object m, int depth) {
         //cout<<"putAt("<<scope<<") - "<<id<<" "<<m<<endl;
-        scoped.get(scope).env.emplace(id, m);
-        ActivationRecord* ar = &scoped.get(scoped.size() - 1 - scope);
+        ActivationRecord* ar = &scoped.get(scoped.size() - 1 - depth);
         ar->env[id] = m;
     }
 };

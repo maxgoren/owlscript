@@ -178,10 +178,10 @@ void ResolveScope::resolveVariableDepth(astnode* node, string id) {
     for (int i = scopes.size() - 1; i >= 0; i--) {
         ScopeMap scope = scopes.get(i);
         if (scope.find(id) != scope.end()) {
-            node->attributes.nestLevel = scopes.size() - 1 - i;
+            node->attributes.depth = scopes.size() - 1 - i;
             //cout<<"Resolve: "<<id<<" is a depth "<<node->attributes.nestLevel<<endl;
             return;
         }
     }
-    node->attributes.nestLevel = -1;
+    node->attributes.depth = -1;
 }

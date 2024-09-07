@@ -240,7 +240,7 @@ Object ASTInterpreter::performStructFieldAssignment(astnode* node, Object& m) {
 }
 
 pair<string,int> ASTInterpreter::getNameAndScopeFromNode(astnode* node) {
-    return make_pair(node->attributes.strval, node->attributes.nestLevel);
+    return make_pair(node->attributes.strval, node->attributes.depth);
 }
 
 Object ASTInterpreter::performSubscriptAssignment(astnode* node, string id, int scope) {
@@ -385,7 +385,7 @@ Object ASTInterpreter::execAppendList(astnode* node) {
     resolveObjForExpression(node, id, m);
     Object t = execExpression(node->child[1]);
     appendToList(getList(m), t);
-    addToContext(id, m, node->child[0]->attributes.nestLevel);
+    addToContext(id, m, node->child[0]->attributes.depth);
     leave();
     return t;
 }
@@ -397,7 +397,7 @@ Object ASTInterpreter::execPushList(astnode* node) {
     resolveObjForExpression(node, id, m);
     Object t = execExpression(node->child[1]);
     pushToList(getList(m), t);
-    addToContext(id, m, node->child[0]->attributes.nestLevel);
+    addToContext(id, m, node->child[0]->attributes.depth);
     leave();
     return t;
 }
@@ -408,7 +408,7 @@ Object ASTInterpreter::execPopList(astnode* node) {
     Object m;
     resolveObjForExpression(node, id, m);
     popList(getList(m));
-    addToContext(id, m, node->child[0]->attributes.nestLevel);
+    addToContext(id, m, node->child[0]->attributes.depth);
     leave();
     return m;
 }
@@ -476,7 +476,7 @@ Object ASTInterpreter::execSortList(astnode* node) {
     list->tail = tail;
     m.objval->listObj = list;
     if (!id.empty())
-        addToContext(id, m, node->child[0]->attributes.nestLevel);
+        addToContext(id, m, node->child[0]->attributes.depth);
     leave();
     return m;
 }
@@ -744,7 +744,7 @@ Object ASTInterpreter::execExpression(astnode* node) {
             m = getConstValue(node);  
             break;
         case ID_EXPR:
-            m = getObjectByID(node->attributes.strval, node->attributes.nestLevel);
+            m = getObjectByID(node->attributes.strval, node->attributes.depth);
             break;
         case BINARYOP_EXPR:
             m = eval(node);

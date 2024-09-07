@@ -54,7 +54,7 @@ void printNode(astnode* n) {
                 break;
         }
     }
-    cout<<"[Scope: "<<(n->attributes.nestLevel == -1 ? "global":"level " + to_string(n->attributes.nestLevel))<<"]";
+    cout<<"[Scope: "<<(n->attributes.depth == -1 ? "global":"level " + to_string(n->attributes.depth))<<"]";
     printToken(n->attributes);
 }
 
