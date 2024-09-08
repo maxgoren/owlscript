@@ -1,13 +1,13 @@
-var a := "global";
-def dozer() {
-   def showA() {
-      println a;
+var x := "a global variable";
+def ex() {
+   def printX() {
+      println x;
    }
-   showA();
-   var a := "inner";
-   showA();
-   println a;
+   printX();
+   var x := "a local variable";
+   printX();
+   println x;
 }
 def main() {
-   dozer();
+   ex();
 }

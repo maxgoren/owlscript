@@ -319,33 +319,32 @@ Object ASTInterpreter::performBlessExpression(astnode* node) {
 
 Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
     enter("[execute lambda]");
-    ActivationRecord ar;
+    Environment env;
     astnode* params = lambdaObj->body;
     VarList* freeVars = lambdaObj->freeVars;
     if (freeVars != nullptr) {
         //Add captured variables to local context
         for (VarList* it = freeVars; it != nullptr; it = it->next) {
-            ar.env[it->key] = it->value;
+            env[it->key] = it->value;
         }
     }
     while (params != nullptr && args != nullptr) {
         string vname = params->attributes.strval;
         string val = args->attributes.strval;
-        ar.env[vname] = execExpression(args);
+        env[vname] = execExpression(args);
         params = params->next;
         args = args->next;
     }
-    ar.staticLink = cxt.scoped.empty() ? nullptr:&cxt.scoped.top();
-    cxt.scoped.push(ar);
+    cxt.scoped.push(env);
     Object m = exec(lambdaObj->params);
     if (freeVars != nullptr) {
         //update any closed-over variables before exiting.
         for (VarList* it = freeVars; it != nullptr; it = it->next) {
-            it->value = cxt.scoped.top().env[it->key];
+            it->value = cxt.scoped.top()[it->key];
         }
         lambdaObj->freeVars = freeVars;
     }
-    cxt.scoped.top().env.clear();
+    cxt.scoped.top().clear();
     cxt.scoped.pop();
     leave();
     return m;
@@ -355,7 +354,7 @@ Object ASTInterpreter::performCreateLambda(astnode* node) {
     enter("[create lambda]");
     LambdaObj* lm = makeLambdaObj(node->child[1], node->child[0]);
     if (!cxt.scoped.empty()) {
-        for (auto frv : cxt.scoped.top().env) {
+        for (auto frv : cxt.scoped.top()) {
             lm->freeVars = makeVarList(frv.first, frv.second, lm->freeVars);
         }
     }
@@ -670,12 +669,10 @@ Object ASTInterpreter::performStructDefStatement(astnode* node) {
 }
  
 Object ASTInterpreter::performBlockStatement(astnode* node) {
-    ActivationRecord ar;
-    ar.staticLink = cxt.scoped.empty() ? nullptr:&cxt.scoped.top();
-    cxt.scoped.push(ar);
+    cxt.scoped.push(Environment());
     exec(node->child[0]);
-    cxt.scoped.top().env.clear();
-    auto tmp = cxt.scoped.pop();
+    cxt.scoped.top().clear();
+    cxt.scoped.pop();
     return makeNilObject();
 }
 
@@ -683,12 +680,12 @@ Object ASTInterpreter::performLetStatement(astnode* node) {
     Object m;
     string id = node->child[0]->child[0]->attributes.strval;
     if (!cxt.scoped.empty()) {
-        Environment env = cxt.scoped.top().env;
+        Environment env = cxt.scoped.top();
         if (env.find(id) != env.end()) {
             cout<<"A variable with label '"<<id<<"' has already been declared in this scope."<<endl;
             return makeNilObject();
         } else {
-             cxt.scoped.top().env[id] = makeNilObject();
+             cxt.scoped.top()[id] = makeNilObject();
              //cout<<"Assigned "<<m<<" to "<<id<<endl;
              m = exec(node->child[0]);
         }
