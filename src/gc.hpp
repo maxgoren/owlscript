@@ -7,6 +7,7 @@ using namespace std;
 
 class GC {
     private:
+        bool loud;
         set<ObjBase*> allocated_objects;
         bool is_gc_object(const Object& m) {
             switch (m.type) {
@@ -41,25 +42,38 @@ class GC {
             vector<ObjBase*> unreachable;
             for (auto & m : allocated_objects) {
                 if (m->mark == false) {
-                    //cout<<m<<" has become unreachable."<<endl;
+                    if (loud) {
+                        cout<<m<<" has become unreachable."<<endl;
+                    }
                     unreachable.push_back(m);  
+                } else {
+                    m->mark = false;
                 }
             }
             for (auto & m : unreachable) {
+                if (loud) {
+                    cout<<"Reclaiming: "<<m<<endl;
+                }
                 allocated_objects.erase(m);
                 destroyObject(m);
             }
         }
     public:
-        GC() {
-
+        GC(bool debug = false) {
+            loud = debug;
         }
         void add(ObjBase* object) {
             allocated_objects.insert(object);
         }
         void run(Context& cxt) {
+            if (loud) {
+                cout<<"[GC Running.]"<<endl;
+            }
             mark(cxt);
             sweep(cxt);
+            if (loud) {
+                cout<<"[GC Complete.]"<<endl;
+            }
         }
 };
 
