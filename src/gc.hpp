@@ -21,20 +21,34 @@ class GC {
             }
             return false;
         }
+        void markList(Object& m) {
+            for (auto it = getList(m)->head; it != nullptr; it = it->next) {
+                if (is_gc_object(it->info)) {
+                    it->info.objval->mark = true;
+                }
+            }
+        }
+        void checkObject(Object& m) {
+            if (is_gc_object(m)) {
+                m.objval->mark = true;
+                switch (m.objval->type) {
+                    case OT_LIST:
+                        markList(m);
+                    default:
+                        break;
+                }
+            }
+        }
         void mark(Context& cxt) {
             for (auto & m : allocated_objects) {
                 m->mark = false;
             }
             for (auto & m : cxt.globals) {
-                if (is_gc_object(m.second)) {
-                    m.second.objval->mark = true;
-                }
+                checkObject(m.second);
             }
             for (int i = 0; i < cxt.scoped.size(); i++) {
                 for (auto& m : cxt.scoped.get(i)) {
-                    if (is_gc_object(m.second)) {
-                        m.second.objval->mark = true;
-                    }
+                    checkObject(m.second);
                 }
             }
         }
@@ -59,7 +73,7 @@ class GC {
             }
         }
     public:
-        GC(bool debug = false) {
+        GC(bool debug = true) {
             loud = debug;
         }
         void add(ObjBase* object) {

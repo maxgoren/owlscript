@@ -323,8 +323,6 @@ void destroyLambda(LambdaObj* lambda) {
         lambda->freeVars = lambda->freeVars->next;
         delete x;
     }
-    cleanup(lambda->params);
-    cleanup(lambda->body);
     delete lambda;
 }
 

@@ -5,6 +5,7 @@ using namespace std;
 ASTInterpreter::ASTInterpreter(bool loud) {
     traceEval = loud;
     recDepth = 0;
+    gc = GC(loud);
 }
 
 //This is the entry point for evaluating owlscript programs.
@@ -163,6 +164,7 @@ Object ASTInterpreter::getConstValue(astnode* node) {
         case TK_ID:
         case TK_STRING:
             m = makeStringObject(node->attributes.strval);
+            gc.add(m.objval);
             break;
         case TK_NIL:
         default:
@@ -348,7 +350,6 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
         }
         lambdaObj->freeVars = freeVars;
     }
-    cxt.scoped.top().clear();
     cxt.scoped.pop();
     leave();
     return m;
@@ -496,6 +497,7 @@ Object ASTInterpreter::execSortList(astnode* node) {
     m.objval->listObj = list;
     if (!id.empty())
         addToContext(id, m, node->child[0]->attributes.depth);
+    
     leave();
     return m;
 }
@@ -527,7 +529,9 @@ Object ASTInterpreter::execRest(astnode* node) {
     for (ListNode* it = getList(m)->head->next; it != nullptr; it = it->next)
         appendToList(list, it->info);
     leave();
-    return makeListObject(list);
+    Object mr = makeListObject(list);
+    gc.add(mr.objval);
+    return mr;
 }
 
 Symbol ASTInterpreter::getSymbol(Object m) {
@@ -683,8 +687,9 @@ Object ASTInterpreter::performStructDefStatement(astnode* node) {
 Object ASTInterpreter::performBlockStatement(astnode* node) {
     cxt.scoped.push(Environment());
     exec(node->child[0]);
-    cxt.scoped.top().clear();
     cxt.scoped.pop();
+    if (cxt.scoped.size() <= 1)
+        gc.run(cxt);
     return makeNilObject();
 }
 
@@ -694,16 +699,15 @@ Object ASTInterpreter::performLetStatement(astnode* node) {
     if (!cxt.scoped.empty()) {
         Environment env = cxt.scoped.top();
         if (env.find(id) != env.end()) {
-            cout<<"A variable with label '"<<id<<"' has already been declared in this scope."<<endl;
+            cout<<"Error: '"<<id<<"' has already been declared in this scope."<<endl;
             return makeNilObject();
         } else {
              cxt.scoped.top()[id] = makeNilObject();
-             //cout<<"Assigned "<<m<<" to "<<id<<endl;
              m = exec(node->child[0]);
         }
     } else {
         if (cxt.globals.find(id) != cxt.globals.end()) {
-            //cout<<"A global variable with that name has already been declared."<<endl;
+            cout<<"Error: '"<<id<<"' has already been declared in this scope."<<endl;
             return makeNilObject();
         } else {
             cxt.globals[id] = makeNilObject();
