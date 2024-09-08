@@ -5,7 +5,7 @@
 using namespace std;
 
 enum ObjectType {
-    AS_INT, AS_REAL, AS_BOOL, AS_STR, AS_LIST, AS_LAMBDA, AS_STRUCT, AS_NIL
+    AS_INT, AS_REAL, AS_BOOL, AS_STRING, AS_LIST, AS_LAMBDA, AS_STRUCT, AS_NIL
 };
 
 enum ObjType {
@@ -44,7 +44,7 @@ struct ObjBase {
         LambdaObj* lambdaObj;
         StructObj* structObj;
     };
-    bool in_use;
+    bool mark;
 };
 
 struct Object {
@@ -64,7 +64,7 @@ struct Object {
             case AS_INT: {  intval = ob.intval; } break;
             case AS_REAL: { realval = ob.realval; } break;
             case AS_BOOL: {  boolval = ob.boolval; } break;
-            case AS_STR: { objval = ob.objval; } break;
+            case AS_STRING: { objval = ob.objval; } break;
             case AS_LIST: { objval = ob.objval; } break;
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
@@ -80,7 +80,7 @@ struct Object {
             case AS_INT: {  intval = ob.intval; } break;
             case AS_REAL: {  realval = ob.realval; } break;
             case AS_BOOL: { boolval = ob.boolval; } break;
-            case AS_STR: {  objval = ob.objval; } break;
+            case AS_STRING: {  objval = ob.objval; } break;
             case AS_LIST: { objval = ob.objval; } break;
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
@@ -145,6 +145,12 @@ Object popList(ListObj* list);
 bool   compareUnknownTypes(Object a, Object b);
 ListNode* merge(ListNode* a, ListNode* b);
 ListNode* mergesort(ListNode* list);
+
+void destroyObject(ObjBase*);
+void destroyList(ListObj*);
+void destroyStruct(StructObj*);
+void destroyString(StringObj*);
+void destroyLambda(LambdaObj*);
 
 std::ostream& operator<<(std::ostream& out, const StringObj& str);
 std::ostream& operator<<(std::ostream& out, const Object& obj);

@@ -7,6 +7,7 @@
 #include "ast.hpp"
 #include "object.hpp"
 #include "context.hpp"
+#include "gc.hpp"
 using namespace std;
 
 
@@ -16,6 +17,7 @@ class ASTInterpreter {
         Object execAST(astnode* node);
         Context& getContext();
     private:
+        GC gc;
         Context cxt;
         bool traceEval;
         int recDepth;

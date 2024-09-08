@@ -24,9 +24,17 @@ StringObj* makeStringObj(string str) {
     return s;
 }
 
- StringObj* getString(Object m) {
+StringObj* getString(Object m) {
     return m.objval->stringObj;
- }
+}
+ 
+LambdaObj* getLambda(Object m) {
+    return m.objval->lambdaObj;
+}
+
+ListObj* getList(Object m) {
+    return m.objval->listObj;
+}
 
 StructObj* makeStructObj() {
     StructObj* so = new StructObj;
@@ -52,6 +60,7 @@ ListObj* makeListObj() {
 ObjBase* makeObjBase(ObjType ot) {
     ObjBase* m = new ObjBase;
     m->type = ot;
+    m->mark = false;
     return m;
 }
 
@@ -79,7 +88,7 @@ Object makeBoolObject(bool val) {
 }
 
 Object makeStringObject(string val) {
-    Object o(AS_STR);
+    Object o(AS_STRING);
     o.objval = makeObjBase(OT_STR);
     o.objval->stringObj = makeStringObj(val);
     return o;
@@ -148,10 +157,6 @@ double getAsReal(Object m) {
     return 0.0;
 }
 
-LambdaObj* getLambda(Object m) {
-    return m.objval->lambdaObj;
-}
-
 VarList* makeVarList(string key, Object val, VarList* list) {
     VarList* nn = new VarList;
     nn->key = key;
@@ -165,10 +170,6 @@ ListNode* makeListNode(Object& m) {
     ln->info = m;
     ln->next = nullptr;
     return ln;
-}
-
-ListObj* getList(Object m) {
-    return m.objval->listObj;
 }
 
 bool listEmpty(ListObj* list) {
@@ -239,7 +240,7 @@ string toString(Object obj) {
         case AS_INT:    return to_string(obj.intval); 
         case AS_REAL:   return to_string(obj.realval);
         case AS_BOOL:   return obj.boolval ? "true":"false";
-        case AS_STR:    return getString(obj)->str;
+        case AS_STRING:    return getString(obj)->str;
         case AS_LIST:   return listToString(obj);
         case AS_LAMBDA: return "(lambda)";
         case AS_STRUCT: return structToString(obj);
@@ -293,4 +294,64 @@ ListNode* mergesort(ListNode* list) {
 
 StructObj* getStruct(Object m) {
     return m.objval->structObj;
+}
+
+void destroyList(ListObj* list) {
+    if (list == nullptr)
+        return;
+    while (list->head != nullptr) {
+        ListNode* t = list->head;
+        list->head = list->head->next;
+        delete t;
+    }
+    delete list;
+}
+
+void destroyString(StringObj* str) {
+    if (str == nullptr)
+        return;
+    if (str->str != nullptr)
+        delete str->str;
+    delete str;
+}
+
+void destroyLambda(LambdaObj* lambda) {
+    if (lambda == nullptr)
+        return;
+    while (lambda->freeVars != nullptr) {
+        VarList* x = lambda->freeVars;
+        lambda->freeVars = lambda->freeVars->next;
+        delete x;
+    }
+    cleanup(lambda->params);
+    cleanup(lambda->body);
+    delete lambda;
+}
+
+void destroyStruct(StructObj* sobj) {
+    if (sobj == nullptr)
+        return;
+    delete sobj;
+}
+
+void destroyObject(ObjBase* object) {
+    if (object == nullptr)
+        return;
+    switch (object->type) {
+        case OT_LAMBDA: 
+                destroyLambda(object->lambdaObj);
+                break;
+        case OT_STRUCT:
+                destroyStruct(object->structObj);
+                break;
+        case OT_LIST:
+                destroyList(object->listObj);
+                break;
+        case OT_STR:
+                destroyString(object->stringObj);
+                break;
+        default:
+            break;
+    }
+    delete object;
 }

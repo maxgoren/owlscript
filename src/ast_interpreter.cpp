@@ -11,6 +11,7 @@ ASTInterpreter::ASTInterpreter(bool loud) {
 Object ASTInterpreter::execAST(astnode* node) {
     recDepth = 0;
     Object m = exec(node);
+    gc.run(cxt);
     return m;
 }
 
@@ -81,7 +82,7 @@ Object ASTInterpreter::evalBinOp(astnode* node, Object& lhn, Object& rhn) {
             default: 
                 break;
         }
-    } else if (typeOf(lhn) == AS_STR || typeOf(rhn) == AS_STR) {
+    } else if (typeOf(lhn) == AS_STRING || typeOf(rhn) == AS_STRING) {
         return evalStringOp(node->attributes.symbol, lhn, rhn);
     }
     return makeIntObject(0);
@@ -304,6 +305,7 @@ Object ASTInterpreter::performFunctionCall(astnode* node) {
 }
 
 Object ASTInterpreter::performBlessExpression(astnode* node) {
+    Object m;
     enter("[bless struct]");
     string id = getNameAndScopeFromNode(node->child[0]).first;
     int scope = getNameAndScopeFromNode(node->child[0]).second;
@@ -314,7 +316,9 @@ Object ASTInterpreter::performBlessExpression(astnode* node) {
     for (auto m : og->bindings) {
         ninst->bindings[m.first] = m.second;
     }
-    return makeStructObject(ninst);
+    m = makeStructObject(ninst);
+    gc.add(m.objval);
+    return m;
 }
 
 Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
@@ -359,20 +363,24 @@ Object ASTInterpreter::performCreateLambda(astnode* node) {
         }
     }
     Object m = makeLambdaObject(lm);
+    gc.add(m.objval);
     leave();
     return m;
 }
 
 
 Object ASTInterpreter::execCreateUnNamedList(astnode* node) {
+    Object m;
     enter("[unnamed list]");
     ListObj* list = makeListObj();
     for (astnode* it = node->child[0]; it != nullptr; it = it->next) {
         Object m = execExpression(it);
         appendToList(list, m);
     }
+    m = makeListObject(list);
+    gc.add(m.objval);
     leave();
-    return makeListObject(list);
+    return m;
 }
 
 void ASTInterpreter::resolveObjForExpression(astnode* node, string& id, Object& m) {
@@ -527,7 +535,7 @@ Symbol ASTInterpreter::getSymbol(Object m) {
         case AS_INT: return TK_NUM;
         case AS_REAL: return TK_REALNUM;
         case AS_BOOL: return m.boolval ? TK_TRUE:TK_FALSE;
-        case AS_STR: return TK_ID;
+        case AS_STRING: return TK_ID;
         case AS_LIST: return TK_LSQUARE;
         case AS_LAMBDA: return TK_LAMBDA;
         default:
@@ -549,8 +557,10 @@ Object ASTInterpreter::execMap(astnode* node) {
         Object r = executeFunction(lmbd, t);
         appendToList(result, r);
     }
+    m = makeListObject(result);
+    gc.add(m.objval);
     leave();
-    return makeListObject(result);
+    return m;
 }
 
 Object ASTInterpreter::execListExpression(astnode* node) {
@@ -629,6 +639,7 @@ Object ASTInterpreter::performDefStatement(astnode* node) {
     string id = getNameAndScopeFromNode(node).first;
     int scope = getNameAndScopeFromNode(node).second;
     Object m = performCreateLambda(node);
+    gc.add(m.objval);
     addToContext(id, m, scope);
     leave();
     return m;
@@ -665,6 +676,7 @@ Object ASTInterpreter::performStructDefStatement(astnode* node) {
     }
     sobj->blessed = false;
     cxt.globals[id] = makeStructObject(sobj);
+    gc.add(cxt.globals[id].objval);
     return makeNilObject();
 }
  

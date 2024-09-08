@@ -1,8 +1,8 @@
 def ok(var m) {
-        let t := m + 1;
+    let t := m + 1;
 	def in(var k) {
 		return m+k;
-        }
+    }
     return in(t);
 }
 def main() {
