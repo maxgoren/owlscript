@@ -24,7 +24,7 @@ class GC {
         void markList(Object& m) {
             for (auto it = getList(m)->head; it != nullptr; it = it->next) {
                 if (is_gc_object(it->info)) {
-                    it->info.objval->mark = true;
+                    checkObject(it->info);
                 }
             }
         }

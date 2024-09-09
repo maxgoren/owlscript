@@ -23,6 +23,7 @@ enum StmtType {
 
 class ResolveScope {
     private:
+        bool loud;
         typedef unordered_map<string, bool> ScopeMap;
         InspectableStack<ScopeMap> scopes;
         void declareVarName(string id);
@@ -34,7 +35,7 @@ class ResolveScope {
         void resolveStatementScope(astnode* node);
         void resolve(astnode* node);
     public:
-        ResolveScope();
+        ResolveScope(bool debug = false);
         void resolveScope(astnode* node);
 };
 

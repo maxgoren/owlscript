@@ -1,7 +1,7 @@
 #include "resolve.hpp"
 
-ResolveScope::ResolveScope() {
-
+ResolveScope::ResolveScope(bool debug) {
+    loud = debug;
 }
 
 void ResolveScope::resolveScope(astnode* node) {
@@ -136,7 +136,8 @@ void ResolveScope::resolveExpressionScope(astnode* node) {
             break;
         case LIST_EXPR:
         case SUBSCRIPT_EXPR:
-            defineVarName(node->child[0]->attributes.strval);
+            if (node->child[0] != nullptr && !node->child[0]->attributes.strval.empty())
+                defineVarName(node->child[0]->attributes.strval);
             resolve(node->child[0]);
             resolve(node->child[1]);
             break;
@@ -155,14 +156,18 @@ void ResolveScope::declareVarName(string id) {
         cout<<"That name already exists in this scope."<<endl;
         return;
     }
-    //cout<<"Declare: "<<id<<" (scope: "<<scopes.size()<<")"<<endl;
+    if (loud) {
+        cout<<"Declare: "<<id<<" (scope: "<<scopes.size()<<")"<<endl;
+    }
     scopes.top()[id] = false;
 }
 
 void ResolveScope::defineVarName(string id) {
     if (scopes.empty())
         return;
-    //cout<<"Define: "<<id<<" (scope: "<<scopes.size()<<")"<<endl;
+    if (loud) {
+        cout<<"Define: "<<id<<" (scope: "<<scopes.size()<<")"<<endl;
+    }
     scopes.top()[id] = true;
 }
 
@@ -179,7 +184,9 @@ void ResolveScope::resolveVariableDepth(astnode* node, string id) {
         ScopeMap scope = scopes.get(i);
         if (scope.find(id) != scope.end()) {
             node->attributes.depth = scopes.size() - 1 - i;
-            //cout<<"Resolve: "<<id<<" is a depth "<<node->attributes.nestLevel<<endl;
+            if (loud) {
+                cout<<"Resolve: "<<id<<" at nest depth "<<node->attributes.depth<<endl;
+            }
             return;
         }
     }
