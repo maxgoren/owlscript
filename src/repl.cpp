@@ -8,6 +8,7 @@ void REPL::start() {
     bool running = true;
     string input;
     int lno = 0;
+    vector<astnode*> asthistory;
     while (running) {
         cout<<"Owlscript("<<lno++<<")> ";
         getline(cin, input);
@@ -26,7 +27,10 @@ void REPL::start() {
                 cout<<"----------------------------"<<endl;
             }
             interpreter.execAST(ast);
-            cleanup(ast);
+            asthistory.push_back(ast);
         }
+    }
+    for (auto m : asthistory) {
+        cleanup(m);
     }
 }
