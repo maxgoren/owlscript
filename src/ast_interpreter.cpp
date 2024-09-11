@@ -5,7 +5,7 @@ using namespace std;
 ASTInterpreter::ASTInterpreter(bool loud) {
     traceEval = loud;
     recDepth = 0;
-    gc = GC(loud);
+    gc = GC(true);
 }
 
 //This is the entry point for evaluating owlscript programs.
@@ -326,7 +326,7 @@ Object ASTInterpreter::performBlessExpression(astnode* node) {
 Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
     enter("[execute lambda]");
     Environment env;
-    astnode* params = lambdaObj->body;
+    astnode* params = lambdaObj->params;
     VarList* freeVars = lambdaObj->freeVars;
     if (freeVars != nullptr) {
         //Add captured variables to local context
@@ -337,12 +337,13 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
     while (params != nullptr && args != nullptr) {
         string vname = params->attributes.strval;
         string val = args->attributes.strval;
+        cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
         env[vname] = execExpression(args);
         params = params->next;
         args = args->next;
     }
     cxt.scoped.push(env);
-    Object m = exec(lambdaObj->params);
+    Object m = exec(lambdaObj->body);
     if (freeVars != nullptr) {
         //update any closed-over variables before exiting.
         for (VarList* it = freeVars; it != nullptr; it = it->next) {
@@ -357,7 +358,7 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
 
 Object ASTInterpreter::performCreateLambda(astnode* node) {
     enter("[create lambda]");
-    LambdaObj* lm = makeLambdaObj(node->child[1], node->child[0]);
+    LambdaObj* lm = makeLambdaObj(node->child[0], node->child[1]);
     if (!cxt.scoped.empty()) {
         for (auto frv : cxt.scoped.top()) {
             lm->freeVars = makeVarList(frv.first, frv.second, lm->freeVars);

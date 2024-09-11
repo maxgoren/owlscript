@@ -28,21 +28,42 @@ class GC {
                 }
             }
         }
+        void markFreeVars(Object& m) {
+            for (auto it = getLambda(m)->freeVars; it != nullptr; it = it->next) {
+                if (is_gc_object(it->value)) {
+                    checkObject(it->value);
+                }
+            }
+        }
+        void markStructFields(Object& m) {
+            for (auto& it : getStruct(m)->bindings) {
+                if (is_gc_object(it.second)) {
+                    checkObject(it.second);
+                }
+            }
+        }
         void checkObject(Object& m) {
             if (is_gc_object(m)) {
                 m.objval->mark = true;
                 switch (m.objval->type) {
                     case OT_LIST:
                         markList(m);
+                        break;
+                    case OT_LAMBDA:
+                        markFreeVars(m);
+                        break;
+                    case OT_STRUCT:
+                        markStructFields(m);
+                        break;
                     default:
                         break;
                 }
             }
         }
         void mark(Context& cxt) {
-            for (auto & m : allocated_objects) {
+           /*for (auto & m : allocated_objects) {
                 m->mark = false;
-            }
+            }*/
             for (auto & m : cxt.globals) {
                 checkObject(m.second);
             }
@@ -53,20 +74,20 @@ class GC {
             }
         }
         void sweep(Context& cxt) {
-            vector<ObjBase*> unreachable;
+            set<ObjBase*> unreachable;
             for (auto & m : allocated_objects) {
                 if (m->mark == false) {
                     if (loud) {
                         cout<<m<<" has become unreachable."<<endl;
                     }
-                    unreachable.push_back(m);  
+                    unreachable.insert(m);  
                 } else {
                     m->mark = false;
                 }
             }
             for (auto & m : unreachable) {
                 if (loud) {
-                    cout<<"Reclaiming: "<<m<<endl;
+                    cout<<"Reclaiming: "<<m<<" ";
                 }
                 allocated_objects.erase(m);
                 destroyObject(m);

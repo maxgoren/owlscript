@@ -223,13 +223,17 @@ string listToString(Object obj) {
 string structToString(Object obj) {
     StructObj* sobj = getStruct(obj);
     string ret = "\n{\n";
-    int i = 0;
-    for (auto np : sobj->bindings) {
-        ret += "\t" + np.first + ": " + toString(np.second);
-        if (i+1 < sobj->bindings.size()) {
-            ret += ",\n";
-            i++;
+    if (sobj != nullptr) {
+        int i = 0;
+        for (auto np : sobj->bindings) {
+            ret += "\t" + np.first + ": " + toString(np.second);
+            if (i+1 < sobj->bindings.size()) {
+                ret += ",\n";
+                i++;
+            }
         }
+    } else {
+        ret += "(nil)";
     }
     ret += "\n}";
     return ret;
@@ -337,18 +341,23 @@ void destroyObject(ObjBase* object) {
         return;
     switch (object->type) {
         case OT_LAMBDA: 
+                cout<<"[lambda]"<<endl;
                 destroyLambda(object->lambdaObj);
                 break;
         case OT_STRUCT:
+                cout<<"[struct]"<<endl;
                 destroyStruct(object->structObj);
                 break;
         case OT_LIST:
+                cout<<"[list]"<<endl;
                 destroyList(object->listObj);
                 break;
         case OT_STR:
+                cout<<"[string]"<<endl;
                 destroyString(object->stringObj);
                 break;
         default:
+                cout<<"uhmmm... what?"<<endl;
             break;
     }
     delete object;

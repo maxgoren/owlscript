@@ -125,8 +125,13 @@ void ResolveScope::resolveExpressionScope(astnode* node) {
             resolve(node->child[1]);
             break;
         case LAMBDA_EXPR: {
-                resolve(node->child[1]);
+                openScope();
+                for (auto it = node->child[1]; it != nullptr; it = it->next) {
+                    declareVarName(it->attributes.strval);
+                    defineVarName(it->attributes.strval);
+                }
                 resolve(node->child[0]);
+                closeScope();
             }
             break;
         case FUNC_EXPR: {

@@ -17,10 +17,10 @@ struct StringObj {
     int length;
 };
 
-struct VarList; //Not sure why I decided to go this route.
+struct VarList;
 
 struct LambdaObj {
-    VarList* freeVars; //Seriously, why?
+    VarList* freeVars;
     astnode* params;
     astnode* body;
 };
