@@ -5,7 +5,7 @@
 using namespace std;
 
 enum ObjectType {
-    AS_INT, AS_REAL, AS_BOOL, AS_STRING, AS_LIST, AS_LAMBDA, AS_STRUCT, AS_NIL
+    AS_INT, AS_REAL, AS_BOOL, AS_STRING, AS_LIST, AS_LAMBDA, AS_STRUCT, AS_REF, AS_NIL
 };
 
 enum ObjType {
@@ -54,6 +54,7 @@ struct Object {
         double realval;
         bool boolval;
         ObjBase* objval;
+        Object* refVal;
     };
     Object(ObjectType t = AS_INT) {
         type = t;
@@ -68,6 +69,7 @@ struct Object {
             case AS_LIST: { objval = ob.objval; } break;
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
+            case AS_REF: { refVal = ob.refVal; } break;
             case AS_NIL: intval = 0; break;
             default: 
                 break;
@@ -84,6 +86,7 @@ struct Object {
             case AS_LIST: { objval = ob.objval; } break;
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
+            case AS_REF: { refVal = ob.refVal; } break;
             case AS_NIL: intval = 0; break;
             default: 
                 break;
@@ -126,6 +129,7 @@ Object makeLambdaObject(LambdaObj* lambda);
 Object makeListObject(ListObj* list);
 Object makeStructObject(StructObj* structobj);
 Object makeNilObject();
+Object makeReferenceObject(Object* ref);
 
 ListObj* getList(Object m);
 LambdaObj* getLambda(Object m);

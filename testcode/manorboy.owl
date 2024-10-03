@@ -6,24 +6,21 @@ def A(var k, var x1, var x2, var x3, var x4, var x5) {
     let B := &() {
         k := k - 1;
         println "Calling A from B";
-        return A(k, B, x1, x2, x3, x4);
+        return A(k, B,x1,x2,x4,x4);
     }
     println "K: " + k;
     if (k <= 0) {
-        println "x4 + x5";
-        return x4() + x5();
+        println "x4: ";
+        var t := x4();
+        return t + x5();
     } else {
         println "Calling B";
-        return B();
+        let t := B(x1,x2,x3,x4,x5);
+        return t;
     } 
 }
 
 def main() {
-    var k := 0;
-    while (k < 9) {
-        println "MAN OR BOY OF " + C(k);
-        println A(k,C(1), C(-1), C(-1), C(1), C(0));
-        k := k + 1;
-    }
+    println A(4,C(1), C(-1), C(-1), C(1), C(0));
     return 0;
 }

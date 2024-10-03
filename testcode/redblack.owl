@@ -1,5 +1,6 @@
 struct tnode {
     var info;
+    var color;
     var left;
     var right;
 }

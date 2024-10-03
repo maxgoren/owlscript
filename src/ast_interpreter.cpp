@@ -5,7 +5,7 @@ using namespace std;
 ASTInterpreter::ASTInterpreter(bool loud) {
     traceEval = loud;
     recDepth = 0;
-    gc = GC(true);
+    gc = GC(false);
 }
 
 //This is the entry point for evaluating owlscript programs.
@@ -334,13 +334,14 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
             env[it->key] = it->value;
         }
     }
-    while (params != nullptr && args != nullptr) {
+    astnode* itr = args;
+    while (params != nullptr && itr != nullptr) {
         string vname = params->attributes.strval;
-        string val = args->attributes.strval;
-        cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
-        env[vname] = execExpression(args);
+        string val = itr->attributes.strval;
+        env[vname] = execExpression(itr);
+       // cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
         params = params->next;
-        args = args->next;
+        itr = itr->next;
     }
     cxt.scoped.push(env);
     Object m = exec(lambdaObj->body);
@@ -350,6 +351,15 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
             it->value = cxt.scoped.top()[it->key];
         }
         lambdaObj->freeVars = freeVars;
+    }
+    params = lambdaObj->params;
+    itr = args;
+    while (params != nullptr && itr != nullptr) {
+        if (params->attributes.passAsRef && itr->type==EXPR_NODE && itr->exprType==ID_EXPR) {
+
+        }
+        params = params->next;
+        itr = itr->next;
     }
     cxt.scoped.pop();
     leave();

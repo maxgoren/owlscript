@@ -124,14 +124,31 @@ astnode* Parser::makeReturnStatement() {
 
 astnode* Parser::paramList() {
     match(TK_VAR);
+    bool passAsRef = false;
+    if (currSym() == TK_REF) {
+        passAsRef = true;
+        match(TK_REF);
+    }
     astnode* m = simpleExpr();
+    if (passAsRef) {
+        m->attributes.passAsRef = true;
+        passAsRef = false;
+    }
     astnode* c = m;
     if (currSym() == TK_COMMA) {
         do {
             match(TK_COMMA);
             match(TK_VAR);
+            if (currSym() == TK_REF) {
+                passAsRef = true;
+                match(TK_REF);
+            }
             c->next = simpleExpr();
             c = c->next;
+            if (passAsRef) {
+                c->attributes.passAsRef = true;
+                passAsRef = false;
+            }
         }  while (currSym() != TK_RPAREN && currSym() == TK_COMMA);
     }
     return m;

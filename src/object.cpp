@@ -115,6 +115,12 @@ Object makeStructObject(StructObj* sobj) {
     return o;
 }
 
+Object makeReferenceObject(Object* obj) {
+    Object o(AS_REF);
+    o.refVal = obj;
+    return o;
+}
+
 Object makeNilObject() {
     Object o(AS_NIL);
     o.intval = 0;
@@ -341,23 +347,23 @@ void destroyObject(ObjBase* object) {
         return;
     switch (object->type) {
         case OT_LAMBDA: 
-                cout<<"[lambda]"<<endl;
+                //cout<<"[lambda]"<<endl;
                 destroyLambda(object->lambdaObj);
                 break;
         case OT_STRUCT:
-                cout<<"[struct]"<<endl;
+                //cout<<"[struct]"<<endl;
                 destroyStruct(object->structObj);
                 break;
         case OT_LIST:
-                cout<<"[list]"<<endl;
+                //cout<<"[list]"<<endl;
                 destroyList(object->listObj);
                 break;
         case OT_STR:
-                cout<<"[string]"<<endl;
+                //cout<<"[string]"<<endl;
                 destroyString(object->stringObj);
                 break;
         default:
-                cout<<"uhmmm... what?"<<endl;
+                //cout<<"uhmmm... what?"<<endl;
             break;
     }
     delete object;
