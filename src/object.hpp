@@ -33,6 +33,12 @@ struct ListObj {
     int length;
 };
 
+struct WeakRef {
+    string objectId;
+    int    objectScope;
+    WeakRef(string id = "nil", int scope = -1) : objectId(id), objectScope(scope) { }
+};
+
 
 struct StructObj;
 
@@ -54,7 +60,7 @@ struct Object {
         double realval;
         bool boolval;
         ObjBase* objval;
-        Object* refVal;
+        WeakRef* refVal;
     };
     Object(ObjectType t = AS_INT) {
         type = t;
@@ -129,7 +135,7 @@ Object makeLambdaObject(LambdaObj* lambda);
 Object makeListObject(ListObj* list);
 Object makeStructObject(StructObj* structobj);
 Object makeNilObject();
-Object makeReferenceObject(Object* ref);
+Object makeReferenceObject(string id, int scope);
 
 ListObj* getList(Object m);
 LambdaObj* getLambda(Object m);

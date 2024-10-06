@@ -2,7 +2,7 @@
 
 Parser::Parser(bool debug) {
     loud = false;
-    listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_PUSH, TK_POP, TK_APPEND, TK_LSQUARE };
+    listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_LSQUARE };
 }
 
 astnode* Parser::parse(vector<Token> in) {
@@ -107,7 +107,7 @@ astnode* Parser::makeIfStatement() {
     match(TK_LPAREN);
     m->child[0] = simpleExpr();
     match(TK_RPAREN);
-   m->child[1] = makeBlock();
+    m->child[1] = makeBlock();
     if (currSym() == TK_ELSE) {
         match(TK_ELSE);
         m->child[2] = makeBlock();
@@ -124,15 +124,13 @@ astnode* Parser::makeReturnStatement() {
 
 astnode* Parser::paramList() {
     match(TK_VAR);
-    bool passAsRef = false;
+    astnode* m = nullptr;
     if (currSym() == TK_REF) {
-        passAsRef = true;
+        m = makeStmtNode(REF_STMT, current);
         match(TK_REF);
-    }
-    astnode* m = simpleExpr();
-    if (passAsRef) {
-        m->attributes.passAsRef = true;
-        passAsRef = false;
+        m->child[0] = simpleExpr();
+    } else {
+        m = simpleExpr();
     }
     astnode* c = m;
     if (currSym() == TK_COMMA) {
@@ -140,15 +138,13 @@ astnode* Parser::paramList() {
             match(TK_COMMA);
             match(TK_VAR);
             if (currSym() == TK_REF) {
-                passAsRef = true;
+                c->next = makeStmtNode(REF_STMT, current);
                 match(TK_REF);
+                c->next->child[0] = simpleExpr();
+            } else {
+                c->next = simpleExpr();
             }
-            c->next = simpleExpr();
             c = c->next;
-            if (passAsRef) {
-                c->attributes.passAsRef = true;
-                passAsRef = false;
-            }
         }  while (currSym() != TK_RPAREN && currSym() == TK_COMMA);
     }
     return m;
@@ -551,6 +547,15 @@ astnode* Parser::makeListExpr() {
             match(TK_RPAREN);
         }
         break;
+        case TK_FILTER: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_FILTER);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_COMMA);
+            m->child[1] = simpleExpr();
+            match(TK_RPAREN);
+        }
         default:
             break;
     }

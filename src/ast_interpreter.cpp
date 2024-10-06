@@ -201,6 +201,14 @@ Object ASTInterpreter::getObjectByID(string id, int scope) {
     return m;
 }
 
+Object ASTInterpreter::getObjectByReference(astnode* node) {
+    string id = getNameAndScopeFromNode(node).first;
+    int scope = getNameAndScopeFromNode(node).second;
+    Object m = getObjectByID(id, scope);
+    Object refd = getObjectByID(m.refVal->objectId, m.refVal->objectScope);
+    return refd;
+}
+
 
 void ASTInterpreter::addToContext(string id, Object m, int scope) {
     if (!cxt.scoped.empty() && scope > -1) {
@@ -323,6 +331,15 @@ Object ASTInterpreter::performBlessExpression(astnode* node) {
     return m;
 }
 
+Object ASTInterpreter::performMakeReference(astnode* node) {
+    Object m;
+    enter("[make reference]");
+    string id = getNameAndScopeFromNode(node->child[0]).first;
+    int scope = getNameAndScopeFromNode(node->child[0]).second;
+    m = makeReferenceObject(id, scope);
+    return m;
+}   
+
 Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
     enter("[execute lambda]");
     Environment env;
@@ -336,7 +353,12 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
     }
     astnode* itr = args;
     while (params != nullptr && itr != nullptr) {
-        string vname = params->attributes.strval;
+        string vname;
+        if (params->type == EXPR_NODE && params->exprType == REF_EXPR) {
+            vname = params->child[0]->attributes.strval;
+        } else {
+            vname = params->attributes.strval;
+        }
         string val = itr->attributes.strval;
         env[vname] = execExpression(itr);
        // cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
@@ -351,15 +373,6 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
             it->value = cxt.scoped.top()[it->key];
         }
         lambdaObj->freeVars = freeVars;
-    }
-    params = lambdaObj->params;
-    itr = args;
-    while (params != nullptr && itr != nullptr) {
-        if (params->attributes.passAsRef && itr->type==EXPR_NODE && itr->exprType==ID_EXPR) {
-
-        }
-        params = params->next;
-        itr = itr->next;
     }
     cxt.scoped.pop();
     leave();
@@ -578,6 +591,27 @@ Object ASTInterpreter::execMap(astnode* node) {
     return m;
 }
 
+Object ASTInterpreter::execFilter(astnode* node) {
+    enter("Map list");
+    Object m;
+    string id;
+    resolveObjForExpression(node, id, m);
+    Object lm = execExpression(node->child[1]);
+    LambdaObj* lmbd = getLambda(lm);
+    ListObj* result = makeListObj();
+    for (ListNode* it = getList(m)->head; it != nullptr; it = it->next) {
+        astnode* t = makeExprNode(CONST_EXPR, Token(getSymbol(it->info), toString(it->info)));
+        Object r = executeFunction(lmbd, t);
+        if (r.boolval) {
+            appendToList(result, it->info);
+        }
+    }
+    m = makeListObject(result);
+    gc.add(m.objval);
+    leave();
+    return m;
+}
+
 Object ASTInterpreter::execListExpression(astnode* node) {
     enter("List expression");
     Object m;
@@ -611,6 +645,9 @@ Object ASTInterpreter::execListExpression(astnode* node) {
                 break;
             case TK_MAP:
                 m = execMap(node);
+                break;
+            case TK_FILTER:
+                m = execFilter(node);
                 break;
             case TK_EMPTY:
                 m = execIsEmptyList(node);
@@ -762,6 +799,9 @@ Object ASTInterpreter::execStatement(astnode* node) {
         case STRUCT_STMT:
             m = performStructDefStatement(node);
             break;
+        case REF_STMT:
+            m = performMakeReference(node);
+            break;
         default:
             break;
     }
@@ -781,6 +821,9 @@ Object ASTInterpreter::execExpression(astnode* node) {
             break;
         case ID_EXPR:
             m = getObjectByID(node->attributes.strval, node->attributes.depth);
+            break;
+        case REF_EXPR:
+            m = getObjectByReference(node);
             break;
         case BINARYOP_EXPR:
             m = eval(node);

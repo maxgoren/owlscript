@@ -45,6 +45,8 @@ class ASTInterpreter {
         Object performLetStatement(astnode* node);
         Object performCreateLambda(astnode* node);
         Object performFunctionCall(astnode* node);
+        Object getObjectByReference(astnode* node);
+        Object performMakeReference(astnode* node);
         Object performBlockStatement(astnode* node);
         Object performWhileStatement(astnode* node);
         Object performPrintStatement(astnode* node);
@@ -63,6 +65,7 @@ class ASTInterpreter {
         Object execPushList(astnode* node);
         Object execPopList(astnode* node);
         Object execLength(astnode* node);
+        Object execFilter(astnode* node);
         Object execFirst(astnode* node);
         Symbol getSymbol(Object m);
         Object execRest(astnode* node);

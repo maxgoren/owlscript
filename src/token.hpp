@@ -12,7 +12,7 @@ enum Symbol {
     TK_ASSIGN, TK_SEMI, TK_COLON,
     TK_LET, TK_DEF, TK_RETURN, TK_WHILE, TK_FOR, TK_VAR, TK_REF,
     TK_IF, TK_ELSE, TK_PRINT, 
-    TK_APPEND, TK_PUSH, TK_POP, TK_LENGTH, TK_EMPTY, TK_SORT, TK_FIRST, TK_REST, TK_MAP, 
+    TK_APPEND, TK_PUSH, TK_POP, TK_LENGTH, TK_EMPTY, TK_SORT, TK_FIRST, TK_REST, TK_MAP, TK_FILTER,
     TK_OPEN_COMMENT, TK_CLOSE_COMMENT, TK_NIL, TK_PIPE,
     TK_EOF, TK_ERROR
 };
@@ -27,7 +27,7 @@ inline string symbolAsString[] = {
     "TK_ASSIGN", "TK_SEMI", "TK_COLON",
     "TK_LET", "TK_DEF", "TK_RETURN", "TK_WHILE", "TK_FOR", "TK_VAR", "TK_REF",
     "TK_IF", "TK_ELSE", "TK_PRINT", 
-    "TK_APPEND", "TK_PUSH", "TK_POP", "TK_LENGTH", "TK_EMPTY", "TK_SORT", "TK_FIRST", "TK_REST", "TK_MAP",
+    "TK_APPEND", "TK_PUSH", "TK_POP", "TK_LENGTH", "TK_EMPTY", "TK_SORT", "TK_FIRST", "TK_REST", "TK_MAP", "TK_FILTER",
     "TK_OPEN_COMMENT", "TK_CLOSE_COMMENT", "TK_NIL", "TK_PIPE",
     "TK_EOF", "TK_ERROR"
 };
@@ -37,13 +37,11 @@ struct Token {
     string strval;
     int lineNumber;  
     int depth;
-    bool passAsRef;
     Token(Symbol s = TK_NONE, string st = " ") {
         symbol = s;
         strval = st;
         lineNumber = 0;
         depth = -1;
-        passAsRef = false;
     }
 };
 

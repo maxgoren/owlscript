@@ -90,6 +90,9 @@ void ResolveScope::resolveStatementScope(astnode* node) {
         case RETURN_STMT: 
             resolve(node->child[0]);
             break;
+        case REF_STMT:
+            declareVarName(node->child[0]->attributes.strval);
+            resolve(node->child[0]);
         case STRUCT_STMT: 
             break;
         default:
@@ -134,6 +137,11 @@ void ResolveScope::resolveExpressionScope(astnode* node) {
                 closeScope();
             }
             break;
+        case REF_EXPR: {
+            defineVarName(node->child[0]->attributes.strval);
+            resolve(node->child[0]);
+        }
+        break;
         case FUNC_EXPR: {
                 resolveVariableDepth(node, node->attributes.strval);
                 resolve(node->child[1]);

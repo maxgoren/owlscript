@@ -115,9 +115,9 @@ Object makeStructObject(StructObj* sobj) {
     return o;
 }
 
-Object makeReferenceObject(Object* obj) {
+Object makeReferenceObject(string name, int scope) {
     Object o(AS_REF);
-    o.refVal = obj;
+    o.refVal = new WeakRef(name, scope);
     return o;
 }
 
