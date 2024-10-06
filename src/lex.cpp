@@ -26,6 +26,7 @@ Lexer::Lexer(bool debug) {
     reserved["map"] = TK_MAP;
     reserved["filter"] = TK_FILTER;
     reserved["empty"] = TK_EMPTY;
+    reserved["matchre"] = TK_MATCH;
     reserved["var"] = TK_VAR;
     reserved["ref"] = TK_REF;
     reserved["make"] = TK_MAKE;

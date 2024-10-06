@@ -1,5 +1,6 @@
 #include <cmath>
 #include "ast_interpreter.hpp"
+#include "regexengine.hpp"
 using namespace std;
 
 ASTInterpreter::ASTInterpreter(bool loud) {
@@ -612,6 +613,16 @@ Object ASTInterpreter::execFilter(astnode* node) {
     return m;
 }
 
+Object ASTInterpreter::execRegularExpr(astnode* node) {
+    enter("Regular Expression");
+    Object m;
+    Object toCheck = execExpression(node->child[0]);
+    Object regExpr = execExpression(node->child[1]);
+    NFA nfa(toString(regExpr));
+    m = makeBoolObject(nfa.match(toString(toCheck)));
+    return m;
+}
+
 Object ASTInterpreter::execListExpression(astnode* node) {
     enter("List expression");
     Object m;
@@ -821,6 +832,9 @@ Object ASTInterpreter::execExpression(astnode* node) {
             break;
         case ID_EXPR:
             m = getObjectByID(node->attributes.strval, node->attributes.depth);
+            break;
+        case REG_EXPR:
+            m = execRegularExpr(node);
             break;
         case REF_EXPR:
             m = getObjectByReference(node);

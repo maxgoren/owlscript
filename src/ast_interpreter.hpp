@@ -37,6 +37,7 @@ class ASTInterpreter {
         Object evalStringOp(Symbol op, Object& lhn, Object& rhn);
         Object execStatement(astnode* node);
         Object execExpression(astnode* node);
+        Object execRegularExpr(astnode* node);
         Object executeFunction(LambdaObj* lambdaObj, astnode* args);
         Object performAssignment(astnode* node);
         Object performIfStatement(astnode* node);

@@ -362,6 +362,16 @@ astnode* Parser::var() {
         m->child[0] = simpleExpr();
         return m;
     }
+    if (currSym() == TK_MATCH) {
+        astnode* m = makeExprNode(REG_EXPR, current);
+        match(TK_MATCH);
+        match(TK_LPAREN);
+        m->child[0] = simpleExpr();
+        match(TK_COMMA);
+        m->child[1] = simpleExpr();
+        match(TK_RPAREN);
+        return m;
+    }
     if (listExprs.find(currSym()) != listExprs.end()) {
         return makeListExpr();
     }
