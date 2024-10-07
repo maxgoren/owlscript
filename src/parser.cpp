@@ -262,6 +262,7 @@ astnode* Parser::statement() {
         case TK_PUSH:
         case TK_POP:
         case TK_LENGTH:
+        case TK_MATCH:
         case TK_SORT:
             m = makeExprStatement();
             return m;

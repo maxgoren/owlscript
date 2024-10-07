@@ -108,8 +108,10 @@ class DirectedDFS {
             return seen[v];
         }
         DirectedDFS operator=(const DirectedDFS& o) {
-            if (this == &o)
+            if (this == &o) {
+                cout<<"Was.. was it this?"<<endl;
                 return *this;
+            }
             if (o.numv > 0) {
                 numv = o.numv;
                 seen = new bool[numv];
@@ -137,8 +139,8 @@ class NFA {
                         lp = ops.pop();
                         G.addEdge(lp, ro+1);
                         G.addEdge(ro, i);
-                    } else if (re[ro] == '(') lp = ro;
-                    else lp = i;
+                    } else if (re[ro] == '(') { lp = ro;
+                    } else lp = i;
                 } 
                 if (i < m - 1 && re[i+1] == '*') {
                     G.addEdge(lp, i+1);
