@@ -109,7 +109,6 @@ class DirectedDFS {
         }
         DirectedDFS operator=(const DirectedDFS& o) {
             if (this == &o) {
-                cout<<"Was.. was it this?"<<endl;
                 return *this;
             }
             if (o.numv > 0) {
@@ -124,6 +123,7 @@ class DirectedDFS {
 
 class NFA {
      private:
+        bool loud;
         Digraph G;
         string re;
         int m;
@@ -152,12 +152,30 @@ class NFA {
                     G.addEdge(i, i+1); 
             }
         }
+        void showNFA() {
+            for (int i = 0; i < G.V(); i++) {
+                if (i < re.size()) {
+                    cout<<i<<"("<<re[i]<<"): "<<endl;
+                    for (int u : G.adj(i)) {
+                        if (u < re.size()) {
+                            cout<<"  --> "<<u<<"("<<re[u]<<") "<<endl;
+                        }
+                    }
+                } else {
+                    cout<<"$ (Match)."<<endl;
+                }
+            }
+        }
      public:
-        NFA(string regexp) {
+        NFA(string regexp = ".", bool trace = false) {
+            loud = trace;
             re = "(" + regexp + ")";
             m = re.length();
             G = Digraph(m+1);
             buildEpsilonGraph();
+            if (trace) {
+                showNFA();
+            }
         }  
         bool match(string text) {
             DirectedDFS dfs(G, 0);
@@ -169,8 +187,12 @@ class NFA {
                 Bag<int> states;
                 for (int v : pc)
                     if (v < m)
-                        if (re[v] == text[i] || re[v] == '.')
+                        if (re[v] == text[i] || re[v] == '.') {
+                            if (loud) {
+                                cout<<"Match at: "<<text[i]<<" == "<<re[v]<<endl;
+                            }
                             states.add(v+1); 
+                        }
                 pc.clear();
                 dfs = DirectedDFS(G, states);
                 for (int v = 0; v < G.V(); v++)

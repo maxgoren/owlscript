@@ -618,7 +618,7 @@ Object ASTInterpreter::execRegularExpr(astnode* node) {
     Object m;
     Object toCheck = execExpression(node->child[0]);
     Object regExpr = execExpression(node->child[1]);
-    NFA nfa(toString(regExpr));
+    NFA nfa(toString(regExpr), traceEval);
     m = makeBoolObject(nfa.match(toString(toCheck)));
     return m;
 }
