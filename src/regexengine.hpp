@@ -5,6 +5,11 @@
 #include "stack.hpp"
 using namespace std;
 
+/*
+    The following code has been adapted from Sedgewick, R. and Wayne, K. "Algorithms" 4th ed. 2008
+*/
+
+
 template <class T>
 struct Bag : public vector<T> {
     Bag& add(T info) {
@@ -103,6 +108,8 @@ class DirectedDFS {
             return seen[v];
         }
         DirectedDFS operator=(const DirectedDFS& o) {
+            if (this == &o)
+                return *this;
             if (o.numv > 0) {
                 numv = o.numv;
                 seen = new bool[numv];
@@ -130,19 +137,22 @@ class NFA {
                         lp = ops.pop();
                         G.addEdge(lp, ro+1);
                         G.addEdge(ro, i);
-                    } else lp = i;
+                    } else if (re[ro] == '(') lp = ro;
+                    else lp = i;
                 } 
                 if (i < m - 1 && re[i+1] == '*') {
                     G.addEdge(lp, i+1);
                     G.addEdge(i+1, lp);
                 }
-                if (re[i] == '(' || re[i] == '*' || re[i] == ')')
+                if (i < m-1 && (re[i+1] == '+'))
+                    G.addEdge(i+1, lp);
+                if (re[i] == '(' || re[i] == '*' ||  re[i] == '+' || re[i] == ')')
                     G.addEdge(i, i+1); 
             }
         }
      public:
         NFA(string regexp) {
-            re = regexp;
+            re = "(" + regexp + ")";
             m = re.length();
             G = Digraph(m+1);
             buildEpsilonGraph();
