@@ -1,0 +1,5 @@
+let doubleAndInc := &(i) -> 2*i+1;
+let series := &(x) { let y := []; let q := 5*doubleAndInc(x); while (x < q) { x := doubleAndInc(x); append(y, x); } return y; };
+let seriesOfSeries := &(x) { let y := []; while (x > 0) { append(y, series(x)); x := x - 1; } return y; };
+let t := seriesOfSeries(6);
+println t;

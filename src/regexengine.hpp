@@ -2,6 +2,7 @@
 #define regexpengine_hpp
 #include <iostream>
 #include <vector>
+#include <unordered_set>
 #include "stack.hpp"
 using namespace std;
 
@@ -71,6 +72,7 @@ class DirectedDFS {
         int numv;
         void search(Digraph& G, int v) {
             seen[v] = true;
+            cout<<" -> "<<v<<" ";
             for (int u : G.adj(v))
                 if (!seen[u])
                     search(G, u);
@@ -85,12 +87,15 @@ class DirectedDFS {
         DirectedDFS(Digraph& G, int v) {
             initseen(G.V());
             search(G, v);
+            cout<<endl;
         }
         DirectedDFS(Digraph& G, Bag<int>& src) {
             initseen(G.V());
             for (int v : src)
-                if (!seen[v])
+                if (!seen[v]) {
                     search(G, v);
+                    cout<<endl;
+                }
         }
         DirectedDFS(const DirectedDFS& o) {
             if (o.numv > 0) {
@@ -134,13 +139,15 @@ class NFA {
                 if (re[i] == '(' || re[i] == '|')
                     ops.push(i); 
                 else if (re[i] == ')') {
-                    int ro = ops.pop();
-                    if (re[ro] == '|') {
-                        lp = ops.pop();
-                        G.addEdge(lp, ro+1);
-                        G.addEdge(ro, i);
-                    } else if (re[ro] == '(') { lp = ro;
-                    } else lp = i;
+                    unordered_set<int> orOpIdx;
+                    while (re[ops.top()] == '|') {
+                        orOpIdx.insert(ops.pop());
+                    }
+                    lp = ops.pop();
+                    for (int ro : orOpIdx) {
+                       G.addEdge(lp, ro+1);
+                       G.addEdge(ro, i);
+                    } 
                 } 
                 if (i < m - 1 && re[i+1] == '*') {
                     G.addEdge(lp, i+1);
@@ -166,6 +173,17 @@ class NFA {
                 }
             }
         }
+        void collectReachedStates(DirectedDFS& dfs, Bag<int>& reached) {
+            for (int v = 0; v < G.V(); v++)
+                if (dfs.marked(v))
+                    reached.add(v); 
+        }
+        bool reachedAcceptState(Bag<int>& reached) {
+            for (int v : reached)
+                if (v == m)
+                    return true;
+            return false;
+        }
      public:
         NFA(string regexp = ".", bool trace = false) {
             loud = trace;
@@ -179,33 +197,26 @@ class NFA {
         }  
         bool match(string text) {
             DirectedDFS dfs(G, 0);
-            Bag<int> pc;
-            for (int v = 0; v < G.V(); v++)
-                if (dfs.marked(v))
-                    pc.add(v); 
+            Bag<int> reached;
+            collectReachedStates(dfs, reached);
             for (int i = 0; i < text.length(); i++) {
-                Bag<int> states;
-                for (int v : pc)
-                    if (v < m)
-                        if (re[v] == text[i] || re[v] == '.') {
-                            if (loud) {
-                                cout<<"Match at: "<<text[i]<<" == "<<re[v]<<endl;
-                            }
-                            states.add(v+1); 
-                        }
-                pc.clear();
-                dfs = DirectedDFS(G, states);
-                for (int v = 0; v < G.V(); v++)
-                    if (dfs.marked(v))
-                        pc.add(v);
-                if (pc.empty())
+                Bag<int> matches;
+                for (int v : reached) {
+                    if (v < m && (re[v] == text[i] || re[v] == '.')) {
+                        matches.add(v+1); 
+                        if (loud)
+                            cout<<"Match at "<<i<<": "<<text[i]<<" == "<<re[v]<<endl;
+                    }
+                }
+                if (matches.empty())
+                    continue;
+                reached.clear();
+                dfs = DirectedDFS(G, matches);
+                collectReachedStates(dfs, reached);
+                if (reached.empty())
                     return false;
             }
-            for (int v : pc) 
-                if (v == m) 
-                    return true;
-            
-            return false;      
+            return reachedAcceptState(reached);      
         }
 };
 
