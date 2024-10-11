@@ -66,13 +66,15 @@ class Digraph {
         }
 };
 
-class DirectedDFS {
+class DFS {
     private:
         bool* seen;
         int numv;
+        bool loud;
         void search(Digraph& G, int v) {
             seen[v] = true;
-            cout<<" -> "<<v<<" ";
+            if (loud)
+                cout<<" -> "<<v<<" ";
             for (int u : G.adj(v))
                 if (!seen[u])
                     search(G, u);
@@ -84,39 +86,43 @@ class DirectedDFS {
                 seen[i] = false;
         }
     public:
-        DirectedDFS(Digraph& G, int v) {
+        DFS(Digraph& G, int v, bool debug) {
+            loud = debug;
             initseen(G.V());
             search(G, v);
-            cout<<endl;
+            if (loud) cout<<endl;
         }
-        DirectedDFS(Digraph& G, Bag<int>& src) {
+        DFS(Digraph& G, Bag<int>& src, bool debug) {
+            loud = debug;
             initseen(G.V());
             for (int v : src)
                 if (!seen[v]) {
                     search(G, v);
-                    cout<<endl;
+                    if (loud) cout<<endl;
                 }
         }
-        DirectedDFS(const DirectedDFS& o) {
+        DFS(const DFS& o) {
             if (o.numv > 0) {
                 numv = o.numv;
                 seen = new bool[numv];
+                loud = o.loud;
                 for (int i = 0; i < numv; i++)
                     seen[i] = o.seen[i];
             }
         }
-        ~DirectedDFS() {
+        ~DFS() {
             if (seen != nullptr) 
                 delete [] seen;
         }
         bool marked(int v) {
             return seen[v];
         }
-        DirectedDFS operator=(const DirectedDFS& o) {
+        DFS operator=(const DFS& o) {
             if (this == &o) {
                 return *this;
             }
             if (o.numv > 0) {
+                loud = o.loud;
                 numv = o.numv;
                 seen = new bool[numv];
                 for (int i = 0; i < numv; i++)
@@ -132,11 +138,12 @@ class NFA {
         Digraph G;
         string re;
         int m;
+        unordered_map<int, int> specifiedSetIndex;
         void buildEpsilonGraph() {
             InspectableStack<int> ops;
             for (int i = 0; i < m; i++) {
                 int lp = i;
-                if (re[i] == '(' || re[i] == '|')
+                if (re[i] == '(' || re[i] == '|' || re[i] == '[')
                     ops.push(i); 
                 else if (re[i] == ')') {
                     unordered_set<int> orOpIdx;
@@ -148,14 +155,20 @@ class NFA {
                        G.addEdge(lp, ro+1);
                        G.addEdge(ro, i);
                     } 
-                } 
+                } else if (re[i] == ']') {
+                    lp = ops.pop();
+                    for (int inside = lp+1; inside < i; inside++) {
+                        G.addEdge(lp, inside);
+                        specifiedSetIndex[inside] = i;
+                    }
+                }
                 if (i < m - 1 && re[i+1] == '*') {
                     G.addEdge(lp, i+1);
                     G.addEdge(i+1, lp);
                 }
                 if (i < m-1 && (re[i+1] == '+'))
                     G.addEdge(i+1, lp);
-                if (re[i] == '(' || re[i] == '*' ||  re[i] == '+' || re[i] == ')')
+                if (re[i] == '(' || re[i] == '*' ||  re[i] == '+' || re[i] == ')' || re[i] == '[' || re[i] == ']')
                     G.addEdge(i, i+1); 
             }
         }
@@ -173,7 +186,7 @@ class NFA {
                 }
             }
         }
-        void collectReachedStates(DirectedDFS& dfs, Bag<int>& reached) {
+        void collectReachedStates(DFS& dfs, Bag<int>& reached) {
             for (int v = 0; v < G.V(); v++)
                 if (dfs.marked(v))
                     reached.add(v); 
@@ -196,22 +209,27 @@ class NFA {
             }
         }  
         bool match(string text) {
-            DirectedDFS dfs(G, 0);
+            DFS dfs(G, 0, loud);
             Bag<int> reached;
             collectReachedStates(dfs, reached);
             for (int i = 0; i < text.length(); i++) {
                 Bag<int> matches;
                 for (int v : reached) {
-                    if (v < m && (re[v] == text[i] || re[v] == '.')) {
-                        matches.add(v+1); 
-                        if (loud)
-                            cout<<"Match at "<<i<<": "<<text[i]<<" == "<<re[v]<<endl;
+                    if (v < m) {
+                        if (re[v] == text[i] || re[v] == '.') {
+                            if (specifiedSetIndex.find(v) != specifiedSetIndex.end()) {
+                                matches.add(specifiedSetIndex[v]);
+                            } else {
+                                matches.add(v+1);
+                            } 
+                            if (loud) cout<<"Match at "<<i<<": "<<text[i]<<" == "<<re[v]<<endl;
+                        }
                     }
                 }
                 if (matches.empty())
                     continue;
                 reached.clear();
-                dfs = DirectedDFS(G, matches);
+                dfs = DFS(G, matches, loud);
                 collectReachedStates(dfs, reached);
                 if (reached.empty())
                     return false;
