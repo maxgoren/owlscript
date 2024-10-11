@@ -461,9 +461,18 @@ Object ASTInterpreter::execPopList(astnode* node) {
 Object ASTInterpreter::execLength(astnode* node) {
     enter("list length");
     string id;
-    Object m;
+    Object m, t;
     resolveObjForExpression(node, id, m);
-    Object t = makeIntObject(listLength(getList(m)));
+    switch (typeOf(m)) {
+        case AS_LIST:
+            t = makeIntObject(listLength(getList(m)));
+            break;
+        case AS_STRING:
+            t = makeIntObject(getString(m)->length);
+            break;
+        default:
+            break;
+    }
     leave();
     return t;
 }
@@ -503,6 +512,18 @@ Object ASTInterpreter::execSubscriptExpression(astnode* node) {
             return makeNilObject();
         }
         m = sobj->bindings[vname];
+    } else if (typeOf(m) == AS_STRING) {
+        Object subm = execExpression(node->child[1]);
+        int subscript = atoi(toString(subm).c_str());
+        StringObj* strobj = getString(m);
+        if (subscript >= 0 && subscript < strobj->length) {
+            string s;
+            s.push_back(strobj->str[subscript]);
+            return makeStringObject(s); 
+        } else {
+            cout<<"index "<<subscript<<" is out of range for string of length "<<strobj->length<<endl;
+            return makeNilObject();
+        }
     }
     return m;
 }
