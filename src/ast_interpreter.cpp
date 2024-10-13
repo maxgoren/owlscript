@@ -13,7 +13,7 @@ ASTInterpreter::ASTInterpreter(bool loud) {
 Object ASTInterpreter::execAST(astnode* node) {
     recDepth = 0;
     Object m = exec(node);
-    gc.run(cxt);
+    //gc.run(cxt);
     return m;
 }
 
@@ -640,7 +640,11 @@ Object ASTInterpreter::execRegularExpr(astnode* node) {
     Object toCheck = execExpression(node->child[0]);
     Object regExpr = execExpression(node->child[1]);
     NFA nfa(toString(regExpr), traceEval);
+    gc.add(toCheck.objval);
+    gc.add(regExpr.objval);
     m = makeBoolObject(nfa.match(toString(toCheck)));
+    gc.add(m.objval);
+    leave();
     return m;
 }
 
@@ -738,7 +742,7 @@ Object ASTInterpreter::performIfStatement(astnode* node) {
     } else if (!test && node->child[2] != nullptr) {
         m = exec(node->child[2]);
     } else {
-        m = exec(node->next);
+        m = exec(node->child[1]->next);
     }
     leave();
     return m;

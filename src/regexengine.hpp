@@ -1,23 +1,17 @@
 #ifndef regexpengine_hpp
 #define regexpengine_hpp
 #include <iostream>
-#include <vector>
 #include <unordered_set>
+#include "queue.hpp"
 #include "stack.hpp"
+#include "bag.hpp"
+#include <vector>
 using namespace std;
 
 /*
-    The following code has been adapted from Sedgewick, R. and Wayne, K. "Algorithms" 4th ed. 2008
+    Based on code from Sedgewick, R. and Wayne, K. "Algorithms" 4th ed. 2008
+
 */
-
-
-template <class T>
-struct Bag : public vector<T> {
-    Bag& add(T info) {
-        vector<T>::push_back(info);
-        return *this;
-    }
-};
 
 class Digraph {
     private:
@@ -40,8 +34,7 @@ class Digraph {
             }
         }
         ~Digraph() {
-            if (adjlist != nullptr) 
-                delete [] adjlist;
+            delete [] adjlist;
         }
         void addEdge(int v, int w) {
             adjlist[v].add(w);
@@ -53,12 +46,14 @@ class Digraph {
             return _v;
         }
         Digraph operator=(const Digraph& o) {
-            _v = o._v;
-            adjlist = new Bag<int>[o._v];
-            for (int i = 0; i < o.V(); i++) {
-                if (!o.adjlist[i].empty()) {
-                    for (int u : o.adjlist[i]) {
-                        addEdge(i, u);
+            if (this != &o) {
+                _v = o._v;
+                adjlist = new Bag<int>[o._v];
+                for (int i = 0; i < o.V(); i++) {
+                    if (!o.adjlist[i].empty()) {
+                        for (int u : o.adjlist[i]) {
+                            addEdge(i, u);
+                        }
                     }
                 }
             }
@@ -66,33 +61,47 @@ class Digraph {
         }
 };
 
-class DFS {
+class GraphSearch {
     private:
+        int* pred;
         bool* seen;
         int numv;
         bool loud;
         void search(Digraph& G, int v) {
+            queue<int> fq;
+            fq.push(v);
+            pred[v] = v;
             seen[v] = true;
-            if (loud)
-                cout<<" -> "<<v<<" ";
-            for (int u : G.adj(v))
-                if (!seen[u])
-                    search(G, u);
+            while (!fq.empty()) {
+                int curr = fq.front();
+                fq.pop();
+                if (loud) cout<<" -> "<<curr<<" ";
+                for (int u : G.adj(curr)) {
+                    if (!seen[u]) {
+                        seen[u] = true;
+                        pred[u] = v;
+                        fq.push(u);
+                    }
+                }
+            }
         }
         void initseen(size_t size) {
             numv = size;
             seen = new bool[size];
-            for (int i = 0; i < size; i++)
+            pred = new int[size];
+            for (int i = 0; i < size; i++) {
                 seen[i] = false;
+                pred[i] = -1;
+            }
         }
     public:
-        DFS(Digraph& G, int v, bool debug) {
+        GraphSearch(Digraph& G, int v, bool debug) {
             loud = debug;
             initseen(G.V());
             search(G, v);
             if (loud) cout<<endl;
         }
-        DFS(Digraph& G, Bag<int>& src, bool debug) {
+        GraphSearch(Digraph& G, Bag<int>& src, bool debug) {
             loud = debug;
             initseen(G.V());
             for (int v : src)
@@ -101,7 +110,7 @@ class DFS {
                     if (loud) cout<<endl;
                 }
         }
-        DFS(const DFS& o) {
+        GraphSearch(const GraphSearch& o) {
             if (o.numv > 0) {
                 numv = o.numv;
                 seen = new bool[numv];
@@ -110,14 +119,17 @@ class DFS {
                     seen[i] = o.seen[i];
             }
         }
-        ~DFS() {
+        ~GraphSearch() {
             if (seen != nullptr) 
                 delete [] seen;
         }
         bool marked(int v) {
             return seen[v];
         }
-        DFS operator=(const DFS& o) {
+        int previous(int v) {
+            return pred[v];
+        }
+        GraphSearch operator=(const GraphSearch& o) {
             if (this == &o) {
                 return *this;
             }
@@ -186,9 +198,22 @@ class NFA {
                 }
             }
         }
-        void collectReachedStates(DFS& dfs, Bag<int>& reached) {
+        Bag<int> collectMatchedStates(char curr, Bag<int>& reached) {
+            Bag<int> matches;
+            for (int state : reached) {
+                if (state < m)
+                    if (re[state] == curr || re[state] == '.') {
+                        if (specifiedSetIndex.find(state) != specifiedSetIndex.end()) 
+                            matches.add(specifiedSetIndex[state]);
+                        else matches.add(state+1);
+                        if (loud) cout<<"Match at: "<<curr<<" == "<<re[state]<<endl;
+                    }
+            }
+            return matches;
+        }
+        void collectReachedStates(GraphSearch& search, Bag<int>& reached) {
             for (int v = 0; v < G.V(); v++)
-                if (dfs.marked(v))
+                if (search.marked(v))
                     reached.add(v); 
         }
         bool reachedAcceptState(Bag<int>& reached) {
@@ -209,28 +234,16 @@ class NFA {
             }
         }  
         bool match(string text) {
-            DFS dfs(G, 0, loud);
+            GraphSearch search(G, 0, loud);
             Bag<int> reached;
-            collectReachedStates(dfs, reached);
+            collectReachedStates(search, reached);
             for (int i = 0; i < text.length(); i++) {
-                Bag<int> matches;
-                for (int v : reached) {
-                    if (v < m) {
-                        if (re[v] == text[i] || re[v] == '.') {
-                            if (specifiedSetIndex.find(v) != specifiedSetIndex.end()) {
-                                matches.add(specifiedSetIndex[v]);
-                            } else {
-                                matches.add(v+1);
-                            } 
-                            if (loud) cout<<"Match at "<<i<<": "<<text[i]<<" == "<<re[v]<<endl;
-                        }
-                    }
-                }
+                Bag<int> matches = collectMatchedStates(text[i], reached);
                 if (matches.empty())
                     continue;
-                reached.clear();
-                dfs = DFS(G, matches, loud);
-                collectReachedStates(dfs, reached);
+                reached = Bag<int>();
+                search = GraphSearch(G, matches, loud);
+                collectReachedStates(search, reached);
                 if (reached.empty())
                     return false;
             }
