@@ -1,6 +1,8 @@
 #include <cmath>
 #include "ast_interpreter.hpp"
-#include "regexengine.hpp"
+#include "regex/compiler.hpp"
+#include "regex/nfa.hpp"
+#include "regex/patternmatcher.hpp"
 using namespace std;
 
 ASTInterpreter::ASTInterpreter(bool loud) {
