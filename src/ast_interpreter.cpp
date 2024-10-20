@@ -6,14 +6,14 @@ using namespace std;
 ASTInterpreter::ASTInterpreter(bool loud) {
     traceEval = loud;
     recDepth = 0;
-    gc = GC(false);
+    gc = GC(loud);
 }
 
 //This is the entry point for evaluating owlscript programs.
 Object ASTInterpreter::execAST(astnode* node) {
     recDepth = 0;
     Object m = exec(node);
-    //gc.run(cxt);
+    gc.run(cxt);
     return m;
 }
 
@@ -639,11 +639,12 @@ Object ASTInterpreter::execRegularExpr(astnode* node) {
     Object m;
     Object toCheck = execExpression(node->child[0]);
     Object regExpr = execExpression(node->child[1]);
-    NFA nfa(toString(regExpr), traceEval);
+    NFACompiler compiler;
+    NFA nfa = compiler.compile(toString(regExpr));
     gc.add(toCheck.objval);
     gc.add(regExpr.objval);
-    m = makeBoolObject(nfa.match(toString(toCheck)));
-    gc.add(m.objval);
+    RegExPatternMatcher pm(nfa, traceEval);
+    m = makeBoolObject(pm.match(toString(toCheck)));
     leave();
     return m;
 }

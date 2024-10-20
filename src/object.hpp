@@ -51,6 +51,7 @@ struct ObjBase {
         StructObj* structObj;
     };
     bool mark;
+    int refCount;
 };
 
 struct Object {

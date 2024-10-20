@@ -61,9 +61,6 @@ class GC {
             }
         }
         void mark(Context& cxt) {
-           /*for (auto & m : allocated_objects) {
-                m->mark = false;
-            }*/
             for (auto & m : cxt.globals) {
                 checkObject(m.second);
             }

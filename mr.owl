@@ -6,5 +6,9 @@ def ok(var n) {
 	}
 }
 def main() {
-	println ok(6);
+	let i := 0;
+	while (i < 25) {
+		println ok(i);
+		i := i + 1;
+	}
 }

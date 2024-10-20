@@ -61,6 +61,7 @@ ObjBase* makeObjBase(ObjType ot) {
     ObjBase* m = new ObjBase;
     m->type = ot;
     m->mark = false;
+    m->refCount = 0;
     return m;
 }
 

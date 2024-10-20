@@ -6,7 +6,7 @@ ASTBuilder::ASTBuilder(bool debug) : loud(debug) {
 
 astnode* ASTBuilder::build(string str) {
     Lexer l(false);
-    Parser p(loud);
+    RegExParser p(loud);
     l.init(str);
     auto m = l.lex();
     if (loud) {
@@ -21,7 +21,7 @@ astnode* ASTBuilder::build(string str) {
 astnode* ASTBuilder::buildFromFile(string filename) {
     FileBuffer fb;
     Lexer l(false);
-    Parser p(loud);
+    RegExParser p(loud);
     auto q = fb.readFile(filename);
     l.init(q);
     auto m = l.lex();
