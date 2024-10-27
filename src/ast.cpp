@@ -38,6 +38,7 @@ void printNode(astnode* n) {
             case ASSIGN_EXPR: cout<<"[assign expr]"; break;
             case FUNC_EXPR: cout<<"[func expr]"; break;
             case LAMBDA_EXPR: cout<<"[lambda expr]"; break;
+            case REG_EXPR: cout<<"[regular expression]"; break;
             default:
                 break;
         }

@@ -264,7 +264,7 @@ Object ASTInterpreter::performSubscriptAssignment(astnode* node, string id, int 
     } else if (typeOf(m) == AS_STRUCT) {
         m = performStructFieldAssignment(node, m);
     } else {
-        cout<<"That type does not support subscript access: "<<toString(m)<<endl;
+        cout<<"Object "<<id<<" type does not support subscript access: "<<toString(m)<<endl;
         return makeNilObject();
     }
     return m;
@@ -744,8 +744,6 @@ Object ASTInterpreter::performIfStatement(astnode* node) {
         m = exec(node->child[1]);
     } else if (!test && node->child[2] != nullptr) {
         m = exec(node->child[2]);
-    } else {
-        m = exec(node->child[1]->next);
     }
     leave();
     return m;
@@ -763,7 +761,7 @@ Object ASTInterpreter::performStructDefStatement(astnode* node) {
     StructObj* sobj = makeStructObj();
     for (astnode* it = node->child[0]; it != nullptr; it = it->next) {
         string vname = it->child[0]->attributes.strval;
-        sobj->bindings[vname] = makeIntObject(0);
+        sobj->bindings[vname] = makeNilObject();
     }
     sobj->blessed = false;
     cxt.globals[id] = makeStructObject(sobj);

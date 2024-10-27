@@ -142,6 +142,11 @@ void ResolveScope::resolveExpressionScope(astnode* node) {
             resolve(node->child[0]);
         }
         break;
+        case REG_EXPR: {
+            resolve(node->child[0]);
+            resolve(node->child[1]);
+        }
+        break;
         case FUNC_EXPR: {
                 resolveVariableDepth(node, node->attributes.strval);
                 resolve(node->child[1]);

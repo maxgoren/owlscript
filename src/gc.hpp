@@ -84,7 +84,7 @@ class GC {
             }
             for (auto & m : unreachable) {
                 if (loud) {
-                    cout<<"Reclaiming: "<<m<<" ";
+                    cout<<"Reclaiming: "<<m<<"\n";
                 }
                 allocated_objects.erase(m);
                 destroyObject(m);

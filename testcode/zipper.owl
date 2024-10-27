@@ -1,0 +1,40 @@
+def zip(var a, var b) { 
+    let i := 0; 
+    let j := 0; 
+    let r := [ ]; 
+    while (i < length(a)) { 
+        append(r, [a[i], b[j]]); 
+        i := i + 1; 
+        j := j + 1; 
+    } 
+    return r; 
+}
+
+def flatten(var a) {
+    let i := 0;
+    let j := 0;
+    let tmp := 0;
+    let r := [];
+    while (i < length(a)) {
+        tmp := a[i];
+        j := 0;
+        while (j < length(tmp)) { 
+            append(r, tmp[j]);
+            j := j + 1;
+        }
+        i := i + 1;
+    }
+    return r;
+}
+
+def main() {
+    let a := ["a", "b", "c", "d", "e", "f"];
+    let b := [ 1, 2, 3, 4, 5, 6];
+    println a;
+    println b;
+    print "zip: ";
+    let q := zip(a, b);
+    println q;
+    print "flat: ";
+    println flatten(q);
+}
