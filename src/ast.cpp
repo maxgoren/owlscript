@@ -39,6 +39,7 @@ void printNode(astnode* n) {
             case FUNC_EXPR: cout<<"[func expr]"; break;
             case LAMBDA_EXPR: cout<<"[lambda expr]"; break;
             case REG_EXPR: cout<<"[regular expression]"; break;
+            case REF_EXPR: cout<<"[reference expression]"; break;
             default:
                 break;
         }
@@ -51,6 +52,7 @@ void printNode(astnode* n) {
             case EXPR_STMT: cout<<"[expr statment]"; break;
             case DEF_STMT:  cout<<"[def statement]"; break;
             case RETURN_STMT: cout<<"[return statement]"; break;
+            case REF_STMT: cout<<"[reference statement]"; break;
             default:
                 break;
         }
