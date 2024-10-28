@@ -21,24 +21,20 @@ def isRed(var tree) {
 }
 
 def rotL(var tree) {
-    println "(enter rotL)";
     let x := tree[right];
     tree[right] := x[left];
     x[left] := tree;
     x[color] := tree[color];
     tree[color] := 1;
-    println "(leave rotL)";
     return x;
 }
 
 def rotR(var tree) {
-    println "(Enter rotR)";
     let x := tree[left];
     tree[left] := x[right];
     x[right] := tree;
     x[color] := tree[color];
     tree[color] := 1;
-    println "(leave rotL)";
     return x;
 }
 
@@ -53,7 +49,6 @@ def colorFlip(var tree) {
 
 def balance(var tree) {
     let t := tree[left];
-    println "(enter balance)";
     if (isRed(tree[right]) == true) {
         println "single red";
         tree := rotL(tree);
@@ -73,7 +68,6 @@ def balance(var tree) {
     } else { 
         ; 
     }
-    println "(exit balance)";
     return tree;
 }
 
@@ -81,7 +75,6 @@ def insert(var tree, var v) {
     if (tree == nil) {
         tree := makeNode(tree, v);
         println "base case, creating node for " + v;
-        println tree;
     } else {
         println v + " < " + tree[info] + "?";
         if (v < tree[info]) {

@@ -145,7 +145,25 @@ Token Lexer::extractString() {
     while (!sb.done()) {
         if (sb.get() == '"')
             break; 
-        str.push_back(sb.get());
+        if (sb.get() == '\\') {
+            sb.advance();
+            switch (sb.get()) {
+                case 'n': 
+                    str.push_back('\n');
+                    break;
+                case 't': 
+                    str.push_back('\t');
+                    break;
+                case 'r': 
+                    str.push_back('\r');
+                    break;
+                default:
+                    str.push_back('\\');
+                    break;
+            };
+        } else {
+            str.push_back(sb.get());
+        }
         sb.advance();
     }
     if (!sb.done() && sb.get() != '"') {
