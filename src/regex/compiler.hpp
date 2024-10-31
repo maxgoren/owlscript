@@ -169,7 +169,8 @@ class NFACompiler {
             RegExParser parser;
             string re = "(" + pattern + ")";
             auto ast = parser.parse(re);
-            traverse(ast, 1);
+            if (loud)
+                traverse(ast, 1);
             gen_nfa(ast);
             return nfaStack.pop();
         }

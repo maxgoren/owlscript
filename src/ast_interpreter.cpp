@@ -205,8 +205,10 @@ Object ASTInterpreter::getObjectByID(string id, int scope) {
 }
 
 Object ASTInterpreter::getObjectByReference(astnode* node) {
+    enter("Getting Object by reference");
     string id = getNameAndScopeFromNode(node).first;
     int scope = getNameAndScopeFromNode(node).second;
+    say("Got: " + id + " at scope level " + to_string(scope));
     Object m = getObjectByID(id, scope);
     Object refd = getObjectByID(m.refVal->objectId, m.refVal->objectScope);
     return refd;
@@ -641,7 +643,7 @@ Object ASTInterpreter::execRegularExpr(astnode* node) {
     Object m;
     Object toCheck = execExpression(node->child[0]);
     Object regExpr = execExpression(node->child[1]);
-    NFACompiler compiler;
+    NFACompiler compiler(traceEval);
     NFA nfa = compiler.compile(toString(regExpr));
     gc.add(toCheck.objval);
     gc.add(regExpr.objval);
