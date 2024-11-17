@@ -166,7 +166,7 @@ class NFACompiler {
             loud = trace;
         }
         NFA compile(string pattern) {
-            RegExParser parser;
+            Parser parser;
             string re = "(" + pattern + ")";
             auto ast = parser.parse(re);
             if (loud)

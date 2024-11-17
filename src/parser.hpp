@@ -8,7 +8,7 @@
 #include "lex.hpp"
 using namespace std;
 
-class RegExParser {
+class Parser {
     private:
         bool loud;
         unordered_set<Symbol> listExprs;
@@ -47,7 +47,7 @@ class RegExParser {
         astnode* makeListExpr();
         astnode* makeLambdaExpr();
     public:
-        RegExParser(bool debug = false);
+        Parser(bool debug = false);
         astnode* parse(vector<Token> in);
 };
 

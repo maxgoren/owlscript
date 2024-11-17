@@ -83,7 +83,7 @@ bool isOp(RegExToken c) {
     return false;
 }
 
-class RegExParser {
+class Parser {
     private:
         RegularExpression* makeTree(vector<RegExToken> postfix) {
             Stack<RegularExpression*> sf;
@@ -181,7 +181,7 @@ class RegExParser {
             return postfix;
         }
     public:
-        RegExParser() {
+        Parser() {
 
         }
         RegularExpression* parse(string regexp) {

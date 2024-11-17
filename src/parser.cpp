@@ -1,20 +1,20 @@
 #include "parser.hpp"
 
-RegExParser::RegExParser(bool debug) {
+Parser::Parser(bool debug) {
     loud = false;
     listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_LSQUARE };
 }
 
-astnode* RegExParser::parse(vector<Token> in) {
+astnode* Parser::parse(vector<Token> in) {
     init(in);
     return program();
 }
 
-inline Symbol RegExParser::currSym() {
+inline Symbol Parser::currSym() {
     return current.symbol;
 }
 
-bool RegExParser::match(Symbol s) {
+bool Parser::match(Symbol s) {
     if (s == currSym()) {
         if (loud)
             cout<<"Matched: "<<symbolAsString[s]<<" - "<<current.strval<<endl;
@@ -25,7 +25,7 @@ bool RegExParser::match(Symbol s) {
     return false;
 }
 
-void RegExParser::advance() {
+void Parser::advance() {
     
     if (tpos+1 < tokens.size()) {
         tpos++;
@@ -35,13 +35,13 @@ void RegExParser::advance() {
     else current = Token(TK_EOF, "<eof>");
 }
 
-void RegExParser::init(vector<Token> in) {
+void Parser::init(vector<Token> in) {
     tokens = in;
     tpos = 0;
     current = tokens[tpos];
 }
 
-astnode* RegExParser::makeLetStatement() {
+astnode* Parser::makeLetStatement() {
     astnode* m = makeStmtNode(LET_STMT, current);
     if (currSym() == TK_LET || currSym() == TK_VAR)
         match(currSym());
@@ -51,33 +51,33 @@ astnode* RegExParser::makeLetStatement() {
     return m;
 }
 
-astnode* RegExParser::makePrintStatement() {
+astnode* Parser::makePrintStatement() {
     astnode* m = makeStmtNode(PRINT_STMT, current);
     match(TK_PRINT);
     m->child[0] = simpleExpr();
     return m;
 }
 
-astnode* RegExParser::makeExprStatement() {
+astnode* Parser::makeExprStatement() {
     astnode* m = makeStmtNode(EXPR_STMT, current);
     m->child[0] = simpleExpr();
     return m;
 }
 
-astnode* RegExParser::makeBlockStatement() {
+astnode* Parser::makeBlockStatement() {
     astnode* m = makeStmtNode(BLOCK_STMT, current);
     m->child[0] = makeBlock();
     return m;
 }
 
-astnode* RegExParser::makeBlock() {
+astnode* Parser::makeBlock() {
     match(TK_LCURLY);
     astnode* m = statementList();
     match(TK_RCURLY);
     return m;
 }
 
-astnode* RegExParser::makeWhileStatement() {
+astnode* Parser::makeWhileStatement() {
     astnode* m = makeStmtNode(WHILE_STMT, current);
     match(TK_WHILE);
     match(TK_LPAREN);
@@ -87,7 +87,7 @@ astnode* RegExParser::makeWhileStatement() {
     return m;
 }
 
-astnode* RegExParser::makeForStatement() {
+astnode* Parser::makeForStatement() {
     astnode* m = makeStmtNode(FOR_STMT, current);
     match(TK_FOR);
     match(TK_LPAREN);
@@ -101,7 +101,7 @@ astnode* RegExParser::makeForStatement() {
     return m;
 }
 
-astnode* RegExParser::makeIfStatement() {
+astnode* Parser::makeIfStatement() {
     astnode* m = makeStmtNode(IF_STMT, current);
     match(TK_IF);
     match(TK_LPAREN);
@@ -115,14 +115,14 @@ astnode* RegExParser::makeIfStatement() {
     return m;
 }
 
-astnode* RegExParser::makeReturnStatement() {
+astnode* Parser::makeReturnStatement() {
     astnode* m = makeStmtNode(RETURN_STMT, current);
     match(TK_RETURN);
     m->child[0] = simpleExpr();
     return m;
 }
 
-astnode* RegExParser::paramList() {
+astnode* Parser::paramList() {
     match(TK_VAR);
     astnode* m = nullptr;
     if (currSym() == TK_REF) {
@@ -150,7 +150,7 @@ astnode* RegExParser::paramList() {
     return m;
 }
 
-astnode* RegExParser::argsList() {
+astnode* Parser::argsList() {
     astnode* m = simpleExpr();
     astnode* c = m;
     while (currSym() == TK_COMMA) {
@@ -161,7 +161,7 @@ astnode* RegExParser::argsList() {
     return m;
 }
 
-astnode* RegExParser::makeDefStatement() {
+astnode* Parser::makeDefStatement() {
     astnode* m = makeStmtNode(DEF_STMT, current);
     if (currSym() == TK_DEF)
         match(TK_DEF);
@@ -179,7 +179,7 @@ astnode* RegExParser::makeDefStatement() {
     return m;
 }
 
-astnode* RegExParser::makeStructStatement() {
+astnode* Parser::makeStructStatement() {
     astnode* m = makeStmtNode(STRUCT_STMT, current);
     match(TK_STRUCT);
     m->attributes.strval = current.strval;
@@ -188,11 +188,11 @@ astnode* RegExParser::makeStructStatement() {
     return m;
 }
 
-astnode* RegExParser::program() {
+astnode* Parser::program() {
     return statementList();
 }
 
-astnode* RegExParser::statementList() {
+astnode* Parser::statementList() {
     astnode* m = statement();
     astnode* c = m;
     while (currSym() != TK_COMMA && currSym() != TK_RCURLY && currSym() != TK_EOF) {
@@ -211,7 +211,7 @@ astnode* RegExParser::statementList() {
     return m;
 }
 
-astnode* RegExParser::statement() {
+astnode* Parser::statement() {
     astnode* m = nullptr;
     switch (currSym()) {
         case TK_PRINT: 
@@ -272,7 +272,7 @@ astnode* RegExParser::statement() {
     return m;
 }
 
-astnode* RegExParser::simpleExpr() {
+astnode* Parser::simpleExpr() {
     astnode* node = expr();
     while (isRelOp(currSym())) {
         astnode* m = makeExprNode(RELOP_EXPR, current);
@@ -284,7 +284,7 @@ astnode* RegExParser::simpleExpr() {
     return node;
 }
 
-astnode* RegExParser::expr() {
+astnode* Parser::expr() {
     astnode* node = term();
     while (currSym() == TK_ADD || currSym() == TK_SUB) {
         astnode* m = makeExprNode(BINARYOP_EXPR, current);
@@ -296,7 +296,7 @@ astnode* RegExParser::expr() {
     return node;
 }
 
-astnode* RegExParser::term() {
+astnode* Parser::term() {
     astnode* node = factor();
     while (currSym() == TK_MUL || currSym() == TK_DIV || currSym() == TK_MOD) {
         astnode* m = makeExprNode(BINARYOP_EXPR, current);
@@ -309,7 +309,7 @@ astnode* RegExParser::term() {
 }
 
 //right associative, so right recursive instead of loop.
-astnode* RegExParser::factor() {
+astnode* Parser::factor() {
      if (currSym() == TK_SQRT) {
         astnode* m = makeExprNode(UNARYOP_EXPR, current);
         match(TK_SQRT);
@@ -327,7 +327,7 @@ astnode* RegExParser::factor() {
     return node;
 }
 
-astnode* RegExParser::var() {
+astnode* Parser::var() {
     if (currSym() == TK_ID) {
         return makeIDExpr();
     }
@@ -380,7 +380,7 @@ astnode* RegExParser::var() {
     return nullptr;
 }
 
-astnode* RegExParser::makeIDExpr() {
+astnode* Parser::makeIDExpr() {
     astnode* m = makeExprNode(ID_EXPR, current);
     match(TK_ID);
     if (currSym() == TK_LSQUARE) {
@@ -411,7 +411,7 @@ astnode* RegExParser::makeIDExpr() {
     return m; 
 }
 
-astnode* RegExParser::makeConstExpr() {
+astnode* Parser::makeConstExpr() {
     astnode* m;
     switch (currSym()) {
         case TK_NIL: {
@@ -450,7 +450,7 @@ astnode* RegExParser::makeConstExpr() {
     return m;
 }
 
-astnode* RegExParser::makeLambdaExpr() {
+astnode* Parser::makeLambdaExpr() {
     astnode* m = makeExprNode(LAMBDA_EXPR, current);
     match(currSym());
     if (currSym() == TK_ID) {
@@ -470,7 +470,7 @@ astnode* RegExParser::makeLambdaExpr() {
     return m;
 }
 
-astnode* RegExParser::makeListExpr() {
+astnode* Parser::makeListExpr() {
     astnode* m;
     switch (currSym()) {
         case TK_LSQUARE: {

@@ -54,6 +54,11 @@ vector<Token> Lexer::lex() {
         if (result.back().symbol == TK_EOF)
             break;        
     }
+    if (state == ERROR) {
+        result.clear();
+        next.symbol = TK_EOF;
+        result.push_back(next);
+    }
     return result;
 }
 
@@ -99,13 +104,13 @@ Token Lexer::nextToken() {
             } else {
                 cout<<"An Error Occured on line "<<sb.lineNo()<<" during lexing."<<endl;
                 next.symbol = TK_EOF;
-                state = DONE;
+                //state = DONE;
             }
         } else {
             if (loud)
                 cout<<"State: "<<dfastate[state]<<endl;
         }
-        if (sb.done()) {
+        if (sb.done() && state != ERROR) {
             if (loud) 
                 cout<<"Input Stream Exhausted."<<endl;
             state = DONE;
@@ -166,7 +171,7 @@ Token Lexer::extractString() {
         }
         sb.advance();
     }
-    if (!sb.done() && sb.get() != '"') {
+    if (sb.get() != '"') {
         state = ERROR;
         cout<<"Error: unterminated string"<<endl;
         return Token(TK_ERROR, "unterminated string");
