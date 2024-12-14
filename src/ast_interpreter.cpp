@@ -532,13 +532,53 @@ Object ASTInterpreter::execSubscriptExpression(astnode* node) {
     return m;
 }
 
+ListNode* ASTInterpreter::merge(ListNode* a, ListNode* b, LambdaObj* compFunc) {
+    ListNode d; ListNode* c = &d;
+    while (a && b) {
+        bool cmpResult = false;
+        if (compFunc == nullptr) {
+            cmpResult = compareUnknownTypes(a->info, b->info);
+        } else {
+            astnode* args = makeExprNode(CONST_EXPR, Token(getSymbol(a->info), toString(a->info)));
+            args->next = makeExprNode(CONST_EXPR, Token(getSymbol(b->info), toString(b->info)));
+            cmpResult = executeFunction(compFunc, args).boolval;
+        }
+        if (cmpResult) {
+            c->next = a; a = a->next; c = c->next;
+        } else {
+            c->next = b; b = b->next; c = c->next;
+        }
+    }
+    c->next = (a == nullptr) ? b:a;
+    return d.next;
+}
+
+ListNode* ASTInterpreter::mergesort(ListNode* list, LambdaObj* compFunc) {
+    if (list == nullptr || list->next == nullptr)
+        return list;
+    ListNode* slow = list, *fast = list->next;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    ListNode* front = list, *back = slow->next;
+    slow->next = nullptr;
+    return merge(mergesort(front, compFunc), mergesort(back, compFunc), compFunc);
+}
+
 Object ASTInterpreter::execSortList(astnode* node) {
     enter("sort list");
     Object m;
     string id;
     resolveObjForExpression(node, id, m);
     ListObj* list = getList(m);
-    ListNode* head = mergesort(list->head);
+    Object lm = execExpression(node->child[1]);
+    LambdaObj* lmbd = nullptr;
+    if (node->child[1] != nullptr) {
+        Object lm = execExpression(node->child[1]);
+        lmbd = getLambda(lm);
+    }
+    ListNode* head = mergesort(list->head, lmbd);
     ListNode* tail = head;
     while (tail->next != nullptr)
         tail = tail->next;

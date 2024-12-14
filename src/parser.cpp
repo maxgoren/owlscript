@@ -529,6 +529,10 @@ astnode* Parser::makeListExpr() {
             match(TK_SORT);
             match(TK_LPAREN);
             m->child[0] = simpleExpr();
+            if (currSym() == TK_COMMA) {
+                match(TK_COMMA);
+                m->child[1] = simpleExpr();
+            } 
             match(TK_RPAREN);
         }
         break;

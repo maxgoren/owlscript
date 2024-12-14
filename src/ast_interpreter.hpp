@@ -28,6 +28,8 @@ class ASTInterpreter {
         pair<string,int> getNameAndScopeFromNode(astnode* node);
         void resolveObjForExpression(astnode* node, string& id, Object& m);
         
+        ListNode* merge(ListNode* a, ListNode* b, LambdaObj* compfunc);
+        ListNode* mergesort(ListNode* list, LambdaObj* compfunc);
         
         Object exec(astnode* node);
         Object eval(astnode* node);

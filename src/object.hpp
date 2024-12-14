@@ -154,8 +154,6 @@ void   appendToList(ListObj* list, Object m);
 void   pushToList(ListObj* list, Object m);
 Object popList(ListObj* list);
 bool   compareUnknownTypes(Object a, Object b);
-ListNode* merge(ListNode* a, ListNode* b);
-ListNode* mergesort(ListNode* list);
 
 void destroyObject(ObjBase*);
 void destroyList(ListObj*);

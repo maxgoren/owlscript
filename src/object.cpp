@@ -277,32 +277,6 @@ bool compareUnknownTypes(Object a, Object b) {
     return a_is_winner;
 }
 
-ListNode* merge(ListNode* a, ListNode* b) {
-    ListNode d; ListNode* c = &d;
-    while (a && b) {
-        if (compareUnknownTypes(a->info, b->info)) {
-            c->next = a; a = a->next; c = c->next;
-        } else {
-            c->next = b; b = b->next; c = c->next;
-        }
-    }
-    c->next = (a == nullptr) ? b:a;
-    return d.next;
-}
-
-ListNode* mergesort(ListNode* list) {
-    if (list == nullptr || list->next == nullptr)
-        return list;
-    ListNode* slow = list, *fast = list->next;
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-    }
-    ListNode* front = list, *back = slow->next;
-    slow->next = nullptr;
-    return merge(mergesort(front), mergesort(back));
-}
-
 StructObj* getStruct(Object m) {
     return m.objval->structObj;
 }

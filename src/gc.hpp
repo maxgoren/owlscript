@@ -56,7 +56,7 @@ class GC {
                         markStructFields(m);
                         break;
                     default:
-                        break;
+                        break; 
                 }
             }
         }
