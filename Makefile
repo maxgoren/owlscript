@@ -9,7 +9,7 @@ main:
 	g++ --std=c++17 -c ./src/resolve.cpp
 	g++ --std=c++17 -c ./src/token.cpp
 	g++ --std=c++17 -c ./src/main.cpp
-	g++ --std=c++17  *.o -o owlscript
+	g++ --std=c++17  *.o -o owlscript -lreadline
 	rm *.o
 
 debug:
@@ -23,5 +23,5 @@ debug:
 	g++ --std=c++17 -c -g ./src/resolve.cpp
 	g++ --std=c++17 -c -g ./src/token.cpp
 	g++ --std=c++17 -c -g ./src/main.cpp
-	g++ --std=c++17 -g *.o -o owlscript
+	g++ --std=c++17 -g *.o -o owlscript -lreadline
 	rm *.o

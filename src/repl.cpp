@@ -1,17 +1,17 @@
 #include "repl.hpp"
-
+#include "readline/readline.h"
 REPL::REPL(bool debug) : loud(debug), builder(debug), interpreter(debug) {
 
 }
 
 void REPL::start() {
     bool running = true;
-    string input;
+    string prompt, input;
     int lno = 0;
     vector<astnode*> asthistory;
     while (running) {
-        cout<<"Owlscript("<<lno++<<")> ";
-        getline(cin, input);
+        prompt = "Owlscript(" + to_string(lno++) + ")> ";
+        input = readline(prompt.data());
         if (input == "quit") {
             running = false;
             continue;
