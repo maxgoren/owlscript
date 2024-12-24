@@ -27,7 +27,7 @@ Using map operator on an anonymous list to get their fibonacci numbers:
 
          let fibd := map([9,10,11,12,13], fib);
 
-While owlscript does not have support for nested procedures, it _does_ have closures:
+it _does_ have closures:
 
         def counter() {
             let a := 0;
