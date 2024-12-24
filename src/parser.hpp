@@ -42,6 +42,7 @@ class Parser {
         astnode* term();
         astnode* factor();
         astnode* var();
+        astnode* primary();
         astnode* makeIDExpr();
         astnode* makeConstExpr();
         astnode* makeListExpr();

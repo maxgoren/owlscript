@@ -328,6 +328,18 @@ astnode* Parser::factor() {
 }
 
 astnode* Parser::var() {
+    astnode* node;
+    if (currSym() == TK_SUB) {
+        node = makeExprNode(UNARYOP_EXPR, current);
+        match(TK_SUB);
+        node->child[0] = var();
+        return node;
+    }
+    node = primary();
+    return node;
+}
+
+astnode* Parser::primary() {
     if (currSym() == TK_ID) {
         return makeIDExpr();
     }

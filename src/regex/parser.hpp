@@ -113,7 +113,7 @@ class Parser {
         }
         bool leftAssociative(RegExToken c) {
             switch (c.symbol) {
-                 case RE_STAR:
+                case RE_STAR:
                 case RE_PLUS:
                 case RE_QUANTIFIER:
                 case RE_QUESTION: 
