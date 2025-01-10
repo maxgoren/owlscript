@@ -6,20 +6,19 @@
 #include <map>
 #include "ast.hpp"
 #include "lex.hpp"
+#include "tokenstream.hpp"
 using namespace std;
 
 class Parser {
     private:
         bool loud;
         unordered_set<Symbol> listExprs;
-        vector<Token> tokens;
-        int tpos;
+        TokenStream ts;
         Token current;
         inline Symbol currSym();
-        Symbol lookahead();
         bool match(Symbol s);
         void advance();
-        void init(vector<Token> in);
+        void init(TokenStream& in);
         Lexer lexer;
         astnode* makeLetStatement();
         astnode* makeBlock();
@@ -38,10 +37,12 @@ class Parser {
         astnode* statementList();
         astnode* statement();
         astnode* simpleExpr();
+        astnode* compExpr();
         astnode* expr();
         astnode* term();
         astnode* factor();
         astnode* var();
+        astnode* range();
         astnode* primary();
         astnode* makeIDExpr();
         astnode* makeConstExpr();
@@ -49,7 +50,7 @@ class Parser {
         astnode* makeLambdaExpr();
     public:
         Parser(bool debug = false);
-        astnode* parse(vector<Token> in);
+        astnode* parse(TokenStream& in);
 };
 
 

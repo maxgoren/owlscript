@@ -88,6 +88,15 @@ Object ASTInterpreter::evalBinOp(astnode* node, Object& lhn, Object& rhn) {
         }
     } else if (typeOf(lhn) == AS_STRING || typeOf(rhn) == AS_STRING) {
         return evalStringOp(node->attributes.symbol, lhn, rhn);
+    } else if (typeOf(lhn) == AS_LIST && typeOf(rhn) == AS_LIST) {
+        ListObj* nl = makeListObj();
+        for (ListNode* it = getList(lhn)->head; it != nullptr; it = it->next) {
+            nl = appendToList(nl, it->info);
+        }
+        for (ListNode* it = getList(rhn)->head; it != nullptr; it = it->next) {
+            nl = appendToList(nl, it->info);
+        }
+        return makeListObject(nl);
     }
     return makeIntObject(0);
 }
@@ -199,7 +208,6 @@ Object ASTInterpreter::getObjectByID(string id, int scope) {
             m = makeNilObject();
         }
     }
-    say("[Resolved " + id + " to " + toString(m) + "]");
     leave();
     return m;
 }
@@ -403,11 +411,15 @@ Object ASTInterpreter::execCreateUnNamedList(astnode* node) {
     Object m;
     enter("[unnamed list]");
     ListObj* list = makeListObj();
-    for (astnode* it = node->child[0]; it != nullptr; it = it->next) {
-        Object m = execExpression(it);
-        appendToList(list, m);
+    if (node->child[0]->exprType == RANGE_EXPR) {
+        m = execExpression(node->child[0]);
+    } else {
+        for (astnode* it = node->child[0]; it != nullptr; it = it->next) {
+            Object m = execExpression(it);
+            appendToList(list, m);
+        }
+        m = makeListObject(list);
     }
-    m = makeListObject(list);
     gc.add(m.objval);
     leave();
     return m;
@@ -888,6 +900,36 @@ Object ASTInterpreter::execStatement(astnode* node) {
     return m;
 }
 
+Object ASTInterpreter::performRangeExpression(astnode* node) {
+    Object from = execExpression(node->child[0]);
+    Object to = execExpression(node->child[1]);
+    Object lm = execExpression(node->child[2]);
+    LambdaObj* lmbd = lm.type == AS_LAMBDA ? getLambda(lm):nullptr;
+    ListObj* list = makeListObj();
+    int a = getAsReal(from);
+    int b = getAsReal(to);
+    if ( a < b)  {
+    for (int i = a; i <= b; i++) {
+        if (lm.type == AS_LAMBDA) {
+            astnode* t = makeExprNode(CONST_EXPR, Token(TK_NUM, to_string(i)));
+            appendToList(list,  executeFunction(lmbd, t));
+        } else {
+            appendToList(list, makeIntObject(i));
+        }
+    }
+    } else {
+        for (int i = a; i >= b; i--) {
+            if (lm.type == AS_LAMBDA) {
+                astnode* t = makeExprNode(CONST_EXPR, Token(TK_NUM, to_string(i)));
+                appendToList(list,  executeFunction(lmbd, t));
+            } else {
+                appendToList(list, makeIntObject(i));
+            }
+        }
+    }
+    return makeListObject(list);
+}
+
 Object ASTInterpreter::execExpression(astnode* node) {
     if (node == nullptr) 
         return makeIntObject(0);
@@ -925,6 +967,9 @@ Object ASTInterpreter::execExpression(astnode* node) {
         case LAMBDA_EXPR:
             m = performCreateLambda(node);
             break;
+        case RANGE_EXPR: {
+            m = performRangeExpression(node);
+        } break;
         case LIST_EXPR:
         case SUBSCRIPT_EXPR:
             m = execListExpression(node);

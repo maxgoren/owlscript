@@ -10,8 +10,8 @@ astnode* ASTBuilder::build(string str) {
     l.init(str);
     auto m = l.lex();
     if (loud) {
-        for (auto t : m)
-            printToken(t);
+        for (m.start(); !m.done(); m.advance())
+            printToken(m.get());
     }
     astnode* ast = p.parse(m);
     resolver.resolveScope(ast);

@@ -3,8 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
+#include "tokenstream.hpp"
 #include "stringbuffer.hpp"
-#include "token.hpp"
 using namespace std;
 
 enum DFA_STATES {
@@ -30,7 +30,7 @@ class Lexer {
         Lexer(bool debug = false);
         void init(string str);
         void init(vector<string> lines);
-        vector<Token> lex();
+        TokenStream lex();
 };
 
 #endif

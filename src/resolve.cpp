@@ -162,6 +162,11 @@ void ResolveScope::resolveExpressionScope(astnode* node) {
         case BLESS_EXPR:
             resolve(node->child[0]);
             break;
+        case RANGE_EXPR:
+            resolve(node->child[0]);
+            resolve(node->child[1]);
+            resolve(node->child[2]);
+            break;
         default:
             break;
     }

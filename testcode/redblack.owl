@@ -76,7 +76,7 @@ def insert(var tree, var v) {
         tree := makeNode(tree, v);
         println "base case, creating node for " + v;
     } else {
-        println v + " < " + tree[info] + "?";
+        print v + " < " + tree[info] + "? ";
         if (v < tree[info]) {
             println "go left";
             tree[left] := insert(tree[left], v);

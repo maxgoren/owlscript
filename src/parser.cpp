@@ -5,7 +5,7 @@ Parser::Parser(bool debug) {
     listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_LSQUARE };
 }
 
-astnode* Parser::parse(vector<Token> in) {
+astnode* Parser::parse(TokenStream& in) {
     init(in);
     return program();
 }
@@ -26,19 +26,18 @@ bool Parser::match(Symbol s) {
 }
 
 void Parser::advance() {
-    
-    if (tpos+1 < tokens.size()) {
-        tpos++;
-        current = tokens[tpos];
+    ts.advance();
+    if (!ts.done()) {
+        current = ts.get();
         return;
     }
     else current = Token(TK_EOF, "<eof>");
 }
 
-void Parser::init(vector<Token> in) {
-    tokens = in;
-    tpos = 0;
-    current = tokens[tpos];
+void Parser::init(TokenStream& in) {
+    ts = in;
+    ts.start();
+    current = ts.get();
 }
 
 astnode* Parser::makeLetStatement() {
@@ -272,7 +271,20 @@ astnode* Parser::statement() {
     return m;
 }
 
+
 astnode* Parser::simpleExpr() {
+    astnode* node = compExpr();
+    while (isEqualityOp(currSym())) {
+        astnode* m = makeExprNode(RELOP_EXPR, current);
+        match(currSym());
+        m->child[0] = node;
+        node = m;
+        node->child[1] = compExpr();
+    }
+    return node;
+}
+
+astnode* Parser::compExpr() {
     astnode* node = expr();
     while (isRelOp(currSym())) {
         astnode* m = makeExprNode(RELOP_EXPR, current);
@@ -335,7 +347,23 @@ astnode* Parser::var() {
         node->child[0] = var();
         return node;
     }
-    node = primary();
+    node = range();
+    return node;
+}
+
+astnode* Parser::range() {
+    astnode* node = primary();
+    if (currSym() == TK_ELIPSE) {
+        astnode* t = makeExprNode(RANGE_EXPR, current);
+        match(TK_ELIPSE);
+        t->child[0] = node;
+        node = t;
+        t->child[1] = primary();
+        if (currSym() == TK_PIPE) {
+            match(TK_PIPE);
+            t->child[2] = primary();
+        }
+    }
     return node;
 }
 
@@ -388,7 +416,6 @@ astnode* Parser::primary() {
     if (listExprs.find(currSym()) != listExprs.end()) {
         return makeListExpr();
     }
-    
     return nullptr;
 }
 

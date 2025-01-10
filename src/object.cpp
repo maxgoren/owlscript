@@ -187,7 +187,7 @@ int listLength(ListObj* list) {
     return list->length;
 }
 
-void appendToList(ListObj* list, Object m) {
+ListObj* appendToList(ListObj* list, Object m) {
     ListNode* ln = makeListNode(m);
     if (listEmpty(list)) {
         list->head = ln;
@@ -196,6 +196,7 @@ void appendToList(ListObj* list, Object m) {
     }
     list->tail = ln;
     list->length += 1;
+    return list;
 }
 
 void pushToList(ListObj* list, Object m) {

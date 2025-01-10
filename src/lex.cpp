@@ -46,7 +46,7 @@ void Lexer::init(vector<string> lines) {
     state = START;
 }
 
-vector<Token> Lexer::lex() {
+TokenStream Lexer::lex() {
     vector<Token> result;
     Token next;
     while (state != DONE && state != ERROR) {
@@ -59,7 +59,9 @@ vector<Token> Lexer::lex() {
         next.symbol = TK_EOF;
         result.push_back(next);
     }
-    return result;
+    TokenStream resStream;
+    resStream.init(result);
+    return resStream;
 }
 
 Token Lexer::nextToken() {
@@ -244,6 +246,12 @@ Token Lexer::checkSpecials() {
         }
         return Token(TK_PIPE, "|");
     }
+    if (sb.get() == '.') {
+        if (sb.advance() == '.') {
+            return Token(TK_ELIPSE, "..");
+        }   
+        return Token(TK_PERIOD, ".");
+    }
     if (sb.get() == '%') return Token(TK_MOD, "%");
     if (sb.get() == '^') return Token(TK_POW, "^");
     if (sb.get() == '+') return Token(TK_ADD, "+");
@@ -253,7 +261,6 @@ Token Lexer::checkSpecials() {
     if (sb.get() == '}') return Token(TK_RCURLY, "}");
     if (sb.get() == '[') return Token(TK_LSQUARE, "[");
     if (sb.get() == ']') return Token(TK_RSQUARE, "]");
-    if (sb.get() == '.') return Token(TK_PERIOD, ".");
     if (sb.get() == ',') return Token(TK_COMMA, ",");
     if (sb.get() == ';') return Token(TK_SEMI, ";");
     state = ERROR;

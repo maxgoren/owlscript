@@ -150,7 +150,7 @@ ObjectType typeOf(Object obj);
 
 bool   listEmpty(ListObj* list);
 int    listLength(ListObj* list);
-void   appendToList(ListObj* list, Object m);
+ListObj*   appendToList(ListObj* list, Object m);
 void   pushToList(ListObj* list, Object m);
 Object popList(ListObj* list);
 bool   compareUnknownTypes(Object a, Object b);
