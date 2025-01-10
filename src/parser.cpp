@@ -359,11 +359,19 @@ astnode* Parser::range() {
         t->child[0] = node;
         node = t;
         t->child[1] = primary();
+    }
+    if (currSym() == TK_PIPE) {
+        astnode* t = makeExprNode(LISTCOMP_EXPR, current);
+        match(TK_PIPE);
+        t->child[0] = node;
+        node = t;
+        node->child[1] = primary();
         if (currSym() == TK_PIPE) {
             match(TK_PIPE);
-            t->child[2] = primary();
+            node->child[2] = primary();
         }
     }
+    
     return node;
 }
 

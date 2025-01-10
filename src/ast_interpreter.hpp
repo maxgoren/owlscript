@@ -59,6 +59,7 @@ class ASTInterpreter {
         Object performSubscriptAssignment(astnode* node, string id, int scope);
         Object performStructFieldAssignment(astnode* node, Object& m);
         Object performRangeExpression(astnode* node);
+        Object performListComprehension(astnode* node);
         //List operations
         Object execSubscriptExpression(astnode* node);
         Object execCreateUnNamedList(astnode* node);
