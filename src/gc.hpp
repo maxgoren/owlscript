@@ -15,6 +15,7 @@ class GC {
                 case AS_STRUCT:
                 case AS_LAMBDA:
                 case AS_LIST:
+                //case AS_FILE:
                         return true;
                 default:
                     break;
@@ -55,6 +56,12 @@ class GC {
                     case OT_STRUCT:
                         markStructFields(m);
                         break;
+                    case OT_FILE:
+                        for (auto it = m.objval->fileObj->lines->head; it != nullptr; it = it->next) {
+                            if (is_gc_object(it->info)) {
+                                checkObject(it->info);
+                            }
+                        }
                     default:
                         break; 
                 }
@@ -86,8 +93,8 @@ class GC {
                 if (loud) {
                     cout<<"Reclaiming: "<<m<<"\n";
                 }
-                allocated_objects.erase(m);
-                destroyObject(m);
+                //allocated_objects.erase(m);
+                //destroyObject(m);
             }
         }
     public:

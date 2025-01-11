@@ -1,4 +1,4 @@
-main:
+main: 
 	g++ --std=c++17 -c ./src/ast.cpp
 	g++ --std=c++17 -c ./src/ast_builder.cpp
 	g++ --std=c++17 -c ./src/ast_interpreter.cpp
@@ -25,3 +25,4 @@ debug:
 	g++ --std=c++17 -c -g ./src/main.cpp
 	g++ --std=c++17 -g *.o -o owlscript -lreadline
 	rm *.o
+

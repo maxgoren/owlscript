@@ -33,6 +33,9 @@ LambdaObj* getLambda(Object m) {
 }
 
 ListObj* getList(Object m) {
+    if (typeOf(m) == AS_FILE) {
+        return m.objval->fileObj->lines;
+    }
     return m.objval->listObj;
 }
 
@@ -55,6 +58,12 @@ ListObj* makeListObj() {
     list->head = nullptr;
     list->tail = nullptr;
     return list;
+}
+
+FileObj* makeFileObj(StringObj* fname) {
+    FileObj* fo = new FileObj;
+    fo->fname = fname;
+    return fo;
 }
 
 ObjBase* makeObjBase(ObjType ot) {
@@ -113,6 +122,13 @@ Object makeStructObject(StructObj* sobj) {
     Object o(AS_STRUCT);
     o.objval = makeObjBase(OT_STRUCT);
     o.objval->structObj = sobj;
+    return o;
+}
+
+Object makeFileObject(FileObj* fobj) {
+    Object o(AS_FILE);
+    o.objval = makeObjBase(OT_FILE);
+    o.objval->fileObj = fobj;
     return o;
 }
 
@@ -217,6 +233,26 @@ Object popList(ListObj* list) {
     return m;
 }
 
+Object popBackList(ListObj* list) {
+    Object m  = list->tail->info;
+    if (list->length == 1) {
+        ListNode* t = list->head;
+        list->head = nullptr;
+        list->length = 0;
+        delete t;
+        return m;
+    }
+    ListNode* x = list->head;
+    while (x->next != nullptr && x->next != list->tail) {
+        x = x->next;
+    }
+    ListNode* t = x->next;
+    x->next = NULL;
+    list->tail = x;
+    list->length -= 1;
+    return m;
+}
+
 string listToString(Object obj) {
     string liststr = "[ ";
     for (auto it = getList(obj)->head; it != nullptr; it = it->next) {
@@ -256,6 +292,14 @@ string toString(Object obj) {
         case AS_LIST:   return listToString(obj);
         case AS_LAMBDA: return "(lambda)";
         case AS_STRUCT: return structToString(obj);
+        case AS_FILE: {
+            string tmp;
+            for (ListNode* it = obj.objval->fileObj->lines->head; it != nullptr; it = it->next) {
+                tmp.append(toString(it->info));
+                tmp.append("\n");
+            }
+            return tmp;
+        } break;
         case AS_NIL:  
         default: 
             break;

@@ -33,6 +33,10 @@ Lexer::Lexer(bool debug) {
     reserved["make"] = TK_MAKE;
     reserved["bless"] = TK_MAKE;
     reserved["nil"] = TK_NIL;
+    reserved["shift"] = TK_SHIFT;
+    reserved["unshift"] = TK_UNSHIFT;
+    reserved["fopen"] = TK_FOPEN;
+    reserved["flclose"] = TK_FCLOSE;
     state = DONE;
 }
 

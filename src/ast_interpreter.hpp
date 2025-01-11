@@ -10,6 +10,7 @@
 #include "gc.hpp"
 using namespace std;
 
+void saveFile(Object& m);
 
 class ASTInterpreter {
     public:
@@ -60,12 +61,15 @@ class ASTInterpreter {
         Object performStructFieldAssignment(astnode* node, Object& m);
         Object performRangeExpression(astnode* node);
         Object performListComprehension(astnode* node);
+        Object performFileOpenExpression(astnode* node);
+        Object performFileCloseExpression(astnode* node);
         //List operations
         Object execSubscriptExpression(astnode* node);
         Object execCreateUnNamedList(astnode* node);
         Object execListExpression(astnode* node);
         Object execIsEmptyList(astnode* node);
         Object execAppendList(astnode* node);
+        Object execPopBackList(astnode* node);
         Object execSortList(astnode* node);
         Object execPushList(astnode* node);
         Object execPopList(astnode* node);

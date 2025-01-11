@@ -1,15 +1,16 @@
 #ifndef object_hpp
 #define object_hpp
 #include <iostream>
+#include <fstream>
 #include "ast.hpp"
 using namespace std;
 
 enum ObjectType {
-    AS_INT, AS_REAL, AS_BOOL, AS_STRING, AS_LIST, AS_LAMBDA, AS_STRUCT, AS_REF, AS_NIL
+    AS_INT, AS_REAL, AS_BOOL, AS_STRING, AS_LIST, AS_LAMBDA, AS_STRUCT, AS_REF, AS_FILE, AS_NIL
 };
 
 enum ObjType {
-    OT_STR, OT_LIST, OT_LAMBDA, OT_STRUCT
+    OT_STR, OT_LIST, OT_LAMBDA, OT_STRUCT, OT_FILE
 };
 
 struct StringObj {
@@ -40,6 +41,12 @@ struct WeakRef {
 };
 
 
+struct FileObj {
+    StringObj* fname;
+    ListObj* lines;
+};
+
+
 struct StructObj;
 
 struct ObjBase {
@@ -49,6 +56,7 @@ struct ObjBase {
         StringObj* stringObj;
         LambdaObj* lambdaObj;
         StructObj* structObj;
+        FileObj* fileObj;
     };
     bool mark;
     int refCount;
@@ -77,6 +85,7 @@ struct Object {
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
             case AS_REF: { refVal = ob.refVal; } break;
+            case AS_FILE: { objval = ob.objval; objval->fileObj = ob.objval->fileObj; objval->fileObj->lines = ob.objval->fileObj->lines; } break;
             case AS_NIL: intval = 0; break;
             default: 
                 break;
@@ -94,6 +103,7 @@ struct Object {
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
             case AS_REF: { refVal = ob.refVal; } break;
+            case AS_FILE: { objval = ob.objval; objval->fileObj = ob.objval->fileObj; objval->fileObj->lines = ob.objval->fileObj->lines; } break;
             case AS_NIL: intval = 0; break;
             default: 
                 break;
@@ -123,6 +133,7 @@ StructObj* makeStructObj();
 LambdaObj* makeLambdaObj(astnode* body, astnode* params);
 StringObj* makeStringObj(string str);
 ListObj*   makeListObj();
+FileObj*   makeFileObj(StringObj* filename);
 ObjBase*   makeObjBase(ObjType ot);
 ListNode*  makeListNode(Object& m);
 VarList*   makeVarList(string key, Object val, VarList* list);
@@ -135,6 +146,7 @@ Object makeStringObject(string val);
 Object makeLambdaObject(LambdaObj* lambda);
 Object makeListObject(ListObj* list);
 Object makeStructObject(StructObj* structobj);
+Object makeFileObject(FileObj* fileObj);
 Object makeNilObject();
 Object makeReferenceObject(string id, int scope);
 
@@ -142,6 +154,7 @@ ListObj* getList(Object m);
 LambdaObj* getLambda(Object m);
 StructObj* getStruct(Object m);
 StringObj* getString(Object m);
+FileObj* getFile(Object m);
 double getAsReal(Object m);
 
 bool comparesAsOrdinal(Object m);
@@ -153,6 +166,7 @@ int    listLength(ListObj* list);
 ListObj*   appendToList(ListObj* list, Object m);
 void   pushToList(ListObj* list, Object m);
 Object popList(ListObj* list);
+Object popBackList(ListObj* list);
 bool   compareUnknownTypes(Object a, Object b);
 
 void destroyObject(ObjBase*);

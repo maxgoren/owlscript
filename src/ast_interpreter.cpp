@@ -231,8 +231,16 @@ void ASTInterpreter::addToContext(string id, Object m, int scope) {
     }    
 }
 
+void saveFile(Object& m) {
+    ofstream ofile(m.objval->fileObj->fname->str);
+    if (ofile.is_open()) {
+        ofile<<toString(m)<<endl;
+        ofile.close();
+    }
+}
+
 Object ASTInterpreter::performListAssignment(astnode* node, Object& m) {
-    ListObj* list = getList(m);
+    ListObj* list = typeOf(m) == AS_LIST ? getList(m):m.objval->fileObj->lines;
     Object subm = execExpression(node->child[0]->child[1]);
     int sub = atoi(toString(subm).c_str());
     if (sub > list->length || sub < 0) {
@@ -245,7 +253,12 @@ Object ASTInterpreter::performListAssignment(astnode* node, Object& m) {
         it = it->next;
     }
     it->info = execExpression(node->child[1]);
-    m.objval->listObj = list;
+    if (typeOf(m) == AS_LIST) {
+        m.objval->listObj = list;
+    } else {
+        m.objval->fileObj->lines = list;
+        saveFile(m);
+    }
     return m;
 }
 
@@ -269,7 +282,7 @@ pair<string,int> ASTInterpreter::getNameAndScopeFromNode(astnode* node) {
 
 Object ASTInterpreter::performSubscriptAssignment(astnode* node, string id, int scope) {
     Object m = getObjectByID(id, scope);
-    if (typeOf(m) == AS_LIST) {
+    if (typeOf(m) == AS_LIST || typeOf(m) == AS_FILE) {
         m = performListAssignment(node, m);
     } else if (typeOf(m) == AS_STRUCT) {
         m = performStructFieldAssignment(node, m);
@@ -449,6 +462,9 @@ Object ASTInterpreter::execAppendList(astnode* node) {
     Object t = execExpression(node->child[1]);
     appendToList(getList(m), t);
     addToContext(id, m, node->child[0]->attributes.depth);
+    if (typeOf(m) == AS_FILE) {
+        saveFile(m);
+    }
     leave();
     return t;
 }
@@ -461,6 +477,9 @@ Object ASTInterpreter::execPushList(astnode* node) {
     Object t = execExpression(node->child[1]);
     pushToList(getList(m), t);
     addToContext(id, m, node->child[0]->attributes.depth);
+    if (typeOf(m) == AS_FILE) {
+        saveFile(m);
+    }
     leave();
     return t;
 }
@@ -472,6 +491,20 @@ Object ASTInterpreter::execPopList(astnode* node) {
     resolveObjForExpression(node, id, m);
     popList(getList(m));
     addToContext(id, m, node->child[0]->attributes.depth);
+    if (typeOf(m) == AS_FILE) {
+        saveFile(m);
+    }
+    leave();
+    return m;
+}
+
+Object ASTInterpreter::execPopBackList(astnode* node) {
+    enter("unshift list");
+    string id;
+    Object m;
+    resolveObjForExpression(node, id, m);
+    popBackList(getList(m));
+    addToContext(id, m, node->child[0]->attributes.depth);
     leave();
     return m;
 }
@@ -482,6 +515,7 @@ Object ASTInterpreter::execLength(astnode* node) {
     Object m, t;
     resolveObjForExpression(node, id, m);
     switch (typeOf(m)) {
+        case AS_FILE:
         case AS_LIST:
             t = makeIntObject(listLength(getList(m)));
             break;
@@ -509,9 +543,9 @@ Object ASTInterpreter::execSubscriptExpression(astnode* node) {
     string id;
     Object m;
     resolveObjForExpression(node, id, m);
-    if (typeOf(m) == AS_LIST) {
+    if (typeOf(m) == AS_LIST || typeOf(m) == AS_FILE) {
         Object subm = execExpression(node->child[1]);
-        ListObj* list = getList(m);
+        ListObj* list = typeOf(m) == AS_LIST ? getList(m):m.objval->fileObj->lines;
         int subscript = atoi(toString(subm).c_str());
         if (subscript > list->length || list->length == 0) {
             cout<<"Error: Subscript out of range."<<endl;
@@ -667,6 +701,9 @@ Object ASTInterpreter::execMap(astnode* node) {
     }
     m = makeListObject(result);
     gc.add(m.objval);
+    if (typeOf(m) == AS_FILE) {
+        saveFile(m);
+    }
     leave();
     return m;
 }
@@ -688,6 +725,9 @@ Object ASTInterpreter::execFilter(astnode* node) {
     }
     m = makeListObject(result);
     gc.add(m.objval);
+    if (typeOf(m) == AS_FILE) {
+        saveFile(m);
+    }
     leave();
     return m;
 }
@@ -717,6 +757,7 @@ Object ASTInterpreter::execListExpression(astnode* node) {
             case TK_LSQUARE: 
                 m = execCreateUnNamedList(node);
                 break;
+            case TK_SHIFT:
             case TK_APPEND:
                 m = execAppendList(node);
                 break;
@@ -725,6 +766,9 @@ Object ASTInterpreter::execListExpression(astnode* node) {
                 break;
             case TK_POP:
                 m = execPopList(node);
+                break;
+            case TK_UNSHIFT:
+                m = execPopBackList(node);
                 break;
             case TK_LENGTH:
                 m = execLength(node);
@@ -941,6 +985,35 @@ Object ASTInterpreter::performRangeExpression(astnode* node) {
     return makeListObject(list);
 }
 
+Object ASTInterpreter::performFileOpenExpression(astnode* node) {
+    Object m;
+    Object fn = execExpression(node);
+    FileObj* fobj = makeFileObj(fn.objval->stringObj);
+    fobj->lines = makeListObj();
+    ifstream ifile(toString(fn));
+    if (!ifile.is_open()) {
+        ofstream ofile(toString(fn));
+        if (ofile.is_open()) {
+            ofile<<' ';
+            ofile.close();
+            m = makeFileObject(fobj);
+            return m;
+        }
+        cout<<"Error: could not open file '"<<toString(fn)<<"'"<<endl;
+        return makeNilObject();
+    }
+    string buff;
+    while (ifile.good()) {
+        getline(ifile, buff);
+        Object m = makeStringObject(buff);
+        appendToList(fobj->lines, m);
+    }
+    m = makeFileObject(fobj);
+    return m;
+}
+Object ASTInterpreter::performFileCloseExpression(astnode* node) {
+    return makeNilObject();
+}
 Object ASTInterpreter::execExpression(astnode* node) {
     if (node == nullptr) 
         return makeIntObject(0);
@@ -978,9 +1051,9 @@ Object ASTInterpreter::execExpression(astnode* node) {
         case LAMBDA_EXPR:
             m = performCreateLambda(node);
             break;
-        case RANGE_EXPR: {
+        case RANGE_EXPR:
             m = performRangeExpression(node);
-        } break;
+            break;
         case LIST_EXPR:
         case SUBSCRIPT_EXPR:
             m = execListExpression(node);
@@ -988,6 +1061,14 @@ Object ASTInterpreter::execExpression(astnode* node) {
         case BLESS_EXPR:
             m = performBlessExpression(node);
             break;
+        case FILE_EXPR: {
+            switch (node->attributes.symbol) {
+                case TK_FOPEN:  m = performFileOpenExpression(node->child[0]); break;
+                case TK_FCLOSE: m = performFileCloseExpression(node->child[0]); break;
+                default:
+                    break;
+            };
+        } break;
         case LISTCOMP_EXPR:
             m = performListComprehension(node);
             break;

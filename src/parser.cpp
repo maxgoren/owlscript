@@ -2,7 +2,7 @@
 
 Parser::Parser(bool debug) {
     loud = false;
-    listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_LSQUARE };
+    listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_SHIFT, TK_UNSHIFT, TK_LSQUARE };
 }
 
 astnode* Parser::parse(TokenStream& in) {
@@ -421,6 +421,22 @@ astnode* Parser::primary() {
         match(TK_RPAREN);
         return m;
     }
+    if (currSym() == TK_FOPEN) {
+        astnode* m = makeExprNode(FILE_EXPR, current);
+        match(TK_FOPEN);
+        match(TK_LPAREN);
+        m->child[0] = simpleExpr();
+        match(TK_RPAREN);
+        return m;
+    }
+    if (currSym() == TK_FCLOSE) {
+        astnode* m = makeExprNode(FILE_EXPR, current);
+        match(TK_FCLOSE);
+        match(TK_LPAREN);
+        m->child[0] = simpleExpr();
+        match(TK_RPAREN);
+        return m;
+    }
     if (listExprs.find(currSym()) != listExprs.end()) {
         return makeListExpr();
     }
@@ -518,6 +534,7 @@ astnode* Parser::makeLambdaExpr() {
 }
 
 astnode* Parser::makeListExpr() {
+    cout<<"Making list expression"<<endl;
     astnode* m;
     switch (currSym()) {
         case TK_LSQUARE: {
@@ -525,6 +542,24 @@ astnode* Parser::makeListExpr() {
             match(TK_LSQUARE);
             m->child[0] = argsList();
             match(TK_RSQUARE);
+        }
+        break;
+        case TK_SHIFT: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_SHIFT);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_COMMA);
+            m->child[1] = simpleExpr();
+            match(TK_RPAREN);
+        }
+        break;
+        case TK_UNSHIFT: {
+            m = makeExprNode(LIST_EXPR, current);
+            match(TK_UNSHIFT);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_RPAREN);
         }
         break;
         case TK_APPEND: {
