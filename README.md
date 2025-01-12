@@ -9,6 +9,7 @@
   - struct types
   - regular expression matching
   - list comprehensions with set builder notation
+  - File I/O
   - interactive development through the REPL or run owlscript programs from the command line
 
 ### Some code examples
@@ -29,7 +30,11 @@ Using map operator on an anonymous list to get their fibonacci numbers:
 
          let fibd := map([9,10,11,12,13], fib);
 
-support for closures:
+Or using the Range operator to _generate_ the anonymous list:
+
+        let fibd := map([ 9 .. 13 ], fib);
+
+Speaking of generators, owlscript has support for closures:
 
         def counter() {
             let a := 0;
@@ -92,8 +97,8 @@ Regular expression matching is available through the match() function
 File I/O is accomplished with the fopen() procedure. Once a file has been opened (or created if the specified file doesn't exist) it can be manipulated
 as if it were a list of strings, with any changes being reflected back on the file
 
-   Owlscript(3)> let k := fopen("./testcode/lexscope.owl");
-   Owlscript(5)> for (x := 0; x < length(k); x := x + 1) { if (match(k[x], ".*ariab.*")) { println "match found on line " + x + ": " + k[x]; } else { ; } }
-    match found on line 0: var x := "a global variable";
-    match found on line 6:    var x := "a local variable";
-   Owlscript(6)> 
+    Owlscript(3)> let k := fopen("./testcode/lexscope.owl");
+    Owlscript(5)> for (x := 0; x < length(k); x := x + 1) { if (match(k[x], ".*ariab.*")) { println "match found on line " + x + ": " + k[x]; } else { ; } }
+     match found on line 0: var x := "a global variable";
+     match found on line 6:    var x := "a local variable";
+    Owlscript(6)> 
