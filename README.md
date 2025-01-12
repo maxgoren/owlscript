@@ -88,3 +88,12 @@ Regular expression matching is available through the match() function
     Owlscript(2)> println map(words, &(x) -> match(x, "r[aeiou]n*."));
      [ true, true, true, false]
     Owlscript(3)>
+
+File I/O is accomplished with the fopen() procedure. Once a file has been opened (or created if the specified file doesn't exist) it can be manipulated
+as if it were a list of strings, with any changes being reflected back on the file
+
+   Owlscript(3)> let k := fopen("./testcode/lexscope.owl");
+   Owlscript(5)> for (x := 0; x < length(k); x := x + 1) { if (match(k[x], ".*ariab.*")) { println "match found on line " + x + ": " + k[x]; } else { ; } }
+    match found on line 0: var x := "a global variable";
+    match found on line 6:    var x := "a local variable";
+   Owlscript(6)> 
