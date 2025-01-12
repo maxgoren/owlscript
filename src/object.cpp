@@ -15,7 +15,7 @@ std::ostream& operator<<(std::ostream& out, const StringObj& str) {
 StringObj* makeStringObj(string str) {
     StringObj* s = new StringObj;
     s->length = str.size();
-    s->str = new char[s->length];
+    s->str = new char[s->length+1];
     int i = 0;
     for (char c : str) {
         s->str[i++] = c;

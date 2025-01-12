@@ -547,7 +547,11 @@ Object ASTInterpreter::execIsEmptyList(astnode* node) {
 Object ASTInterpreter::execSubscriptExpression(astnode* node) {
     string id;
     Object m;
-    resolveObjForExpression(node, id, m);
+    if (node->child[0]->type == EXPR_NODE && node->child[0]->exprType == SUBSCRIPT_EXPR) {
+        m = execSubscriptExpression(node->child[0]);
+    } else {
+        resolveObjForExpression(node, id, m);
+    }
     if (typeOf(m) == AS_LIST || typeOf(m) == AS_FILE) {
         Object subm = execExpression(node->child[1]);
         ListObj* list = typeOf(m) == AS_LIST ? getList(m):m.objval->fileObj->lines;
