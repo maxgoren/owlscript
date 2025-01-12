@@ -22,7 +22,7 @@ class ASTInterpreter {
         Context cxt;
         bool traceEval;
         int recDepth;
-        
+        bool bailout;
         void addToContext(string id, Object m, int scope);
         Object getConstValue(astnode* node);
         Object getObjectByID(string id, int scope);

@@ -13,6 +13,7 @@ ASTInterpreter::ASTInterpreter(bool loud) {
 
 //This is the entry point for evaluating owlscript programs.
 Object ASTInterpreter::execAST(astnode* node) {
+    bailout = false;
     recDepth = 0;
     Object m = exec(node);
     gc.run(cxt);
@@ -393,6 +394,7 @@ Object ASTInterpreter::executeFunction(LambdaObj* lambdaObj, astnode* args) {
     }
     cxt.scoped.push(env);
     Object m = exec(lambdaObj->body);
+    bailout = false;
     if (freeVars != nullptr) {
         //update any closed-over variables before exiting.
         for (VarList* it = freeVars; it != nullptr; it = it->next) {
@@ -424,10 +426,13 @@ Object ASTInterpreter::execCreateUnNamedList(astnode* node) {
     Object m;
     enter("[unnamed list]");
     ListObj* list = makeListObj();
-    if (node->child[0]->exprType == RANGE_EXPR) {
-        m = execExpression(node->child[0]);
-    } else if (node->child[0]->exprType == LISTCOMP_EXPR) {
-        m = execExpression(node->child[0]);
+    if (node->child[0] != nullptr && node->child[0]->type == EXPR_NODE && 
+        (node->child[0]->exprType == RANGE_EXPR || node->child[0]->exprType == LISTCOMP_EXPR)) {
+        if (node->child[0]->exprType == RANGE_EXPR) {
+            m = execExpression(node->child[0]);
+        } else if (node->child[0]->exprType == LISTCOMP_EXPR) {
+            m = execExpression(node->child[0]);
+        }
     } else {
         for (astnode* it = node->child[0]; it != nullptr; it = it->next) {
             Object m = execExpression(it);
@@ -932,6 +937,7 @@ Object ASTInterpreter::execStatement(astnode* node) {
             break;
         case RETURN_STMT: 
             m = execExpression(node->child[0]);
+            bailout = true;
             break;
         case STRUCT_STMT:
             m = performStructDefStatement(node);
@@ -1095,7 +1101,7 @@ Object ASTInterpreter::exec(astnode* node) {
             default:
                 break;
         }
-        if (node->next != nullptr)
+        if (node->next != nullptr && !bailout)
             m = exec(node->next);
     }
     return m;

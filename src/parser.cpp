@@ -194,7 +194,7 @@ astnode* Parser::program() {
 astnode* Parser::statementList() {
     astnode* m = statement();
     astnode* c = m;
-    while (currSym() != TK_COMMA && currSym() != TK_RCURLY && currSym() != TK_EOF) {
+    while (currSym() != TK_COMMA && currSym() != TK_RCURLY && currSym() != TK_ELSE && currSym() != TK_EOF) {
         if (currSym() == TK_SEMI)
             match(TK_SEMI);
         astnode* q = statement();
@@ -204,6 +204,11 @@ astnode* Parser::statementList() {
             else {
                 c->next = q;
                 c = c->next;
+            }
+            if (q->attributes.symbol == TK_RETURN) {
+                if (currSym() == TK_SEMI)
+                    match(TK_SEMI);
+                return m;
             }
         }
     }
