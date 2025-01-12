@@ -30,7 +30,11 @@ Using map operator on an anonymous list to get their fibonacci numbers:
 
          let fibd := map([9,10,11,12,13], fib);
 
-support for closures:
+Or using the Range operator to _generate_ the anonymous list:
+
+        let fibd := map([ 9 .. 13 ], fib);
+
+Speaking of generators, owlscript has support for closures:
 
         def counter() {
             let a := 0;
