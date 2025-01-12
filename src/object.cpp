@@ -189,10 +189,7 @@ VarList* makeVarList(string key, Object val, VarList* list) {
 }
 
 ListNode* makeListNode(Object& m) {
-    ListNode* ln = new ListNode;
-    ln->info = m;
-    ln->next = nullptr;
-    return ln;
+    return new ListNode(m);
 }
 
 bool listEmpty(ListObj* list) {

@@ -1,0 +1,4 @@
+let m := fopen("LICENSE");
+let n := fopen("README.md");
+println m;
+println n;

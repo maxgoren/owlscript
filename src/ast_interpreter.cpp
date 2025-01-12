@@ -234,7 +234,7 @@ void ASTInterpreter::addToContext(string id, Object m, int scope) {
 void saveFile(Object& m) {
     ofstream ofile(m.objval->fileObj->fname->str);
     if (ofile.is_open()) {
-        ofile<<toString(m)<<endl;
+        ofile<<toString(m)<<flush;
         ofile.close();
     }
 }
@@ -1003,12 +1003,15 @@ Object ASTInterpreter::performFileOpenExpression(astnode* node) {
         return makeNilObject();
     }
     string buff;
+    ListObj* list = makeListObj();
     while (ifile.good()) {
         getline(ifile, buff);
         Object m = makeStringObject(buff);
-        appendToList(fobj->lines, m);
+        list = appendToList(list, m);
     }
+    fobj->lines = list;
     m = makeFileObject(fobj);
+    gc.add(m.objval);
     return m;
 }
 Object ASTInterpreter::performFileCloseExpression(astnode* node) {

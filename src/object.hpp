@@ -121,6 +121,8 @@ struct VarList {
 struct ListNode {
     Object info;
     ListNode* next;
+    ListNode(Object m) : info(m), next(nullptr) { }
+    ListNode() { next = nullptr; }
 };
 
 struct StructObj {

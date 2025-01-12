@@ -263,6 +263,10 @@ astnode* Parser::statement() {
         case TK_LENGTH:
         case TK_MATCH:
         case TK_SORT:
+        case TK_SHIFT:
+        case TK_UNSHIFT:
+        case TK_MAP:
+        case TK_FILTER:
             m = makeExprStatement();
             return m;
         default:
@@ -429,14 +433,6 @@ astnode* Parser::primary() {
         match(TK_RPAREN);
         return m;
     }
-    if (currSym() == TK_FCLOSE) {
-        astnode* m = makeExprNode(FILE_EXPR, current);
-        match(TK_FCLOSE);
-        match(TK_LPAREN);
-        m->child[0] = simpleExpr();
-        match(TK_RPAREN);
-        return m;
-    }
     if (listExprs.find(currSym()) != listExprs.end()) {
         return makeListExpr();
     }
@@ -534,7 +530,6 @@ astnode* Parser::makeLambdaExpr() {
 }
 
 astnode* Parser::makeListExpr() {
-    cout<<"Making list expression"<<endl;
     astnode* m;
     switch (currSym()) {
         case TK_LSQUARE: {
