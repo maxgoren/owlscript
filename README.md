@@ -9,6 +9,7 @@
   - struct types
   - regular expression matching
   - list comprehensions with set builder notation
+  - File I/O
   - interactive development through the REPL or run owlscript programs from the command line
 
 ### Some code examples
