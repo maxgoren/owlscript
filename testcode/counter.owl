@@ -5,5 +5,9 @@ def newCounter() {
 }
 def main() {
     var c := newCounter();
-    println c() + " " + c();
+    let i := 0;
+    while (i < 10) {
+        println c() + " " + c();
+        i := i + 1;
+    }
 }

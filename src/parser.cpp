@@ -3,6 +3,8 @@
 Parser::Parser(bool debug) {
     loud = false;
     listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_SHIFT, TK_UNSHIFT, TK_LSQUARE };
+    constExprs = { TK_NIL, TK_STRING, TK_NUM, TK_REALNUM, TK_TRUE, TK_FALSE };
+    builtInExprs = { TK_MAKE, TK_MATCH, TK_FOPEN, TK_EVAL };
 }
 
 astnode* Parser::parse(TokenStream& in) {
@@ -90,7 +92,11 @@ astnode* Parser::makeForStatement() {
     astnode* m = makeStmtNode(FOR_STMT, current);
     match(TK_FOR);
     match(TK_LPAREN);
-    m->child[0] = simpleExpr();
+    if (currSym() == TK_LET || currSym() == TK_VAR) {
+        m->child[0] = statement();
+    } else {
+        m->child[0] = simpleExpr();
+    }
     match(TK_SEMI);
     m->child[0]->next = simpleExpr();
     match(TK_SEMI);
@@ -366,37 +372,63 @@ astnode* Parser::var() {
 }
 
 astnode* Parser::range() {
-    astnode* node = primary();
+    astnode* node = subscript();
     if (currSym() == TK_ELIPSE) {
         astnode* t = makeExprNode(RANGE_EXPR, current);
         match(TK_ELIPSE);
         t->child[0] = node;
         node = t;
-        t->child[1] = primary();
+        t->child[1] = subscript();
     }
     if (currSym() == TK_PIPE) {
         astnode* t = makeExprNode(LISTCOMP_EXPR, current);
         match(TK_PIPE);
         t->child[0] = node;
         node = t;
-        node->child[1] = primary();
+        node->child[1] = subscript();
         if (currSym() == TK_PIPE) {
             match(TK_PIPE);
-            node->child[2] = primary();
+            node->child[2] = subscript();
         }
     }
-    
     return node;
+}
+
+astnode* Parser::subscript() {
+    astnode* m = primary();
+    while (currSym() == TK_LSQUARE) {
+        astnode* t = makeExprNode(SUBSCRIPT_EXPR, current);
+        match(TK_LSQUARE);
+        t->child[0] = m;
+        m = t;
+        m->child[1] = simpleExpr();
+        match(TK_RSQUARE);
+    }
+    if (currSym() == TK_ASSIGN) {
+        astnode* t = makeExprNode(ASSIGN_EXPR, current);
+        match(TK_ASSIGN);
+        t->child[0] = m;
+        m = t;
+        m->child[1] = simpleExpr();
+    } else if (currSym() == TK_LPAREN) {
+        m->exprType = FUNC_EXPR;
+        match(TK_LPAREN);
+        if (currSym() == TK_RPAREN) {
+            match(TK_RPAREN);
+            return m;
+        } else {
+            m->child[1] = argsList();
+            match(TK_RPAREN);
+        }
+    }
+    return m;
 }
 
 astnode* Parser::primary() {
     if (currSym() == TK_ID) {
-        return makeIDExpr();
-    }
-    if ((currSym() == TK_NIL) || (currSym() == TK_STRING) ||
-        (currSym() == TK_NUM) || (currSym() == TK_REALNUM) || 
-        (currSym() == TK_TRUE) || (currSym() == TK_FALSE)) {
-        return makeConstExpr();
+        astnode* m = makeExprNode(ID_EXPR, current);
+        match(TK_ID);
+        return m; 
     }
     if (currSym() == TK_LPAREN) {
         match(TK_LPAREN);
@@ -407,14 +439,36 @@ astnode* Parser::primary() {
     if (currSym() == TK_LAMBDA || currSym() == TK_AMPER) {
         return makeLambdaExpr();
     }
-    if (currSym() == TK_MAKE || currSym() == TK_MATCH || 
-        currSym() == TK_FOPEN || currSym() == TK_EVAL) {
+    if (builtInExprs.find(currSym()) != builtInExprs.end()) {
         return makeBultInsExpr();
+    }
+    if (constExprs.find(currSym()) != constExprs.end()) {
+        return makeConstExpr();
     }
     if (listExprs.find(currSym()) != listExprs.end()) {
         return makeListExpr();
     }
     return nullptr;
+}
+
+astnode* Parser::makeLambdaExpr() {
+    astnode* m = makeExprNode(LAMBDA_EXPR, current);
+    match(currSym());
+    if (currSym() == TK_ID) {
+        m->attributes.strval = current.strval;
+        match(TK_ID);
+    }
+    match(TK_LPAREN);
+    if (currSym() != TK_RPAREN)
+        m->child[1] = argsList();
+    match(TK_RPAREN);
+    if (currSym() == TK_LCURLY) {
+        m->child[0] = makeBlock();
+    } else if (currSym() == TK_PRODUCE) {
+        match(TK_PRODUCE);
+        m->child[0] = statement();
+    }
+    return m;
 }
 
 astnode* Parser::makeBultInsExpr() {
@@ -440,7 +494,6 @@ astnode* Parser::makeBultInsExpr() {
             match(TK_LPAREN);
             m->child[0] = simpleExpr();
             match(TK_RPAREN);
-            return m;
         } break;
         case TK_EVAL: {
             m = makeExprNode(META_EXPR, current);
@@ -453,39 +506,6 @@ astnode* Parser::makeBultInsExpr() {
             break;
     }
     return m;
-}
-
-astnode* Parser::makeIDExpr() {
-    astnode* m = makeExprNode(ID_EXPR, current);
-    match(TK_ID);
-    if (currSym() == TK_LSQUARE) {
-        while (currSym() == TK_LSQUARE) {
-            astnode* t = makeExprNode(SUBSCRIPT_EXPR, current);
-            match(TK_LSQUARE);
-            t->child[0] = m;
-            m = t;
-            m->child[1] = simpleExpr();
-            match(TK_RSQUARE);
-        }
-    }
-    if (currSym() == TK_ASSIGN) {
-        astnode* t = makeExprNode(ASSIGN_EXPR, current);
-        match(TK_ASSIGN);
-        t->child[0] = m;
-        m = t;
-        m->child[1] = simpleExpr();
-    } else if (currSym() == TK_LPAREN) {
-        m->exprType = FUNC_EXPR;
-        match(TK_LPAREN);
-        if (currSym() == TK_RPAREN) {
-            match(TK_RPAREN);
-            return m;
-        } else {
-            m->child[1] = argsList();
-            match(TK_RPAREN);
-        }
-    }
-    return m; 
 }
 
 astnode* Parser::makeConstExpr() {
@@ -523,26 +543,6 @@ astnode* Parser::makeConstExpr() {
         break;
         default:
             break;
-    }
-    return m;
-}
-
-astnode* Parser::makeLambdaExpr() {
-    astnode* m = makeExprNode(LAMBDA_EXPR, current);
-    match(currSym());
-    if (currSym() == TK_ID) {
-        m->attributes.strval = current.strval;
-        match(TK_ID);
-    }
-    match(TK_LPAREN);
-    if (currSym() != TK_RPAREN)
-        m->child[1] = argsList();
-    match(TK_RPAREN);
-    if (currSym() == TK_LCURLY) {
-        m->child[0] = makeBlock();
-    } else if (currSym() == TK_PRODUCE) {
-        match(TK_PRODUCE);
-        m->child[0] = statement();
     }
     return m;
 }

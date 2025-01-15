@@ -1,10 +1,11 @@
 def ok(var m) {
     let t := m + 1;
-	def in(var k) {
+	let in := &(k) {
 		return m+k;
     }
     return in(t);
 }
+
 def main() {
 	let i := 0;
 	while (i < 20) { 

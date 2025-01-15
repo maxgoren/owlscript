@@ -846,7 +846,11 @@ Object ASTInterpreter::performForStatement(astnode* node) {
     astnode* testcon = node->child[0]->next;
     astnode* postExpr = node->child[0]->next->next;
     astnode* loopBody = node->child[1];
-    m = execExpression(precon);
+    if (precon->type == STMT_NODE) {
+        m = execStatement(precon);
+    } else {
+        m = execExpression(precon);
+    }
     while (execExpression(testcon).boolval) {
         exec(loopBody);
         m = execExpression(postExpr);
@@ -1106,7 +1110,6 @@ Object ASTInterpreter::execExpression(astnode* node) {
         case FILE_EXPR: {
             switch (node->attributes.symbol) {
                 case TK_FOPEN:  m = performFileOpenExpression(node->child[0]); break;
-                case TK_FCLOSE: m = performFileCloseExpression(node->child[0]); break;
                 default:
                     break;
             };

@@ -13,6 +13,8 @@ class Parser {
     private:
         bool loud;
         unordered_set<Symbol> listExprs;
+        unordered_set<Symbol> constExprs;
+        unordered_set<Symbol> builtInExprs;
         TokenStream ts;
         Token current;
         inline Symbol currSym();
@@ -43,8 +45,8 @@ class Parser {
         astnode* factor();
         astnode* var();
         astnode* range();
+        astnode* subscript();
         astnode* primary();
-        astnode* makeIDExpr();
         astnode* makeBultInsExpr();
         astnode* makeConstExpr();
         astnode* makeListExpr();

@@ -65,7 +65,6 @@ class ASTInterpreter {
         Object performSubscriptListAccess(astnode* node, Object m);
         Object performSubscriptStructAccess(astnode* node, string id, Object m);
         Object performFileOpenExpression(astnode* node);
-        Object performFileCloseExpression(astnode* node);
         Object execSubscriptExpression(astnode* node);
         Object performRangeExpression(astnode* node);
         Object performListComprehension(astnode* node);
