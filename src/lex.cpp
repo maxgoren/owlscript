@@ -37,6 +37,7 @@ Lexer::Lexer(bool debug) {
     reserved["unshift"] = TK_UNSHIFT;
     reserved["fopen"] = TK_FOPEN;
     reserved["flclose"] = TK_FCLOSE;
+    reserved["eval"] = TK_EVAL;
     state = DONE;
 }
 
@@ -110,7 +111,7 @@ Token Lexer::nextToken() {
             } else {
                 cout<<"An Error Occured on line "<<sb.lineNo()<<" during lexing."<<endl;
                 next.symbol = TK_EOF;
-                //state = DONE;
+                state = DONE;
             }
         } else {
             if (loud)

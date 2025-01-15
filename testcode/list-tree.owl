@@ -1,0 +1,48 @@
+def makeTree(var key, var left, var right) {
+    return [ key, left, right ];
+};
+def getKey(var tree) {
+    return tree[0];
+};
+def getLeft(var tree) {
+    return tree[1];
+};
+def getRight(var tree) {
+    return tree[2];
+};
+def addTree(var tree, var key) {
+    if (tree == nil) {
+        return makeTree(key, nil, nil);
+    } else {
+        if (key < getKey(tree)) {
+            tree[1] := addTree(getLeft(tree), key);
+        } else {
+            tree[2] := addTree(getRight(tree), key);
+        }
+    }
+    return tree;
+};
+def preorder(var tree, var d) {
+    let i := 0;
+    if (tree != nil) {
+        while (i < d) {
+            print "   ";
+            i := i + 1;
+        }
+        println getKey(tree);
+        preorder(getLeft(tree), d + 1);
+        preorder(getRight(tree), d + 1);
+    }
+};
+def main() {
+    let tree := nil;
+    let heh := [ 24, 13, 5, 42, 11, 6, 101, 3];
+    let i := 0;
+    while (i < length(heh)) {
+        tree := addTree(tree, heh[i]);
+        i := i + 1;
+    }
+    preorder(tree, 0);
+    println tree;
+    println "Me Lisp you long time.";
+}

@@ -3,6 +3,7 @@
 #include "regex/compiler.hpp"
 #include "regex/nfa.hpp"
 #include "regex/patternmatcher.hpp"
+#include "ast_builder.hpp"
 using namespace std;
 
 ASTInterpreter::ASTInterpreter(bool loud) {
@@ -240,9 +241,10 @@ void saveFile(Object& m) {
     }
 }
 
-Object ASTInterpreter::performListAssignment(astnode* node, Object& m) {
-    ListObj* list = typeOf(m) == AS_LIST ? getList(m):m.objval->fileObj->lines;
-    Object subm = execExpression(node->child[0]->child[1]);
+
+Object ASTInterpreter::performListAssignment(astnode* node, astnode* expr, Object& m) {
+    ListObj* list = getList(m);
+    Object subm = execExpression(node->child[1]);
     int sub = atoi(toString(subm).c_str());
     if (sub > list->length || sub < 0) {
         cout<<"Error: subscript out of range"<<endl;
@@ -253,7 +255,7 @@ Object ASTInterpreter::performListAssignment(astnode* node, Object& m) {
     for (int i = 0; i < sub; i++) {
         it = it->next;
     }
-    it->info = execExpression(node->child[1]);
+    it->info = execExpression(expr);
     if (typeOf(m) == AS_LIST) {
         m.objval->listObj = list;
     } else {
@@ -263,11 +265,11 @@ Object ASTInterpreter::performListAssignment(astnode* node, Object& m) {
     return m;
 }
 
-Object ASTInterpreter::performStructFieldAssignment(astnode* node, Object& m) {
-    string vname = node->child[0]->child[1]->attributes.strval;
+Object ASTInterpreter::performStructFieldAssignment(astnode* node, astnode* expr, Object& m) {
+    string vname = node->child[1]->attributes.strval;
     StructObj* st = getStruct(m);
     if (st->blessed) {
-        st->bindings[vname] = execExpression(node->child[1]);
+        st->bindings[vname] = execExpression(expr);
     } else {
         cout<<"Structs must be instantiated before use."<<endl;
         leave();
@@ -281,12 +283,20 @@ pair<string,int> ASTInterpreter::getNameAndScopeFromNode(astnode* node) {
     return make_pair(node->attributes.strval, node->attributes.depth);
 }
 
-Object ASTInterpreter::performSubscriptAssignment(astnode* node, string id, int scope) {
-    Object m = getObjectByID(id, scope);
+Object ASTInterpreter::performSubscriptAssignment(astnode* node, astnode* expr, string& id, int& scope) {
+    Object m;
+    bool unomas = false;
+    if (node->child[0]->attributes.symbol == TK_LSQUARE) {
+        m = execSubscriptExpression(node->child[0]);
+    } else {
+        id = getNameAndScopeFromNode(node->child[0]).first;
+        scope = getNameAndScopeFromNode(node->child[0]).second;
+        m = getObjectByID(id, scope);
+    }
     if (typeOf(m) == AS_LIST || typeOf(m) == AS_FILE) {
-        m = performListAssignment(node, m);
+        m = performListAssignment(node, expr, m);
     } else if (typeOf(m) == AS_STRUCT) {
-        m = performStructFieldAssignment(node, m);
+        m = performStructFieldAssignment(node, expr, m);
     } else {
         cout<<"Object "<<id<<" type does not support subscript access: "<<toString(m)<<endl;
         return makeNilObject();
@@ -302,25 +312,24 @@ Object ASTInterpreter::performAssignment(astnode* node) {
     if (node->child[0]->attributes.symbol == TK_LSQUARE) {
         id = getNameAndScopeFromNode(node->child[0]->child[0]).first;
         scope = getNameAndScopeFromNode(node->child[0]->child[0]).second;
-        //cout<<"Looking for  '"<<id<<"' in "<<scope<<endl;
-        m = performSubscriptAssignment(node, id, scope);
+        m = performSubscriptAssignment(node->child[0], node->child[1], id, scope);
     } else {
         id = getNameAndScopeFromNode(node->child[0]).first;
         scope = getNameAndScopeFromNode(node->child[0]).second;
         m = execExpression(node->child[1]);
+        if (scope > -1) {
+            if (!cxt.scoped.empty() && cxt.getAt(scope).find(id) == cxt.getAt(scope).end()) {
+                cout<<"Undeclared Identifier: "<<id<<endl;
+                return makeNilObject();
+            } 
+        } else {
+            if (cxt.globals.find(id) == cxt.globals.end()) {
+                cout<<"Undeclared Identifier: "<<id<<endl;
+                return makeNilObject();
+            } 
+        }
+        addToContext(id,  m, scope);
     }
-    if (scope > -1) {
-        if (!cxt.scoped.empty() && cxt.getAt(scope).find(id) == cxt.getAt(scope).end()) {
-            cout<<"Undeclared Identifier: "<<id<<endl;
-            return makeNilObject();
-        } 
-    } else {
-        if (cxt.globals.find(id) == cxt.globals.end()) {
-            cout<<"Undeclared Identifier: "<<id<<endl;
-            return makeNilObject();
-        } 
-    }
-    addToContext(id,  m, scope);
     leave();
     return m;
 }
@@ -428,11 +437,8 @@ Object ASTInterpreter::execCreateUnNamedList(astnode* node) {
     ListObj* list = makeListObj();
     if (node->child[0] != nullptr && node->child[0]->type == EXPR_NODE && 
         (node->child[0]->exprType == RANGE_EXPR || node->child[0]->exprType == LISTCOMP_EXPR)) {
-        if (node->child[0]->exprType == RANGE_EXPR) {
             m = execExpression(node->child[0]);
-        } else if (node->child[0]->exprType == LISTCOMP_EXPR) {
-            m = execExpression(node->child[0]);
-        }
+        
     } else {
         for (astnode* it = node->child[0]; it != nullptr; it = it->next) {
             Object m = execExpression(it);
@@ -547,47 +553,62 @@ Object ASTInterpreter::execIsEmptyList(astnode* node) {
 Object ASTInterpreter::execSubscriptExpression(astnode* node) {
     string id;
     Object m;
+    //cout<<"Subscript expression"<<endl;
     if (node->child[0]->type == EXPR_NODE && node->child[0]->exprType == SUBSCRIPT_EXPR) {
         m = execSubscriptExpression(node->child[0]);
     } else {
         resolveObjForExpression(node, id, m);
     }
     if (typeOf(m) == AS_LIST || typeOf(m) == AS_FILE) {
-        Object subm = execExpression(node->child[1]);
-        ListObj* list = typeOf(m) == AS_LIST ? getList(m):m.objval->fileObj->lines;
-        int subscript = atoi(toString(subm).c_str());
-        if (subscript > list->length || list->length == 0) {
-            cout<<"Error: Subscript out of range."<<endl;
-            return makeNilObject();
-        }
-        ListNode* it = list->head;
-        for (int i = 0; i < subscript; i++) {
-            it = it->next;
-        }
-        m = it->info;
+        m = performSubscriptListAccess(node, m);
     } else if (typeOf(m) == AS_STRUCT) {
+        m = performSubscriptStructAccess(node, id, m);
+    } else if (typeOf(m) == AS_STRING) {
+        m = performSubscriptStringAccess(node, m);
+    }
+    return m;
+}
+
+Object ASTInterpreter::performSubscriptListAccess(astnode* node, Object m) {
+    //cout<<"subscript list access"<<endl;
+    Object subm = execExpression(node->child[1]);
+    ListObj* list = getList(m);
+    int subscript = atoi(toString(subm).c_str());
+    if (subscript > list->length || list->length == 0) {
+        cout<<"Error: Subscript out of range."<<endl;
+        return makeNilObject();
+    }
+    ListNode* it = list->head;
+    for (int i = 0; i < subscript; i++) {
+        it = it->next;
+    }
+    return it->info;
+}
+
+Object ASTInterpreter::performSubscriptStructAccess(astnode* node, string id, Object m) {
         StructObj* sobj = getStruct(m);
         string vname = node->child[1]->attributes.strval;
         if (sobj->bindings.find(vname) == sobj->bindings.end()) {
             cout<<"Struct '"<<id<<"' has no such property '"<<vname<<"'."<<endl;
             return makeNilObject();
         }
-        m = sobj->bindings[vname];
-    } else if (typeOf(m) == AS_STRING) {
-        Object subm = execExpression(node->child[1]);
-        int subscript = atoi(toString(subm).c_str());
-        StringObj* strobj = getString(m);
-        if (subscript >= 0 && subscript < strobj->length) {
-            string s;
-            s.push_back(strobj->str[subscript]);
-            return makeStringObject(s); 
-        } else {
-            cout<<"index "<<subscript<<" is out of range for string of length "<<strobj->length<<endl;
-            return makeNilObject();
-        }
+        return sobj->bindings[vname];
+ }
+
+ Object ASTInterpreter::performSubscriptStringAccess(astnode* node, Object m) {
+    Object subm = execExpression(node->child[1]);
+    int subscript = atoi(toString(subm).c_str());
+    StringObj* strobj = getString(m);
+    if (subscript >= 0 && subscript < strobj->length) {
+        string s;
+        s.push_back(strobj->str[subscript]);
+        return makeStringObject(s); 
+    } else {
+        cout<<"index "<<subscript<<" is out of range for string of length "<<strobj->length<<endl;
+        return makeNilObject();
     }
     return m;
-}
+ }
 
 ListNode* ASTInterpreter::merge(ListNode* a, ListNode* b, LambdaObj* compFunc) {
     ListNode d; ListNode* c = &d;
@@ -1027,6 +1048,13 @@ Object ASTInterpreter::performFileOpenExpression(astnode* node) {
 Object ASTInterpreter::performFileCloseExpression(astnode* node) {
     return makeNilObject();
 }
+Object ASTInterpreter::evalMetaExpression(astnode* node) {
+    Object m = execExpression(node->child[0]);
+    ASTBuilder astbuilder;
+    astnode* meta = astbuilder.build(toString(m));
+    Object r = exec(meta);
+    return r;
+}
 Object ASTInterpreter::execExpression(astnode* node) {
     if (node == nullptr) 
         return makeIntObject(0);
@@ -1063,6 +1091,9 @@ Object ASTInterpreter::execExpression(astnode* node) {
             break;
         case LAMBDA_EXPR:
             m = performCreateLambda(node);
+            break;
+        case META_EXPR:
+            m = evalMetaExpression(node);
             break;
         case RANGE_EXPR:
             m = performRangeExpression(node);

@@ -40,6 +40,7 @@ class ASTInterpreter {
         Object evalStringOp(Symbol op, Object& lhn, Object& rhn);
         Object execStatement(astnode* node);
         Object execExpression(astnode* node);
+        Object evalMetaExpression(astnode* node);
         Object execRegularExpr(astnode* node);
         Object executeFunction(LambdaObj* lambdaObj, astnode* args);
         Object performAssignment(astnode* node);
@@ -54,11 +55,14 @@ class ASTInterpreter {
         Object performBlockStatement(astnode* node);
         Object performWhileStatement(astnode* node);
         Object performPrintStatement(astnode* node);
-        Object performListAssignment(astnode* node, Object& m);
         Object performBlessExpression(astnode* node);
         Object performStructDefStatement(astnode* node);
-        Object performSubscriptAssignment(astnode* node, string id, int scope);
-        Object performStructFieldAssignment(astnode* node, Object& m);
+        Object performSubscriptAssignment(astnode* node, astnode* expr, string& id, int& scope);
+        Object performListAssignment(astnode* node, astnode* expr, Object& m);
+        Object performStructFieldAssignment(astnode* node, astnode* expr, Object& m);
+        Object performSubscriptStringAccess(astnode* node, Object m);
+        Object performSubscriptListAccess(astnode* node, Object m);
+        Object performSubscriptStructAccess(astnode* node, string id, Object m);
         Object performRangeExpression(astnode* node);
         Object performListComprehension(astnode* node);
         Object performFileOpenExpression(astnode* node);

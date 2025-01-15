@@ -9,6 +9,8 @@ def makeNode(var t, var i) {
     t := bless tnode; 
     t[info] := i;
     t[color] := true; 
+    t[left] := nil;
+    t[right] := nil;
     return t;
 }
 
@@ -53,40 +55,35 @@ def balance(var tree) {
         println "single red";
         tree := rotL(tree);
         t := tree[left];
-    } else {
-        ;
     }
     if (isRed(tree[left]) && isRed(t[left])) {
         println "double red";
         tree := rotR(tree);
-    } else {
-        ;
-    }
+    } 
     if (isRed(tree[left]) && isRed(tree[right])) {
         println "color flip";
         tree := colorFlip(tree);
-    } else { 
-        ; 
-    }
+    } 
     return tree;
 }
 
 def insert(var tree, var v) {
     if (tree == nil) {
-        tree := makeNode(tree, v);
         println "base case, creating node for " + v;
-    } else {
-        print v + " < " + tree[info] + "? ";
-        if (v < tree[info]) {
-            println "go left";
-            tree[left] := insert(tree[left], v);
-        } else {
-            println "go right";
-            tree[right] := insert(tree[right], v);
-        }
+        return makeNode(tree, v);
     }
-    tree := balance(tree);
-    return tree;
+    if (v == tree[info]) {
+        return tree;
+    }
+    print v + " < " + tree[info] + "? ";
+    if (v < tree[info]) {
+        println "go left";
+        tree[left] := insert(tree[left], v);
+    } else {
+        println "go right";
+        tree[right] := insert(tree[right], v);
+    }
+    return balance(tree);
 }
 
 def visit(var tree) {
@@ -94,8 +91,26 @@ def visit(var tree) {
         print tree[info] + " ";
         visit(tree[left]);
         visit(tree[right]);
-    } else {
-        ;
+    }
+}
+
+def bfs(var tree) {
+    let fq := [ tree ];
+    let nc := 1;
+    let t := tree;
+    while (length(fq) > 0) {
+        nc := length(fq);
+        while (nc > 0) {
+            t := fq[0]; 
+            pop(fq);
+            nc := nc - 1;
+            if (t != nil) {
+                print t[info] + " ";
+                append(fq, t[left]);
+                append(fq, t[right]);
+            }
+        }
+        println " ";
     }
 }
 
@@ -109,6 +124,7 @@ def main() {
         root[color] := 0;
         i := i + 1;
     }
+    bfs(root);
     visit(root);
     println " ";
 }

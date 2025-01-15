@@ -431,6 +431,14 @@ astnode* Parser::primary() {
         match(TK_RPAREN);
         return m;
     }
+    if (currSym() == TK_EVAL) {
+        astnode* m = makeExprNode(META_EXPR, current);
+        match(TK_EVAL);
+        match(TK_LPAREN);
+        m->child[0] = simpleExpr();
+        match(TK_RPAREN);
+        return m;
+    }
     if (listExprs.find(currSym()) != listExprs.end()) {
         return makeListExpr();
     }

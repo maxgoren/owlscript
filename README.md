@@ -102,3 +102,14 @@ as if it were a list of strings, with any changes being reflected back on the fi
      match found on line 0: var x := "a global variable";
      match found on line 6:    var x := "a local variable";
     Owlscript(6)> 
+
+Multi dimensional list access using operator[] is now working as expected for access and assignment:
+
+    let k := [ [ 1 .. 4], [ 5 .. 9], [10 .. 14], [15 .. 19] ];
+    println k;
+    k[1][2] := 42;
+    println k;
+
+    ----------------------------
+    [ [ 1, 2, 3, 4], [ 5, 6, 7, 8, 9], [ 10, 11, 12, 13, 14], [ 15, 16, 17, 18, 19]]
+    [ [ 1, 2, 3, 4], [ 5, 6, 42, 8, 9], [ 10, 11, 12, 13, 14], [ 15, 16, 17, 18, 19]]
