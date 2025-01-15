@@ -40,6 +40,12 @@ void printNode(astnode* n) {
             case LAMBDA_EXPR: cout<<"[lambda expr]"; break;
             case REG_EXPR: cout<<"[regular expression]"; break;
             case REF_EXPR: cout<<"[reference expression]"; break;
+            case SUBSCRIPT_EXPR: cout<<"[subscript expression]"; break;
+            case LISTCOMP_EXPR: cout<<"[list comprehension expression]"; break;
+            case RANGE_EXPR:    cout<<"[range expression]"; break;
+            case LIST_EXPR:     cout<<"[list expression]"; break;
+            case FILE_EXPR:     cout<<"[file expression]"; break;
+            case META_EXPR:     cout<<"[meta expression]"; break;
             default:
                 break;
         }

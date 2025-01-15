@@ -55,6 +55,7 @@ class ASTInterpreter {
         Object performBlockStatement(astnode* node);
         Object performWhileStatement(astnode* node);
         Object performPrintStatement(astnode* node);
+
         Object performBlessExpression(astnode* node);
         Object performStructDefStatement(astnode* node);
         Object performSubscriptAssignment(astnode* node, astnode* expr, string& id, int& scope);
@@ -63,12 +64,12 @@ class ASTInterpreter {
         Object performSubscriptStringAccess(astnode* node, Object m);
         Object performSubscriptListAccess(astnode* node, Object m);
         Object performSubscriptStructAccess(astnode* node, string id, Object m);
-        Object performRangeExpression(astnode* node);
-        Object performListComprehension(astnode* node);
         Object performFileOpenExpression(astnode* node);
         Object performFileCloseExpression(astnode* node);
-        //List operations
         Object execSubscriptExpression(astnode* node);
+        Object performRangeExpression(astnode* node);
+        Object performListComprehension(astnode* node);
+        //List operations
         Object execCreateUnNamedList(astnode* node);
         Object execListExpression(astnode* node);
         Object execIsEmptyList(astnode* node);

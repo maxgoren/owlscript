@@ -45,6 +45,7 @@ class Parser {
         astnode* range();
         astnode* primary();
         astnode* makeIDExpr();
+        astnode* makeBultInsExpr();
         astnode* makeConstExpr();
         astnode* makeListExpr();
         astnode* makeLambdaExpr();

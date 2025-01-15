@@ -1045,9 +1045,7 @@ Object ASTInterpreter::performFileOpenExpression(astnode* node) {
     gc.add(m.objval);
     return m;
 }
-Object ASTInterpreter::performFileCloseExpression(astnode* node) {
-    return makeNilObject();
-}
+
 Object ASTInterpreter::evalMetaExpression(astnode* node) {
     Object m = execExpression(node->child[0]);
     ASTBuilder astbuilder;
