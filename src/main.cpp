@@ -1,7 +1,7 @@
 #include <iostream>
 #include "repl.hpp"
 #include "ast_builder.hpp"
-#include "ast_interpreter.hpp"
+#include "interpreter/ast_interpreter.hpp"
 #include "version.hpp"
 using namespace std;
 

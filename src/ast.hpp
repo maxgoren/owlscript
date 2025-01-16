@@ -34,6 +34,11 @@ struct astnode {
 
 astnode* makeExprNode(ExprType type, Token data);
 astnode* makeStmtNode(StmtType type, Token data);
+bool isExprNode(astnode* node);
+bool isStmtNode(astnode* node);
+bool isExprType(astnode* node, ExprType type);
+bool isStmtType(astnode* node, StmtType type);
+Token& getAttributes(astnode* node);
 void printToken(Token m);
 void printNode(astnode* n);
 void traverse(astnode* node, void (*pre)(astnode* x), void (*post)(astnode* x));

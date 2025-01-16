@@ -1,7 +1,10 @@
 main: 
 	g++ --std=c++17 -c ./src/ast.cpp
 	g++ --std=c++17 -c ./src/ast_builder.cpp
-	g++ --std=c++17 -c ./src/ast_interpreter.cpp
+	g++ --std=c++17 -c ./src/interpreter/ast_interpreter.cpp
+	g++ --std=c++17 -c ./src/interpreter/interpret_statements.cpp
+	g++ --std=c++17 -c ./src/interpreter/interpret_expressions.cpp
+	g++ --std=c++17 -c ./src/interpreter/interpret_list_expressions.cpp
 	g++ --std=c++17 -c ./src/lex.cpp
 	g++ --std=c++17 -c ./src/object.cpp
 	g++ --std=c++17 -c ./src/parser.cpp
@@ -15,7 +18,10 @@ main:
 debug:
 	g++ --std=c++17 -c -g ./src/ast.cpp
 	g++ --std=c++17 -c -g ./src/ast_builder.cpp
-	g++ --std=c++17 -c -g ./src/ast_interpreter.cpp
+	g++ --std=c++17 -c -g ./src/interpreter/ast_interpreter.cpp
+	g++ --std=c++17 -c ./src/interpreter/interpret_statements.cpp
+	g++ --std=c++17 -c ./src/interpreter/interpret_expressions.cpp
+	g++ --std=c++17 -c ./src/interpreter/interpret_list_expressions.cpp
 	g++ --std=c++17 -c -g ./src/lex.cpp
 	g++ --std=c++17 -c -g ./src/object.cpp
 	g++ --std=c++17 -c -g ./src/parser.cpp

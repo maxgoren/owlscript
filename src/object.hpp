@@ -162,7 +162,7 @@ double getAsReal(Object m);
 bool comparesAsOrdinal(Object m);
 string     toString(Object obj);
 ObjectType typeOf(Object obj);
-
+string      getTypeName(Object obj);
 bool   listEmpty(ListObj* list);
 int    listLength(ListObj* list);
 ListObj*   appendToList(ListObj* list, Object m);

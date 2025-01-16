@@ -1,7 +1,7 @@
 #ifndef repl_hpp
 #define repl_hpp
 #include <iostream>
-#include "ast_interpreter.hpp"
+#include "interpreter/ast_interpreter.hpp"
 #include "ast_builder.hpp"
 using namespace std;
 

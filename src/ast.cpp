@@ -22,6 +22,24 @@ astnode* makeStmtNode(StmtType type, Token data) {
     return m;
 }
 
+bool isExprNode(astnode* node) {
+    return node != nullptr && node->type == EXPR_NODE;
+}
+bool isStmtNode(astnode* node) {
+    return node != nullptr && node->type == STMT_NODE;
+}
+
+bool isExprType(astnode* node, ExprType type) {
+    return isExprNode(node) && node->exprType == type;
+}
+bool isStmtType(astnode* node, StmtType type) {
+    return isStmtNode(node) && node->stmtType == type;
+}
+
+Token& getAttributes(astnode* node) {
+    return node->attributes;
+}
+
 void printToken(Token m) {
     cout<<"["<<symbolAsString[m.symbol]<<", "<<m.strval<<"]"<<endl;
 }

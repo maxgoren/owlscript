@@ -25,12 +25,12 @@ def addTree(var tree, var key) {
 def preorder(var tree, var d) {
     let i := 0;
     if (tree != nil) {
+        preorder(getLeft(tree), d + 1);
         while (i < d) {
             print "   ";
             i := i + 1;
         }
         println getKey(tree);
-        preorder(getLeft(tree), d + 1);
         preorder(getRight(tree), d + 1);
     }
 };

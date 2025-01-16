@@ -304,6 +304,23 @@ string toString(Object obj) {
     return "(nil)";
 }
 
+string getTypeName(Object obj) {
+    switch (obj.type) {
+        case AS_INT:    return "integer"; 
+        case AS_REAL:   return "real";
+        case AS_BOOL:   return "boolean";
+        case AS_STRING: return "string";
+        case AS_LIST:   return "list";
+        case AS_LAMBDA: return "lambda";
+        case AS_STRUCT: return "struct";
+        case AS_FILE:   return "file";
+        case AS_NIL:  
+        default: 
+            break;
+    }
+    return "nil";
+}
+
 std::ostream& operator<<(std::ostream& out, const Object& obj) {
     out<<toString(obj);
     return out;

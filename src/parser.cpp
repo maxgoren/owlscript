@@ -4,7 +4,7 @@ Parser::Parser(bool debug) {
     loud = false;
     listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_SHIFT, TK_UNSHIFT, TK_LSQUARE };
     constExprs = { TK_NIL, TK_STRING, TK_NUM, TK_REALNUM, TK_TRUE, TK_FALSE };
-    builtInExprs = { TK_MAKE, TK_MATCH, TK_FOPEN, TK_EVAL };
+    builtInExprs = { TK_MAKE, TK_MATCH, TK_FOPEN, TK_EVAL, TK_TYPEOF };
 }
 
 astnode* Parser::parse(TokenStream& in) {
@@ -498,6 +498,13 @@ astnode* Parser::makeBultInsExpr() {
         case TK_EVAL: {
             m = makeExprNode(META_EXPR, current);
             match(TK_EVAL);
+            match(TK_LPAREN);
+            m->child[0] = simpleExpr();
+            match(TK_RPAREN);
+        } break;
+        case TK_TYPEOF: {
+            m = makeExprNode(META_EXPR, current);
+            match(TK_TYPEOF);
             match(TK_LPAREN);
             m->child[0] = simpleExpr();
             match(TK_RPAREN);
