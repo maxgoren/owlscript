@@ -62,7 +62,7 @@ class ASTInterpreter {
         Object performWhileStatement(astnode* node);
         Object performPrintStatement(astnode* node);
         Object performStructDefStatement(astnode* node);
-       
+        Object performForEachStatement(astnode* node);
         Object performSubscriptAssignment(astnode* node, astnode* expr, string& id, int& scope);
         Object performListAssignment(astnode* node, astnode* expr, Object& m);
         Object performListAccess(astnode* node, Object m);

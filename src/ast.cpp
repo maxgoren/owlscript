@@ -72,6 +72,8 @@ void printNode(astnode* n) {
             case LET_STMT: cout<<"[let statement]"; break;
             case IF_STMT: cout<<"[if statement]"; break;
             case WHILE_STMT: cout<<"[while statement]"; break;
+            case FOR_STMT: cout<<"[for statement]"; break;
+            case FOREACH_STMT: cout<<"[foreach statement]"; break;
             case PRINT_STMT: cout<<"[print statement]"; break;
             case EXPR_STMT: cout<<"[expr statment]"; break;
             case DEF_STMT:  cout<<"[def statement]"; break;

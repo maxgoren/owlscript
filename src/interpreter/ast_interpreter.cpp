@@ -59,6 +59,7 @@ Object ASTInterpreter::execStatement(astnode* node) {
         case BLOCK_STMT: m = performBlockStatement(node); break;
         case DEF_STMT: m = performDefStatement(node); break;
         case FOR_STMT: m = performForStatement(node); break;
+        case FOREACH_STMT: m = performForEachStatement(node); break;
         case EXPR_STMT: m = evalExpression(node->child[0]); break;
         case LET_STMT: m = performLetStatement(node); break;
         case RETURN_STMT: {

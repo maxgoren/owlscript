@@ -97,10 +97,16 @@ astnode* Parser::makeForStatement() {
     } else {
         m->child[0] = simpleExpr();
     }
-    match(TK_SEMI);
-    m->child[0]->next = simpleExpr();
-    match(TK_SEMI);
-    m->child[0]->next->next = simpleExpr();
+    if (currSym() == TK_SEMI) {
+        match(TK_SEMI);
+        m->child[0]->next = simpleExpr();
+        match(TK_SEMI);
+        m->child[0]->next->next = simpleExpr();
+    } else if (currSym() == TK_OF) {
+        m->stmtType = FOREACH_STMT;
+        match(TK_OF);
+        m->child[0]->next = simpleExpr();
+    }
     match(TK_RPAREN);
     m->child[1] = makeBlock();
     return m;

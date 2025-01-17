@@ -9,9 +9,21 @@ Object ASTInterpreter::performWhileStatement(astnode* node) {
     leave();
     return m;
 }
-
-Object ASTInterpreter::performForStatement(astnode* node) {
-    enter("for statement");
+Object ASTInterpreter::performForEachStatement(astnode* node) {
+    Object lstObject = evalExpression(node->child[0]->next);
+    if (typeOf(lstObject) != AS_LIST) {
+        cout<<"Foreach only for list types."<<endl;
+        return makeNilObject();
+    }
+    LambdaObj* lmbd = makeLambdaObj(node->child[1], node->child[0]);
+    ListObj* result = makeListObj();
+    for (ListNode* it = getList(lstObject)->head; it != nullptr; it = it->next) {
+        astnode* t = makeExprNode(CONST_EXPR, Token(getSymbol(it->info), toString(it->info)));
+        evalFunctionExpr(lmbd, t);
+    }
+    return lstObject;
+}
+Object ASTInterpreter::performForStatement(astnode* node) {   
     Object m;
     astnode* precon = node->child[0];
     astnode* testcon = node->child[0]->next;

@@ -56,6 +56,16 @@ void ResolveScope::resolveStatementScope(astnode* node) {
                 closeScope();
             }
             break;
+        case FOREACH_STMT: {
+            openScope();
+                declareVarName(node->child[0]->attributes.strval);
+                declareVarName(node->child[0]->next->attributes.strval);
+                defineVarName(node->child[0]->attributes.strval);
+                defineVarName(node->child[0]->next->attributes.strval);
+                for (int i = 0; i < 3; i++)
+                    resolve(node->child[i]);
+            closeScope();
+        } break;
         case FOR_STMT:
             for (int i = 0; i < 3; i++)
                 resolve(node->child[i]);
