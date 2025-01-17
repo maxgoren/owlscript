@@ -213,7 +213,7 @@ Object ASTInterpreter::evalFunctionExpr(LambdaObj* lambdaObj, astnode* args) {
         }
         string val = itr->attributes.strval;
         env[vname] = evalExpression(itr);
-        cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
+        //cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
         params = params->next;
         itr = itr->next;
     }
