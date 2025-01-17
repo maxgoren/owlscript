@@ -29,7 +29,7 @@ StringObj* getString(Object m) {
 }
  
 LambdaObj* getLambda(Object m) {
-    return m.objval->lambdaObj;
+    return m.type == AS_LAMBDA ? m.objval->lambdaObj:nullptr;
 }
 
 ListObj* getList(Object m) {
@@ -199,6 +199,32 @@ bool listEmpty(ListObj* list) {
 int listLength(ListObj* list) {
     return list->length;
 }
+
+ListObj*   updateListItem(ListObj* list, int index, Object m) {
+    if (index > list->length || index < 0) {
+        cout<<"Error: subscript out of range"<<endl;
+        return list;
+    }
+    ListNode* it = list->head;
+    for (int i = 0; i < index; i++) {
+        it = it->next;
+    }
+    it->info = m;
+    return list;
+}
+
+Object getListItem(ListObj* list, int subscript) {
+    if (subscript > list->length || list->length == 0) {
+        cout<<"Error: Subscript out of range."<<endl;
+        return makeNilObject();
+    }
+    ListNode* it = list->head;
+    for (int i = 0; i < subscript; i++) {
+        it = it->next;
+    }
+    return it->info;
+}
+
 
 ListObj* appendToList(ListObj* list, Object m) {
     ListNode* ln = makeListNode(m);

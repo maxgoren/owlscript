@@ -243,8 +243,8 @@ Object ASTInterpreter::performListComprehension(astnode* node) {
         return makeNilObject();
     Object lm = evalExpression(node->child[1]);
     Object prd = evalExpression(node->child[2]);
-    LambdaObj* lmbd = lm.type == AS_LAMBDA ? getLambda(lm):nullptr;
-    LambdaObj* pred = prd.type == AS_LAMBDA ? getLambda(prd):nullptr;
+    LambdaObj* lmbd = getLambda(lm);
+    LambdaObj* pred = getLambda(prd);
     ListObj* list = makeListObj();
     for (ListNode* it = getList(il)->head; it != nullptr; it = it->next) {
         astnode* t = makeExprNode(CONST_EXPR, Token(getSymbol(it->info), toString(it->info)));

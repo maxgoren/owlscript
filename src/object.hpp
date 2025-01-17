@@ -166,6 +166,8 @@ string      getTypeName(Object obj);
 bool   listEmpty(ListObj* list);
 int    listLength(ListObj* list);
 ListObj*   appendToList(ListObj* list, Object m);
+ListObj*   updateListItem(ListObj* list, int index, Object m);
+Object getListItem(ListObj* list, int index);
 void   pushToList(ListObj* list, Object m);
 Object popList(ListObj* list);
 Object popBackList(ListObj* list);

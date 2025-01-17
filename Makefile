@@ -2,6 +2,7 @@ main:
 	g++ --std=c++17 -c ./src/ast.cpp
 	g++ --std=c++17 -c ./src/ast_builder.cpp
 	g++ --std=c++17 -c ./src/interpreter/ast_interpreter.cpp
+	g++ --std=c++17 -c ./src/interpreter/interpret_objects.cpp
 	g++ --std=c++17 -c ./src/interpreter/interpret_statements.cpp
 	g++ --std=c++17 -c ./src/interpreter/interpret_expressions.cpp
 	g++ --std=c++17 -c ./src/interpreter/interpret_list_expressions.cpp
@@ -19,6 +20,7 @@ debug:
 	g++ --std=c++17 -c -g ./src/ast.cpp
 	g++ --std=c++17 -c -g ./src/ast_builder.cpp
 	g++ --std=c++17 -c -g ./src/interpreter/ast_interpreter.cpp
+	g++ --std=c++17 -c ./src/interpreter/interpret_objects.cpp
 	g++ --std=c++17 -c ./src/interpreter/interpret_statements.cpp
 	g++ --std=c++17 -c ./src/interpreter/interpret_expressions.cpp
 	g++ --std=c++17 -c ./src/interpreter/interpret_list_expressions.cpp
