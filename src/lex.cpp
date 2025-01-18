@@ -56,6 +56,7 @@ void Lexer::init(vector<string> lines) {
 TokenStream Lexer::lex() {
     vector<Token> result;
     Token next;
+    inComment = false;
     while (state != DONE && state != ERROR) {
         result.push_back(nextToken());
         if (result.back().symbol == TK_EOF)
@@ -78,7 +79,9 @@ Token Lexer::nextToken() {
             cout<<"State: "<<dfastate[state]<<endl;
         if (shouldSkip(sb.get()))
             skipWhiteSpace();
-
+        if (sb.get() == '#') {
+            while (sb.get() != '\n') sb.get();
+        }
         if (state == START || state == SCANNING) {
             if (loud)
                 cout<<"Scanning from "<<sb.get()<<endl;
@@ -101,15 +104,15 @@ Token Lexer::nextToken() {
             if (loud)
                 cout<<"State: "<<dfastate[state]<<endl;
             if (state != ERROR) { 
-                if (state != IN_COMMENT) {
+                if (inComment == false) {
                     if (loud)
                         cout<<"Extracted: "<<next.strval<<endl;
                     next.lineNumber = sb.lineNo()+1;
-                    state = SCANNING;
                 }
                 if (next.symbol == TK_CLOSE_COMMENT) {
-                    state = SCANNING;
+                    inComment = false;
                 }
+                state = SCANNING;
             } else {
                 cout<<"An Error Occured on line "<<sb.lineNo()<<" during lexing."<<endl;
                 next.symbol = TK_EOF;
@@ -220,7 +223,7 @@ Token Lexer::checkSpecials() {
     }
     if (sb.get() == '/') {
         if (sb.advance() == '*') {
-            state = IN_COMMENT;
+            inComment = true;
             return Token(TK_OPEN_COMMENT, "/*");
         }
         sb.reverse();
@@ -251,12 +254,14 @@ Token Lexer::checkSpecials() {
         if (sb.advance() == '|') {
             return Token(TK_LOGIC_OR, "||");
         }
+        sb.reverse();
         return Token(TK_PIPE, "|");
     }
     if (sb.get() == '.') {
         if (sb.advance() == '.') {
             return Token(TK_ELIPSE, "..");
         }   
+        sb.reverse();
         return Token(TK_PERIOD, ".");
     }
     if (sb.get() == '%') return Token(TK_MOD, "%");

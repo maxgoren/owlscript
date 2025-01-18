@@ -87,8 +87,8 @@ Object ASTInterpreter::evalAssignmentExpression(astnode* node) {
                 return makeNilObject();
             } 
         }
-        updateContext(id,  m, scope);
     }
+    updateContext(id,  m, scope);
     leave();
     return m;
 }
@@ -108,7 +108,7 @@ Object ASTInterpreter::performSubscriptAssignment(astnode* node, astnode* expr, 
     } else if (typeOf(m) == AS_STRUCT) {
         m = performStructFieldAssignment(node, expr, m);
     } else if (typeOf(m) == AS_STRING) {
-        cout<<"Coming soon to an interpreter near you."<<endl;
+        m = performSubscriptStringAssignment(node, expr, m);
     } else {
         cout<<"Object "<<id<<" type does not support subscript assignment: "<<toString(m)<<endl;
         return makeNilObject();
@@ -174,6 +174,25 @@ Object ASTInterpreter::performSubscriptStringAccess(astnode* node, Object m) {
     } else {
         cout<<"index "<<subscript<<" is out of range for string of length "<<strobj->length<<endl;
         return makeNilObject();
+    }
+    return m;
+}
+
+Object ASTInterpreter::performSubscriptStringAssignment(astnode* node, astnode* expr, Object& m) {
+    Object subm = evalExpression(node->child[1]);
+    int subscript = atoi(toString(subm).c_str());
+    StringObj* strobj = getString(m);
+    if (subscript >= 0 && subscript < strobj->length) {
+        string s;
+        int i;
+        for (i = 0; i < subscript; i++)
+            s.push_back(strobj->str[i]);
+        s += toString(evalExpression(expr));
+        for (int i = s.length(); i < strobj->length; i++)
+            s.push_back(strobj->str[i]);
+        return makeStringObject(s); 
+    } else {
+        cout<<"index "<<subscript<<" is out of range for string of length "<<strobj->length<<endl;
     }
     return m;
 }

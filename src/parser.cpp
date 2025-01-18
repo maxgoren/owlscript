@@ -135,22 +135,22 @@ astnode* Parser::makeReturnStatement() {
 
 astnode* Parser::paramList() {
     match(TK_VAR);
-    astnode* m = nullptr;
+    astnode* m = nullptr, *c = nullptr;
     if (currSym() == TK_REF) {
-        m = makeStmtNode(REF_STMT, current);
         match(TK_REF);
+        m = makeStmtNode(REF_STMT, current);
         m->child[0] = simpleExpr();
     } else {
         m = simpleExpr();
     }
-    astnode* c = m;
+    c = m;
     if (currSym() == TK_COMMA) {
         do {
             match(TK_COMMA);
             match(TK_VAR);
             if (currSym() == TK_REF) {
-                c->next = makeStmtNode(REF_STMT, current);
                 match(TK_REF);
+                c->next = makeStmtNode(REF_STMT, current);
                 c->next->child[0] = simpleExpr();
             } else {
                 c->next = simpleExpr();
@@ -292,8 +292,18 @@ astnode* Parser::statement() {
     return m;
 }
 
-
 astnode* Parser::simpleExpr() {
+    astnode* node = relExpr();
+    if (currSym() == TK_ASSIGN) {
+        astnode* t = makeExprNode(ASSIGN_EXPR, current);
+        match(TK_ASSIGN);
+        t->child[0] = node;
+        node = t;
+        node->child[1] = simpleExpr();
+    }
+    return node;
+}
+astnode* Parser::relExpr() {
     astnode* node = compExpr();
     while (isEqualityOp(currSym())) {
         astnode* m = makeExprNode(RELOP_EXPR, current);
@@ -407,16 +417,10 @@ astnode* Parser::subscript() {
         match(TK_LSQUARE);
         t->child[0] = m;
         m = t;
-        m->child[1] = simpleExpr();
+        m->child[1] = primary();
         match(TK_RSQUARE);
     }
-    if (currSym() == TK_ASSIGN) {
-        astnode* t = makeExprNode(ASSIGN_EXPR, current);
-        match(TK_ASSIGN);
-        t->child[0] = m;
-        m = t;
-        m->child[1] = simpleExpr();
-    } else if (currSym() == TK_LPAREN) {
+    if (currSym() == TK_LPAREN) {
         m->exprType = FUNC_EXPR;
         match(TK_LPAREN);
         if (currSym() == TK_RPAREN) {
@@ -426,6 +430,13 @@ astnode* Parser::subscript() {
             m->child[1] = argsList();
             match(TK_RPAREN);
         }
+    }
+    while (currSym() == TK_PERIOD) {
+        astnode* t = makeExprNode(OBJECT_DOT_EXPR, current);
+        match(TK_PERIOD);
+        t->child[0] = m;
+        m = t;
+        m->child[1] = primary();
     }
     return m;
 }

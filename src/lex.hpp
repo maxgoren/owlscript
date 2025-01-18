@@ -15,6 +15,7 @@ inline string dfastate[] = {
 };
 class Lexer {
     private:
+        bool inComment;
         DFA_STATES state;
         unordered_map<string, Symbol> reserved;
         StringBuffer sb;

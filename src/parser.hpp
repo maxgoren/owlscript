@@ -39,6 +39,7 @@ class Parser {
         astnode* statementList();
         astnode* statement();
         astnode* simpleExpr();
+        astnode* relExpr();
         astnode* compExpr();
         astnode* expr();
         astnode* term();

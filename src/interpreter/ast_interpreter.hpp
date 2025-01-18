@@ -49,7 +49,7 @@ class ASTInterpreter {
         Object evalListExpression(astnode* node);
         Object evalSubscriptExpression(astnode* node);
         Object evalAssignmentExpression(astnode* node);
-
+        void prepareEnvForFunctionCall(astnode* params, astnode* args, VarList* freeVars, Environment& env);
         Object performIfStatement(astnode* node);
         Object performForStatement(astnode* node);
         Object performDefStatement(astnode* node);
@@ -69,7 +69,7 @@ class ASTInterpreter {
         Object performStructFieldAssignment(astnode* node, astnode* expr, Object& m);
         Object performStructFieldAccess(astnode* node, string id, Object m);
         Object performSubscriptStringAccess(astnode* node, Object m);
-
+        Object performSubscriptStringAssignment(astnode* node, astnode* expr, Object& m);
         Object performFileOpenExpression(astnode* node);
         
         Object performMetaExpression(astnode* node);

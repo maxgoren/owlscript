@@ -64,6 +64,7 @@ void printNode(astnode* n) {
             case LIST_EXPR:     cout<<"[list expression]"; break;
             case FILE_EXPR:     cout<<"[file expression]"; break;
             case META_EXPR:     cout<<"[meta expression]"; break;
+            case OBJECT_DOT_EXPR: cout<<"[object dot expr]"; break;
             default:
                 break;
         }

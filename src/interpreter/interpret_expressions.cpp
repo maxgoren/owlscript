@@ -192,41 +192,34 @@ Object ASTInterpreter::getConstValue(astnode* node) {
     return m;
 }
 
-Object ASTInterpreter::evalFunctionExpr(LambdaObj* lambdaObj, astnode* args) {
-    enter("[execute lambda]");
-    Environment env;
-    astnode* params = lambdaObj->params;
-    VarList* freeVars = lambdaObj->freeVars;
-    if (freeVars != nullptr) {
-        //Add captured variables to local context
-        for (VarList* it = freeVars; it != nullptr; it = it->next) {
-            env[it->key] = it->value;
-        }
+void ASTInterpreter::prepareEnvForFunctionCall(astnode* params, astnode* args, VarList* freeVars, Environment& env) {
+    for (VarList* it = freeVars; it != nullptr; it = it->next) {
+        env[it->key] = it->value;
     }
     astnode* itr = args;
     while (params != nullptr && itr != nullptr) {
-        string vname;
-        if (isExprType(params,REF_EXPR)) {
-            vname = getAttributes(params->child[0]).strval;
-        } else {
-            vname = params->attributes.strval;
-        }
-        string val = itr->attributes.strval;
+        string vname = isExprType(params,REF_EXPR) ? getAttributes(params->child[0]).strval:getAttributes(params).strval;
         env[vname] = evalExpression(itr);
         //cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
         params = params->next;
         itr = itr->next;
     }
+}
+
+Object ASTInterpreter::evalFunctionExpr(LambdaObj* lambdaObj, astnode* args) {
+    enter("[execute lambda]");
+    Environment env;
+    astnode* params = lambdaObj->params;
+    VarList* freeVars = lambdaObj->freeVars;
+    prepareEnvForFunctionCall(params, args, freeVars, env);
     cxt.scoped.push(env);
     Object m = exec(lambdaObj->body);
     bailout = false;
-    if (freeVars != nullptr) {
-        //update any closed-over variables before exiting.
-        for (VarList* it = freeVars; it != nullptr; it = it->next) {
-            it->value = cxt.scoped.top()[it->key];
-        }
-        lambdaObj->freeVars = freeVars;
+    //update any closed-over variables before exiting.
+    for (VarList* it = freeVars; it != nullptr; it = it->next) {
+        it->value = cxt.scoped.top()[it->key];
     }
+    lambdaObj->freeVars = freeVars;
     cxt.scoped.pop();
     leave();
     return m;
