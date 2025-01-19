@@ -2,7 +2,7 @@
 #define parser_hpp
 #include <iostream>
 #include "tokenizer.hpp"
-#include "stack.hpp"
+#include "../../stack.hpp"
 using namespace std;
 
 class RegularExpression {
@@ -86,7 +86,7 @@ bool isOp(RegExToken c) {
 class Parser {
     private:
         RegularExpression* makeTree(vector<RegExToken> postfix) {
-            Stack<RegularExpression*> sf;
+            InspectableStack<RegularExpression*> sf;
             for (RegExToken c : postfix) {
                 if (!isOp(c)) {
                     sf.push(new ExpressionLiteral(c));
@@ -149,7 +149,7 @@ class Parser {
             return fixed;
         }
         vector<RegExToken> in2post(vector<RegExToken> str) {
-            Stack<RegExToken> ops;
+            InspectableStack<RegExToken> ops;
             vector<RegExToken> postfix;
             for (int i = 0; i < str.size(); i++) {
                 if (str[i].symbol == RE_LPAREN) {

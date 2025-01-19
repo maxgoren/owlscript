@@ -143,6 +143,10 @@ Object ASTInterpreter::performListAssignment(astnode* node, astnode* expr, Objec
 
 Object ASTInterpreter::performStructFieldAccess(astnode* node, string id, Object m) {
         StructObj* sobj = getStruct(m);
+        if (!sobj->blessed) {
+            cout<<"Structs must be instantiated before use."<<endl;
+            return makeNilObject();
+        }
         string vname = getAttributes(node->child[1]).strval;
         if (sobj->bindings.find(vname) == sobj->bindings.end()) {
             cout<<"Struct '"<<id<<"' has no such property '"<<vname<<"'."<<endl;
@@ -158,7 +162,6 @@ Object ASTInterpreter::performStructFieldAssignment(astnode* node, astnode* expr
         st->bindings[vname] = evalExpression(expr);
     } else {
         cout<<"Structs must be instantiated before use."<<endl;
-        leave();
         return makeNilObject();
     }
     m.objval->structObj = st;

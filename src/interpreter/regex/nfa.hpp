@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "stack.hpp"
+#include "../../stack.hpp"
 #include "tokenizer.hpp"
 using namespace std;
 
@@ -27,6 +27,11 @@ class CharEdge : public Edge {
                 if (i+1 < label.charachters.size() && label.charachters[i] == '-') {
                     lo = label.charachters[i-1];
                     hi = label.charachters[i+1];
+                    if (hi < lo) {
+                        char tmp = hi;
+                        hi = lo;
+                        lo = tmp;
+                    }
                     if (c >= lo && c <= hi) {
                         is_good = true;
                         break;

@@ -97,6 +97,12 @@ Object ASTInterpreter::evalBinOp(astnode* node, Object& lhn, Object& rhn) {
     return makeIntObject(0);
 }
 
+
+/// @brief string concat
+/// @param op 
+/// @param lhn 
+/// @param rhn 
+/// @return 
 Object ASTInterpreter::evalStringOp(Symbol op, Object& lhn, Object& rhn) {
     if (op != TK_ADD) {
         cout<<"Error: unsupported operation on type 'string'"<<endl;
@@ -106,6 +112,10 @@ Object ASTInterpreter::evalStringOp(Symbol op, Object& lhn, Object& rhn) {
     return makeStringObject(concat);
 }
 
+
+/// @brief unary minus and logical not
+/// @param node 
+/// @return 
 Object ASTInterpreter::evalUnaryOp(astnode* node) {
     enter("eval unary op");
     Object m = evalExpression(node->child[0]);
@@ -141,6 +151,10 @@ Object ASTInterpreter::evalUnaryOp(astnode* node) {
     return m;
 }
 
+
+/// @brief match regular expression
+/// @param node 
+/// @return 
 Object ASTInterpreter::evalRegularExpr(astnode* node) {
     enter("Regular Expression");
     Object m;
@@ -156,6 +170,10 @@ Object ASTInterpreter::evalRegularExpr(astnode* node) {
     return m;
 }
 
+
+/// @brief user supplied eval()
+/// @param node 
+/// @return 
 Object ASTInterpreter::evalMetaExpression(astnode* node) {
     Object m = evalExpression(node->child[0]);
     ASTBuilder astbuilder;
@@ -163,6 +181,7 @@ Object ASTInterpreter::evalMetaExpression(astnode* node) {
     Object r = exec(meta);
     return r;
 }
+
 
 Object ASTInterpreter::getConstValue(astnode* node) {
     Object m;
@@ -192,6 +211,10 @@ Object ASTInterpreter::getConstValue(astnode* node) {
     return m;
 }
 
+/// @brief set up environment for function call
+/// @param lambdaObj 
+/// @param args 
+/// @param env 
 void ASTInterpreter::prepareEnvForFunctionCall(LambdaObj* lambdaObj, astnode* args, Environment& env) {
     astnode* params = lambdaObj->params;
     VarList* freeVars = lambdaObj->freeVars;
@@ -202,12 +225,15 @@ void ASTInterpreter::prepareEnvForFunctionCall(LambdaObj* lambdaObj, astnode* ar
     while (params != nullptr && itr != nullptr) {
         string vname = isStmtType(params,REF_STMT) ? getAttributes(params->child[0]).strval:getAttributes(params).strval;
         env[vname] = evalExpression(itr);
-        cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
+        //cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
         params = params->next;
         itr = itr->next;
     }
 }
 
+/// @brief restore environment after function call
+/// @param lobj 
+/// @param args 
 void ASTInterpreter::cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args) {
     astnode* params = lobj->params;
     VarList* freeVars = lobj->freeVars;
@@ -218,18 +244,25 @@ void ASTInterpreter::cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args) {
     }
     lobj->freeVars = freeVars;
     astnode* itr = args;
+    //listen. I _know_ this is technically pass by value-result
+    //pass by reference is unexpectedly hard to implement with 
+    //the current environment schemea
     while (params != nullptr && itr != nullptr) {
         if (isStmtType(params, REF_STMT)) {
             Object m = cxt.scoped.top()[params->child[0]->attributes.strval];
-            cout<<"Copy that sniz '"<<toString(m)<<"' back out to "<<itr->attributes.strval<<endl;
             auto [id, scope]  = getNameAndScopeFromNode(itr);
-            updateContext(id, m, scope+1);
+            updateContext(id, m, scope > -1 ? scope+1:scope);
         }
         params = params->next;
         itr = itr->next;
     }
 }
 
+
+/// @brief Evaluate user defined function
+/// @param lambdaObj 
+/// @param args 
+/// @return 
 Object ASTInterpreter::evalFunctionExpr(LambdaObj* lambdaObj, astnode* args) {
     enter("[execute lambda]");
     Environment env;
@@ -242,6 +275,9 @@ Object ASTInterpreter::evalFunctionExpr(LambdaObj* lambdaObj, astnode* args) {
     return m;
 }
 
+/// @brief resolve a subscript
+/// @param node 
+/// @return Object
 Object ASTInterpreter::evalSubscriptExpression(astnode* node) {
     string id;
     Object m;
@@ -261,6 +297,9 @@ Object ASTInterpreter::evalSubscriptExpression(astnode* node) {
     return m;
 }
 
+/// @brief instantiate an object
+/// @param node 
+/// @return Object 
 Object ASTInterpreter::evalBlessExpression(astnode* node) {
     Object m;
     enter("[bless struct]");
