@@ -238,6 +238,7 @@ Object ASTInterpreter::execFilter(astnode* node) {
 }
 
 Object ASTInterpreter::performListComprehension(astnode* node) {
+    enter("[List Comprehension]");
     Object il = evalExpression(node->child[0]);
     if (typeOf(il) != AS_LIST)
         return makeNilObject();
@@ -255,10 +256,12 @@ Object ASTInterpreter::performListComprehension(astnode* node) {
             appendToList(list, evalFunctionExpr(lmbd, t));
         }
     }
+    leave();
     return makeListObject(list);
 }
 
 Object ASTInterpreter::evalRangeExpression(astnode* node) {
+    enter("[range expr]");
     Object from = evalExpression(node->child[0]);
     Object to = evalExpression(node->child[1]);
     ListObj* list = makeListObj();
@@ -273,15 +276,18 @@ Object ASTInterpreter::evalRangeExpression(astnode* node) {
             appendToList(list, makeIntObject(i));
         }
     }
+    leave();
     return makeListObject(list);
 }
 
 Object ASTInterpreter::performFileOpenExpression(astnode* node) {
+    enter("[File Open Expr]");
     Object m;
     Object fn = evalExpression(node);
     FileObj* fobj = makeFileObj(fn.objval->stringObj);
     fobj->lines = makeListObj();
     ifstream ifile(toString(fn));
+    leave();
     if (!ifile.is_open()) {
         ofstream ofile(toString(fn));
         if (ofile.is_open()) {

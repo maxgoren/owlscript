@@ -10,12 +10,14 @@ Object ASTInterpreter::getObjectByID(string id, int scope) {
             m = env[id];
             resolved_in_scoped = true;
             say("[Resolved " + id + " as " + toString(m) + " from scope level: " + to_string(scope)  +"]");
+            return env[id];
         }
     }
     if (!resolved_in_scoped) {
         if (cxt.globals.find(id) != cxt.globals.end()) {
             say("[Resolved " + id + " from global scope.]");
             m = cxt.globals[id];
+            return cxt.globals[id];
         } else {
             cout<<"Unknown Identifier: "<<id<<endl;
             m = makeNilObject();
@@ -195,15 +197,4 @@ Object ASTInterpreter::performSubscriptStringAssignment(astnode* node, astnode* 
         cout<<"index "<<subscript<<" is out of range for string of length "<<strobj->length<<endl;
     }
     return m;
-}
-
-//this doesn't work yet.
-Object ASTInterpreter::getObjectByReference(astnode* node) {
-    enter("Getting Object by reference");
-    string id = getNameAndScopeFromNode(node).first;
-    int scope = getNameAndScopeFromNode(node).second;
-    say("Got: " + id + " at scope level " + to_string(scope));
-    Object m = getObjectByID(id, scope);
-    Object refd = getObjectByID(m.refVal->objectId, m.refVal->objectScope);
-    return refd;
 }

@@ -2,10 +2,11 @@
 #define stringbuffer_hpp
 #include <iostream>
 #include <fstream>
+#include "stream_iface.hpp"
 using namespace std;
 
 
-class StringBuffer {
+class StringBuffer : public Stream<char> {
     private:
         vector<string> lines;
         char eosChar;
@@ -36,13 +37,13 @@ class StringBuffer {
         int lineNo() {
             return lpos;
         }
-        char get() {
+        char& get() {
             if (spos >= buff.length() && lpos >= lines.size()) {
                     return eosChar; 
             }
             return buff[spos];
         }
-        char advance() {
+        char& advance() {
             spos++;
             if (spos >= buff.length()) {
                 lpos++;

@@ -27,6 +27,7 @@ class ASTInterpreter {
         void updateContext(string id, Object m, int scope);
         Object getConstValue(astnode* node);
         Object getObjectByID(string id, int scope);
+        Object getObjectByReference(astnode* node);
         pair<string,int> getNameAndScopeFromNode(astnode* node);
         void resolveObjForExpression(astnode* node, string& id, Object& m);
         
@@ -49,14 +50,14 @@ class ASTInterpreter {
         Object evalListExpression(astnode* node);
         Object evalSubscriptExpression(astnode* node);
         Object evalAssignmentExpression(astnode* node);
-        void prepareEnvForFunctionCall(astnode* params, astnode* args, VarList* freeVars, Environment& env);
+        void prepareEnvForFunctionCall(LambdaObj* lobj, astnode* args, Environment& env);
+        void cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args);
         Object performIfStatement(astnode* node);
         Object performForStatement(astnode* node);
         Object performDefStatement(astnode* node);
         Object performLetStatement(astnode* node);
         Object performCreateLambda(astnode* node);
         Object performFunctionCall(astnode* node);
-        Object getObjectByReference(astnode* node);
         Object performMakeReference(astnode* node);
         Object performBlockStatement(astnode* node);
         Object performWhileStatement(astnode* node);

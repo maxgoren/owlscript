@@ -26,6 +26,7 @@ class ResolveScope {
         bool loud;
         typedef unordered_map<string, bool> ScopeMap;
         InspectableStack<ScopeMap> scopes;
+        unordered_map<astnode*, int> depthmap;
         void declareVarName(string id);
         void defineVarName(string id);
         void openScope();

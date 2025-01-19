@@ -132,9 +132,9 @@ Object makeFileObject(FileObj* fobj) {
     return o;
 }
 
-Object makeReferenceObject(string name, int scope) {
+Object makeReferenceObject(Object* objPtr) {
     Object o(AS_REF);
-    o.refVal = new WeakRef(name, scope);
+    o.refVal = objPtr;
     return o;
 }
 

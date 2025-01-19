@@ -102,6 +102,7 @@ void ResolveScope::resolveStatementScope(astnode* node) {
             break;
         case REF_STMT:
             declareVarName(node->child[0]->attributes.strval);
+            defineVarName(node->child[0]->attributes.strval);
             resolve(node->child[0]);
         case STRUCT_STMT: 
             break;
@@ -218,8 +219,7 @@ void ResolveScope::closeScope() {
 
 void ResolveScope::resolveVariableDepth(astnode* node, string id) {
     for (int i = scopes.size() - 1; i >= 0; i--) {
-        ScopeMap scope = scopes.get(i);
-        if (scope.find(id) != scope.end()) {
+        if (scopes.get(i).find(id) != scopes.get(i).end()) {
             node->attributes.depth = scopes.size() - 1 - i;
             if (loud) {
                 cout<<"Resolve: "<<id<<" at nest depth "<<node->attributes.depth<<endl;

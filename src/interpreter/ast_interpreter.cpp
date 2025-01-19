@@ -90,7 +90,7 @@ Object ASTInterpreter::evalExpression(astnode* node) {
         case RANGE_EXPR: m = evalRangeExpression(node); break;
         case REG_EXPR: m = evalRegularExpr(node); break;
         case BLESS_EXPR: m = evalBlessExpression(node); break;
-        case REF_EXPR: m = getObjectByReference(node); break;
+        //case REF_EXPR: m = getObjectByReference(node); break;
         case ASSIGN_EXPR: m = evalAssignmentExpression(node); break;
         case FUNC_EXPR: m = performFunctionCall(node); break;
         case LAMBDA_EXPR: m = performCreateLambda(node); break;
@@ -156,7 +156,7 @@ Object ASTInterpreter::performMakeReference(astnode* node) {
     enter("[make reference]");
     string id = getNameAndScopeFromNode(node->child[0]).first;
     int scope = getNameAndScopeFromNode(node->child[0]).second;
-    m = makeReferenceObject(id, scope);
+    m = (getObjectByID(id, scope));
     return m;
 }   
 

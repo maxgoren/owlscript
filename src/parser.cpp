@@ -359,7 +359,7 @@ astnode* Parser::factor() {
         m->child[0] = factor();
         return m;
     }
-    astnode* node = var();
+    astnode* node = var(); 
     if (currSym() == TK_POW) {
         astnode* m = makeExprNode(BINARYOP_EXPR, current);
         match(TK_POW);

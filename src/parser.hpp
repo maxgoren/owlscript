@@ -33,20 +33,20 @@ class Parser {
         astnode* makeReturnStatement();
         astnode* makeStructStatement();
         astnode* makeDefStatement();
-        astnode* paramList();
-        astnode* argsList();
+        astnode* paramList();   // ,
+        astnode* argsList();   //  ,
         astnode* program();
         astnode* statementList();
         astnode* statement();
-        astnode* simpleExpr();
-        astnode* relExpr();
-        astnode* compExpr();
-        astnode* expr();
-        astnode* term();
-        astnode* factor();
-        astnode* var();
-        astnode* range();
-        astnode* subscript();
+        astnode* simpleExpr(); //  :=
+        astnode* relExpr();    //  == !=
+        astnode* compExpr();   //  <= < >= >
+        astnode* expr();       //  + -
+        astnode* term();       //  * / %
+        astnode* factor();     //  - ! (prefix, unary)
+        astnode* var();       //   sqrt, pow
+        astnode* range();      //   .. 
+        astnode* subscript();  //   [] . func()
         astnode* primary();
         astnode* makeBultInsExpr();
         astnode* makeConstExpr();

@@ -192,15 +192,39 @@ Object ASTInterpreter::getConstValue(astnode* node) {
     return m;
 }
 
-void ASTInterpreter::prepareEnvForFunctionCall(astnode* params, astnode* args, VarList* freeVars, Environment& env) {
+void ASTInterpreter::prepareEnvForFunctionCall(LambdaObj* lambdaObj, astnode* args, Environment& env) {
+    astnode* params = lambdaObj->params;
+    VarList* freeVars = lambdaObj->freeVars;
     for (VarList* it = freeVars; it != nullptr; it = it->next) {
         env[it->key] = it->value;
     }
     astnode* itr = args;
     while (params != nullptr && itr != nullptr) {
-        string vname = isExprType(params,REF_EXPR) ? getAttributes(params->child[0]).strval:getAttributes(params).strval;
+        string vname = isStmtType(params,REF_STMT) ? getAttributes(params->child[0]).strval:getAttributes(params).strval;
         env[vname] = evalExpression(itr);
-        //cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
+        cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
+        params = params->next;
+        itr = itr->next;
+    }
+}
+
+void ASTInterpreter::cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args) {
+    astnode* params = lobj->params;
+    VarList* freeVars = lobj->freeVars;
+    bailout = false;
+    //update any closed-over variables before exiting.
+    for (VarList* it = freeVars; it != nullptr; it = it->next) {
+        it->value = cxt.scoped.top()[it->key];
+    }
+    lobj->freeVars = freeVars;
+    astnode* itr = args;
+    while (params != nullptr && itr != nullptr) {
+        if (isStmtType(params, REF_STMT)) {
+            Object m = cxt.scoped.top()[params->child[0]->attributes.strval];
+            cout<<"Copy that sniz '"<<toString(m)<<"' back out to "<<itr->attributes.strval<<endl;
+            auto [id, scope]  = getNameAndScopeFromNode(itr);
+            updateContext(id, m, scope+1);
+        }
         params = params->next;
         itr = itr->next;
     }
@@ -209,17 +233,10 @@ void ASTInterpreter::prepareEnvForFunctionCall(astnode* params, astnode* args, V
 Object ASTInterpreter::evalFunctionExpr(LambdaObj* lambdaObj, astnode* args) {
     enter("[execute lambda]");
     Environment env;
-    astnode* params = lambdaObj->params;
-    VarList* freeVars = lambdaObj->freeVars;
-    prepareEnvForFunctionCall(params, args, freeVars, env);
+    prepareEnvForFunctionCall(lambdaObj, args, env);
     cxt.scoped.push(env);
     Object m = exec(lambdaObj->body);
-    bailout = false;
-    //update any closed-over variables before exiting.
-    for (VarList* it = freeVars; it != nullptr; it = it->next) {
-        it->value = cxt.scoped.top()[it->key];
-    }
-    lambdaObj->freeVars = freeVars;
+    cleanUpAfterFunctionCall(lambdaObj, args);
     cxt.scoped.pop();
     leave();
     return m;

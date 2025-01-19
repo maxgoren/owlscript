@@ -6,7 +6,11 @@
 using namespace std;
 
 enum ObjectType {
-    AS_INT, AS_REAL, AS_BOOL, AS_STRING, AS_LIST, AS_LAMBDA, AS_STRUCT, AS_REF, AS_FILE, AS_NIL
+    AS_INT, AS_REAL, 
+    AS_BOOL, AS_STRING, 
+    AS_LIST, AS_LAMBDA, 
+    AS_STRUCT, AS_REF, 
+    AS_FILE, AS_NIL
 };
 
 enum ObjType {
@@ -32,12 +36,6 @@ struct ListObj {
     ListNode* head;
     ListNode* tail;
     int length;
-};
-
-struct WeakRef {
-    string objectId;
-    int    objectScope;
-    WeakRef(string id = "nil", int scope = -1) : objectId(id), objectScope(scope) { }
 };
 
 
@@ -69,7 +67,7 @@ struct Object {
         double realval;
         bool boolval;
         ObjBase* objval;
-        WeakRef* refVal;
+        Object* refVal;
     };
     Object(ObjectType t = AS_INT) {
         type = t;
@@ -150,8 +148,7 @@ Object makeListObject(ListObj* list);
 Object makeStructObject(StructObj* structobj);
 Object makeFileObject(FileObj* fileObj);
 Object makeNilObject();
-Object makeReferenceObject(string id, int scope);
-
+Object makeReferenceObject(Object* obj);
 ListObj* getList(Object m);
 LambdaObj* getLambda(Object m);
 StructObj* getStruct(Object m);

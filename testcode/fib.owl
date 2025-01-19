@@ -17,9 +17,9 @@ def fibo(var n) {
 }
 
 def main() {
-    let i := 1;
-    while (i <= 20) {
-        println i + ": " + fibo(i);
+    let i := 0;
+    while (i <= 30) {
+        println i + ": " + fib(i);
         i := i + 1;
     }
     return 0;

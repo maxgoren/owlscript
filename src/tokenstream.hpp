@@ -1,10 +1,11 @@
 #ifndef tokenstream_hpp
 #define tokenstream_hpp
+#include "stream_iface.hpp"
 #include "token.hpp"
 #include <vector>
 using namespace std;
 
-class TokenStream {
+class TokenStream : public Stream<Token> {
     private:
         vector<Token> tokens;
         int tpos;
@@ -28,8 +29,9 @@ class TokenStream {
         Token& get() {
             return tokens[tpos];
         }
-        void advance() {
+        Token& advance() {
             tpos++;
+            return get();
         }
         void rewind() {
             if (tpos-1 >= 0)

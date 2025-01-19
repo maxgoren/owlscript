@@ -1,0 +1,12 @@
+def makeCounter() {
+    var i := 0;
+    def count() {
+        i := i + 1;
+        println i;
+    }
+    return count;
+}
+
+var counter := makeCounter();
+counter();
+counter();
