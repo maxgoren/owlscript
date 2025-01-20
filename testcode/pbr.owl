@@ -1,11 +1,11 @@
-def exch(var ref a, var ref b) {
+def exch(var inout a, var inout b) {
     let q := a;
     a := b;
     b := q;
 }
 def main() {
-    var m := "dolph";
-    var n := "spaz";
+    var m := "one";
+    var n := "two";
     println m + " " + n;
     exch(m, n);
     println m + " " + n;

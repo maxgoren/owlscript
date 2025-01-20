@@ -30,13 +30,13 @@ Lexer::Lexer(bool debug) {
     reserved["match"] = TK_MATCH;
     reserved["var"] = TK_VAR;
     reserved["ref"] = TK_REF;
+    reserved["inout"] = TK_INOUT;
     reserved["make"] = TK_MAKE;
     reserved["bless"] = TK_MAKE;
     reserved["nil"] = TK_NIL;
     reserved["shift"] = TK_SHIFT;
     reserved["unshift"] = TK_UNSHIFT;
     reserved["fopen"] = TK_FOPEN;
-    reserved["flclose"] = TK_FCLOSE;
     reserved["eval"] = TK_EVAL;
     reserved["typeOf"] = TK_TYPEOF;
     reserved["of"] = TK_OF;

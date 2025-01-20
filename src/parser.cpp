@@ -136,8 +136,8 @@ astnode* Parser::makeReturnStatement() {
 astnode* Parser::paramList() {
     match(TK_VAR);
     astnode* m = nullptr, *c = nullptr;
-    if (currSym() == TK_REF) {
-        match(TK_REF);
+    if (currSym() == TK_INOUT) {
+        match(TK_INOUT);
         m = makeStmtNode(REF_STMT, current);
         m->child[0] = simpleExpr();
     } else {
@@ -148,8 +148,8 @@ astnode* Parser::paramList() {
         do {
             match(TK_COMMA);
             match(TK_VAR);
-            if (currSym() == TK_REF) {
-                match(TK_REF);
+            if (currSym() == TK_INOUT) {
+                match(TK_INOUT);
                 c->next = makeStmtNode(REF_STMT, current);
                 c->next->child[0] = simpleExpr();
             } else {
