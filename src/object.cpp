@@ -240,11 +240,30 @@ ListObj* appendToList(ListObj* list, Object m) {
 
 void pushToList(ListObj* list, Object m) {
     ListNode* ln = makeListNode(m);
-    ln->next = list->head;
-    list->head = ln;
-    if (list->tail == nullptr)
+    if (listEmpty(list)) {
+        list->head = ln;
         list->tail = ln;
+    } else {
+        ln->next = list->head;
+        list->head = ln;
+    }
     list->length += 1;
+}
+
+ListObj* reverseList(ListObj* list) {
+    ListNode* tmp = nullptr;
+    ListNode* x = list->head;
+    while (x != nullptr) {
+        ListNode* t = x;
+        x = x->next;
+        t->next = tmp;
+        tmp = t;
+    }
+    list->head = tmp;
+    x = list->head;
+    while (x != nullptr && x->next != nullptr) x = x->next;
+    list->tail = x;
+    return list;
 }
 
 Object popList(ListObj* list) {

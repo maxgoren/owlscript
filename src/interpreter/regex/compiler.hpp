@@ -38,9 +38,16 @@ class NFACompiler {
         NFA emptyExpr() {
             return singleTransitionNFA(new EpsilonEdge());
         }
+        /*
+            A -> N(A)
+        */
         NFA atomicNFA(RegExToken c) {
             return singleTransitionNFA(new CharEdge(c));
         }
+
+        /*
+             AB   -> N(N(A)->N(B)) ->
+        */
         NFA concatNFA(NFA first, NFA second) {
             NFA nnfa;
             copyTransitions(nnfa, first);
@@ -50,6 +57,13 @@ class NFACompiler {
             nnfa.addTransition(Transition(first.getAccept(), second.getStart(), new EpsilonEdge()));
             return nnfa;
         }
+        /*
+                     ___N(A)_
+                    /     |  \
+            A* -> N(S)<---'   N(E)->
+                    \________/
+                     
+        */
         NFA kleeneNFA(NFA torepeat, bool mustMatch) {
             NFA nnfa;
             initNextNFA(nnfa);
@@ -61,6 +75,14 @@ class NFACompiler {
                 nnfa.addTransition(Transition(nnfa.getStart(), nnfa.getAccept(), new EpsilonEdge()));
             return nnfa;
         }
+        /* 
+                          __N(A)___
+                         /         \
+            A|B   -> N(S)           N(E) ->
+                         \__     __/
+                             N(B)
+
+        */
         NFA alternateNFA(NFA first, NFA second) {
             //create new NFA with start and end state.
             NFA nnfa;

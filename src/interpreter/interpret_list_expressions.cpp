@@ -267,12 +267,17 @@ Object ASTInterpreter::evalRangeExpression(astnode* node) {
     ListObj* list = makeListObj();
     int a = getAsReal(from);
     int b = getAsReal(to);
-    if ( a < b)  {
-        for (int i = a; i <= b; i++) {
-            appendToList(list, makeIntObject(i));
-        }
-    } else {
-        for (int i = a; i >= b; i--) {
+    bool swapped = false;
+    if (b < a) {
+        int tmp = a;
+        a = b;
+        b = tmp;
+        swapped = true;
+    }
+    for (int i = a; i <= b; i++) {
+        if (swapped) {
+            pushToList(list, makeIntObject(i));
+        } else {
             appendToList(list, makeIntObject(i));
         }
     }

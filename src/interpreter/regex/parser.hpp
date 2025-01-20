@@ -186,16 +186,10 @@ class Parser {
         }
         RegularExpression* parse(string regexp) {
             Tokenizer tz;
-            //cout<<"Parsing: "<<regexp<<endl;
             regexp = addConcatOp(regexp);
-            auto tokens =  tz.tokenize(regexp);
+            auto tokens = tz.tokenize(regexp);
             int i = 0;
             vector<RegExToken> postfix = in2post(tokens);
-            /*cout<<"Postfix: \n";
-            for (auto m : postfix) {
-                cout<<"("<<i++<<"): "<<m.charachters<<" - "<<reSymStr[m.symbol]<<endl;
-            }
-            cout<<endl;*/
             return makeTree(postfix);
         }
 };

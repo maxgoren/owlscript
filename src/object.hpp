@@ -169,6 +169,7 @@ void   pushToList(ListObj* list, Object m);
 Object popList(ListObj* list);
 Object popBackList(ListObj* list);
 bool   compareUnknownTypes(Object a, Object b);
+ListObj* reverseList(ListObj* list);
 
 void destroyObject(ObjBase*);
 void destroyList(ListObj*);
