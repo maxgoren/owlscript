@@ -200,7 +200,7 @@ int listLength(ListObj* list) {
     return list->length;
 }
 
-ListObj*   updateListItem(ListObj* list, int index, Object m) {
+ListObj* updateListItem(ListObj* list, int index, Object m) {
     if (index > list->length || index < 0) {
         cout<<"Error: subscript out of range"<<endl;
         return list;

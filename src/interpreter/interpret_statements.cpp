@@ -44,8 +44,8 @@ Object ASTInterpreter::performForStatement(astnode* node) {
 
 Object ASTInterpreter::performDefStatement(astnode* node) {
     enter("def statement");
-    string id = getNameAndScopeFromNode(node).first;
-    int scope = getNameAndScopeFromNode(node).second;
+    string id = getNameAndScopeFromNode(node).name;
+    int scope = getNameAndScopeFromNode(node).scope;
     Object m = performCreateLambda(node);
     gc.add(m.objval);
     updateContext(id, m, scope);

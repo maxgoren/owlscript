@@ -282,7 +282,7 @@ Object ASTInterpreter::evalSubscriptExpression(astnode* node) {
     string id;
     Object m;
     //cout<<"Subscript expression"<<endl;
-    if (isExprType(node->child[0], SUBSCRIPT_EXPR)) {
+    if (isExprType(node->child[0], SUBSCRIPT_EXPR) || isExprType(node->child[0], OBJECT_DOT_EXPR)) {
         m = evalSubscriptExpression(node->child[0]);
     } else {
         resolveObjForExpression(node, id, m);
@@ -303,9 +303,8 @@ Object ASTInterpreter::evalSubscriptExpression(astnode* node) {
 Object ASTInterpreter::evalBlessExpression(astnode* node) {
     Object m;
     enter("[bless struct]");
-    string id = getNameAndScopeFromNode(node->child[0]).first;
-    int scope = getNameAndScopeFromNode(node->child[0]).second;
-    Object master = getObjectByID(id, scope);
+    NameAndScope resolved = getNameAndScopeFromNode(node->child[0]);
+    Object master = getObjectByID(resolved.name, resolved.scope);
     StructObj* og = getStruct(master);
     StructObj* ninst = makeStructObj();
     ninst->blessed = true;

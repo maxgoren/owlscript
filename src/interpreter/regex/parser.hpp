@@ -86,7 +86,7 @@ bool isOp(RegExToken c) {
 class Parser {
     private:
         RegularExpression* makeTree(vector<RegExToken> postfix) {
-            InspectableStack<RegularExpression*> sf;
+            IndexedStack<RegularExpression*> sf;
             for (RegExToken c : postfix) {
                 if (!isOp(c)) {
                     sf.push(new ExpressionLiteral(c));
@@ -149,7 +149,7 @@ class Parser {
             return fixed;
         }
         vector<RegExToken> in2post(vector<RegExToken> str) {
-            InspectableStack<RegExToken> ops;
+            IndexedStack<RegExToken> ops;
             vector<RegExToken> postfix;
             for (int i = 0; i < str.size(); i++) {
                 if (str[i].symbol == RE_LPAREN) {

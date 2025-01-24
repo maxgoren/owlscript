@@ -167,6 +167,7 @@ void ResolveScope::resolveExpressionScope(astnode* node) {
             }
             break;
         case LIST_EXPR:
+        case OBJECT_DOT_EXPR:
         case SUBSCRIPT_EXPR:
             if (node->child[0] != nullptr && !node->child[0]->attributes.strval.empty())
                 defineVarName(node->child[0]->attributes.strval);

@@ -12,6 +12,12 @@ using namespace std;
 
 void saveFile(Object& m);
 
+struct NameAndScope {
+    string name;
+    int scope;
+    NameAndScope(string n = "nil", int sc = -1) : name(n), scope(sc) { }
+};
+
 class ASTInterpreter {
     public:
         ASTInterpreter(bool trace = false);
@@ -28,7 +34,7 @@ class ASTInterpreter {
         Object getConstValue(astnode* node);
         Object getObjectByID(string id, int scope);
         Object getObjectByReference(astnode* node);
-        pair<string,int> getNameAndScopeFromNode(astnode* node);
+        NameAndScope getNameAndScopeFromNode(astnode* node);
         void resolveObjForExpression(astnode* node, string& id, Object& m);
         
         ListNode* merge(ListNode* a, ListNode* b, LambdaObj* compfunc);
@@ -72,7 +78,6 @@ class ASTInterpreter {
         Object performSubscriptStringAccess(astnode* node, Object m);
         Object performSubscriptStringAssignment(astnode* node, astnode* expr, Object& m);
         Object performFileOpenExpression(astnode* node);
-        
         Object performMetaExpression(astnode* node);
         //List operations
         Object performListComprehension(astnode* node);

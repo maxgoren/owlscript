@@ -80,7 +80,6 @@ Object ASTInterpreter::evalExpression(astnode* node) {
         return makeIntObject(0);
     enter("[expression]");
     Object m;
-    //printNode(node);
     switch (node->exprType) {
         case CONST_EXPR: m = getConstValue(node);   break;
         case ID_EXPR: m = getObjectByID(node->attributes.strval, node->attributes.depth); break;
@@ -90,7 +89,6 @@ Object ASTInterpreter::evalExpression(astnode* node) {
         case RANGE_EXPR: m = evalRangeExpression(node); break;
         case REG_EXPR: m = evalRegularExpr(node); break;
         case BLESS_EXPR: m = evalBlessExpression(node); break;
-        //case REF_EXPR: m = getObjectByReference(node); break;
         case ASSIGN_EXPR: m = evalAssignmentExpression(node); break;
         case FUNC_EXPR: m = performFunctionCall(node); break;
         case LAMBDA_EXPR: m = performCreateLambda(node); break;
@@ -134,31 +132,16 @@ Object ASTInterpreter::evalListExpression(astnode* node) {
     return m;
 }
 
-
-Object ASTInterpreter::performFunctionCall(astnode* node) {
-    enter("[function call]");
-    string id = getNameAndScopeFromNode(node).first;
-    int scope = getNameAndScopeFromNode(node).second;
-    Object lmbd = getObjectByID(id, scope);
-    if (lmbd.type != AS_LAMBDA) {
-        leave();
-        cout<<"Error: No function '"<<id<<"' coult be found."<<endl;
-        return makeNilObject();
-    }
-    Object m = evalFunctionExpr(getLambda(lmbd), node->child[1]);
-    updateContext(id, lmbd, scope);
-    leave();
+Object ASTInterpreter::performMetaExpression(astnode* node) {
+    Object m;
+    switch (node->attributes.symbol) {
+        case TK_EVAL: m = evalMetaExpression(node); break;
+        case TK_TYPEOF: m = makeStringObject(getTypeName(exec(node->child[0]))); break;
+        default: 
+            break;
+    };
     return m;
 }
-
-Object ASTInterpreter::performMakeReference(astnode* node) {
-    Object m;
-    enter("[make reference]");
-    string id = getNameAndScopeFromNode(node->child[0]).first;
-    int scope = getNameAndScopeFromNode(node->child[0]).second;
-    m = (getObjectByID(id, scope));
-    return m;
-}   
 
 Object ASTInterpreter::performCreateLambda(astnode* node) {
     enter("[create lambda]");
@@ -174,16 +157,30 @@ Object ASTInterpreter::performCreateLambda(astnode* node) {
     return m;
 }
 
-Object ASTInterpreter::performMetaExpression(astnode* node) {
-    Object m;
-    switch (node->attributes.symbol) {
-        case TK_EVAL: m = evalMetaExpression(node); break;
-        case TK_TYPEOF: m = makeStringObject(getTypeName(exec(node->child[0]))); break;
-        default: 
-            break;
-    };
+Object ASTInterpreter::performFunctionCall(astnode* node) {
+    enter("[function call]");
+    string id = getNameAndScopeFromNode(node).name;
+    int scope = getNameAndScopeFromNode(node).scope;
+    Object lmbd = getObjectByID(id, scope);
+    if (lmbd.type != AS_LAMBDA) {
+        leave();
+        cout<<"Error: No function '"<<id<<"' coult be found."<<endl;
+        return makeNilObject();
+    }
+    Object m = evalFunctionExpr(getLambda(lmbd), node->child[1]);
+    updateContext(id, lmbd, scope);
+    leave();
     return m;
 }
+
+Object ASTInterpreter::performMakeReference(astnode* node) {
+    Object m;
+    enter("[make reference]");
+    string id = getNameAndScopeFromNode(node->child[0]).name;
+    int scope = getNameAndScopeFromNode(node->child[0]).scope;
+    m = (getObjectByID(id, scope));
+    return m;
+} 
 
 void ASTInterpreter::say(string s) {
     if (!traceEval)

@@ -33,7 +33,7 @@ class RegExPatternMatcher : public PatternMatcher {
         //Gathers a list of states reachable from those in clist using _only_ epsilon transitions.
         unordered_set<State> e_closure(unordered_set<State> clist) {
             unordered_set<State> nlist = clist;
-            InspectableStack<State> sf;
+            IndexedStack<State> sf;
             for (State s : clist)
                 sf.push(s);
             while (!sf.empty()) {

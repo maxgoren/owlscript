@@ -10,7 +10,7 @@ using namespace std;
 
 typedef unordered_map<string, Object> Environment;
 
-typedef InspectableStack<Environment> CallStack;
+typedef IndexedStack<Environment> CallStack;
 
 struct Context {
     Environment globals;

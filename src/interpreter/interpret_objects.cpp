@@ -47,14 +47,15 @@ void ASTInterpreter::updateContext(string id, Object m, int scope) {
     }    
 }
 
-pair<string,int> ASTInterpreter::getNameAndScopeFromNode(astnode* node) {
-    return make_pair(node->attributes.strval, node->attributes.depth);
+NameAndScope ASTInterpreter::getNameAndScopeFromNode(astnode* node) {
+    return NameAndScope(node->attributes.strval, node->attributes.depth);
 }
 
 void ASTInterpreter::resolveObjForExpression(astnode* node, string& id, Object& m) {
     if (getAttributes(node->child[0]).symbol == TK_ID) {
-        id = getNameAndScopeFromNode(node->child[0]).first;
-        int scope = getNameAndScopeFromNode(node->child[0]).second;
+        NameAndScope resolved = getNameAndScopeFromNode(node->child[0]);
+        int scope = resolved.scope;
+        id = resolved.name;
         m = getObjectByID(id, scope);
     } else if (node->child[0]->attributes.symbol == TK_LSQUARE) {
         m = performCreateUnNamedList(node->child[0]);
@@ -69,14 +70,17 @@ Object ASTInterpreter::evalAssignmentExpression(astnode* node) {
     Object m;
     string id;
     int scope;
+    NameAndScope resolved;
     enter("[assignment]");
-    if (isExprType(node->child[0], SUBSCRIPT_EXPR)) {
-        id = getNameAndScopeFromNode(node->child[0]->child[0]).first;
-        scope = getNameAndScopeFromNode(node->child[0]->child[0]).second;
+    if (isExprType(node->child[0], SUBSCRIPT_EXPR) || isExprType(node->child[0], OBJECT_DOT_EXPR)) {
+        resolved = getNameAndScopeFromNode(node->child[0]->child[0]);
+        id = resolved.name;
+        scope = resolved.scope;
         m = performSubscriptAssignment(node->child[0], node->child[1], id, scope);
     } else {
-        id = getNameAndScopeFromNode(node->child[0]).first;
-        scope = getNameAndScopeFromNode(node->child[0]).second;
+        resolved = getNameAndScopeFromNode(node->child[0]);
+        id = resolved.name;
+        scope = resolved.scope;
         m = evalExpression(node->child[1]);
         if (scope > -1) {
             if (!cxt.scoped.empty() && cxt.getAt(scope).find(id) == cxt.getAt(scope).end()) {
@@ -98,11 +102,11 @@ Object ASTInterpreter::evalAssignmentExpression(astnode* node) {
 Object ASTInterpreter::performSubscriptAssignment(astnode* node, astnode* expr, string& id, int& scope) {
     Object m;
     bool unomas = false;
-    if (getAttributes(node->child[0]).symbol == TK_LSQUARE) {
+    if (isExprType(node->child[0], SUBSCRIPT_EXPR) || isExprType(node->child[0], OBJECT_DOT_EXPR)) {
         m = evalSubscriptExpression(node->child[0]);
     } else {
-        id = getNameAndScopeFromNode(node->child[0]).first;
-        scope = getNameAndScopeFromNode(node->child[0]).second;
+        id = getNameAndScopeFromNode(node->child[0]).name;
+        scope = getNameAndScopeFromNode(node->child[0]).scope;
         m = getObjectByID(id, scope);
     }
     if (typeOf(m) == AS_LIST || typeOf(m) == AS_FILE) {
@@ -130,7 +134,6 @@ Object ASTInterpreter::performListAssignment(astnode* node, astnode* expr, Objec
     ListObj* list = getList(m);
     Object subm = evalExpression(node->child[1]);
     int sub = atoi(toString(subm).c_str());
-    
     list = updateListItem(list, sub, evalExpression(expr));
     if (typeOf(m) == AS_LIST) {
         m.objval->listObj = list;

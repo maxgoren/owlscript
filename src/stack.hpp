@@ -2,7 +2,7 @@
 #define inspectablestack_hpp
 
 template <class Item>
-class InspectableStack {
+class IndexedStack {
     private:
         Item* st;
         int n;
@@ -22,17 +22,17 @@ class InspectableStack {
             st = new Item[maxn];
         }
     public:
-        InspectableStack() {
+        IndexedStack() {
             init(255);
         }
-        InspectableStack(const InspectableStack& cs) {
+        IndexedStack(const IndexedStack& cs) {
             init(cs.maxn);
             for (int i = 0; i < cs.n; i++) {
                 st[i] = cs.st[i];
             }
             n = cs.n;
         }
-        ~InspectableStack() {
+        ~IndexedStack() {
             delete [] st;
         }
         int size() const { return n; }
@@ -53,7 +53,7 @@ class InspectableStack {
         void clear() {
             n = 0;
         }
-        InspectableStack& operator=(const InspectableStack& cs) {
+        IndexedStack& operator=(const IndexedStack& cs) {
             if (this != &cs) {
                 init(cs.maxn);
                 for (int i = 0; i < cs.n; i++) {
@@ -62,6 +62,9 @@ class InspectableStack {
                 n = cs.n;
             }
             return *this;
+        }
+        Item& operator[](int index) {
+            return st[index];
         }
  };
 

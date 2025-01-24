@@ -5,6 +5,6 @@ using std::string;
 
 inline const string NAME = "Owlscript"; 
 inline const int MAJOR_VERSION = 0;
-inline const int MINOR_VERSION = 23;
+inline const int MINOR_VERSION = 41;
 
 #endif

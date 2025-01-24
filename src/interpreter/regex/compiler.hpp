@@ -8,7 +8,7 @@ using namespace std;
 class NFACompiler {
     private:
         int l;
-        InspectableStack<NFA> nfaStack;
+        IndexedStack<NFA> nfaStack;
         int makeStateLabel() {
             return l++;
         }
@@ -116,7 +116,7 @@ class NFACompiler {
         // copy t's transitions into F, creating an epsilon transition from p to tmp's start state, then assigning tmps accept state as p.
         //When the stack is empty create one final epsilong transition from p to F's accept state.
         NFA repeatNTimes(NFA a, int N) {
-            InspectableStack<NFA> sf;
+            IndexedStack<NFA> sf;
             for (int i = 0; i < N; i++) {
                 NFA tnfa;
                 initNextNFA(tnfa);
