@@ -1,8 +1,8 @@
 #ifndef compiler_hpp
 #define compiler_hpp
 #include <iostream>
-#include "./parser.hpp"
-#include "./nfa.hpp"
+#include "re_parser.hpp"
+#include "nfa.hpp"
 using namespace std;
 
 class NFACompiler {

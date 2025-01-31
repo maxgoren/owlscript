@@ -1,7 +1,7 @@
 #ifndef parser_hpp
 #define parser_hpp
 #include <iostream>
-#include "tokenizer.hpp"
+#include "re_tokenizer.hpp"
 #include "../../stack.hpp"
 using namespace std;
 

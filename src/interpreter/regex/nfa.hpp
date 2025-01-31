@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <vector>
 #include "../../stack.hpp"
-#include "tokenizer.hpp"
+#include "re_tokenizer.hpp"
 using namespace std;
 
 class Edge {
@@ -147,7 +147,7 @@ class NFA {
     private:
         State start;
         State accept;
-        unordered_map<State, vector<Transition>> states;
+        unordered_map<State, unordered_set<Transition>> states;
     public:
         NFA() {
             start = 0;
@@ -165,7 +165,7 @@ class NFA {
         }
         void makeState(State name) {
             if (states.find(name) == states.end()) {
-                states.insert(make_pair(name, vector<Transition>()));
+                states.insert(make_pair(name, unordered_set<Transition>()));
             }
         }
         void setStart(State ss) {
@@ -181,15 +181,15 @@ class NFA {
             return accept;
         }
         void addTransition(Transition t) {
-            states[t.from].push_back(t);
+            states[t.from].insert(t);
         }
         int size() {
             return states.size();
         }
-        unordered_map<State, vector<Transition>>& getStates() {
+        unordered_map<State, unordered_set<Transition>>& getStates() {
             return states;
         }
-        vector<Transition>& getTransitions(State state) {
+        unordered_set<Transition>& getTransitions(State state) {
             return states[state];
         }
         NFA& operator=(const NFA& nfa) {

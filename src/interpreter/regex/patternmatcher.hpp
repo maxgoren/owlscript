@@ -20,7 +20,7 @@ class RegExPatternMatcher : public PatternMatcher {
             for (State s : clist) {
                 for (Transition t : nfa.getTransitions(s)) {
                     if (t.edge->matches(ch) || t.edge->matches('.')) {
-                        if (t.edge->isEpsilon() == false) {
+                        if (t.edge->isEpsilon() == false && nlist.find(t.to) == nlist.end()) {
                             if (loud) cout<<'\t'<<t.from<<" - ("<<t.edge->getLabel().charachters<<") ->"<<t.to<<endl;
                             nlist.insert(t.to);
                         } 
@@ -42,7 +42,7 @@ class RegExPatternMatcher : public PatternMatcher {
                     if (t.edge->isEpsilon()) {
                         if (nlist.find(t.to) == nlist.end()) {
                             if (loud)
-                                cout<<'\t'<<t.from<<" - ("<<t.edge->getLabel().charachters<<") ->"<<t.to<<endl;
+                                cout<<'\t'<<t.from<<" - ["<<t.edge->getLabel().charachters<<"] ->"<<t.to<<endl;
                             nlist.insert(t.to);
                             sf.push(t.to);
                         }

@@ -1,5 +1,5 @@
 #include "ast_interpreter.hpp"
-#include "regex/compiler.hpp"
+#include "regex/re_compiler.hpp"
 #include "regex/nfa.hpp"
 #include "regex/patternmatcher.hpp"
 #include "../ast_builder.hpp"
