@@ -138,6 +138,26 @@ Object ASTInterpreter::evalUnaryOp(astnode* node) {
             }
             leave();
             return m;
+        case TK_POST_INC: {
+            if (m.type == AS_REAL) { 
+                m.realval += 1; 
+            } else if (m.type == AS_INT) {
+                m.intval += 1; 
+            }
+            string id = getNameAndScopeFromNode(node->child[0]).name;
+            int scope = getNameAndScopeFromNode(node->child[0]).scope;
+            updateContext(id, m, scope);
+        } return m;
+        case TK_POST_DEC: {
+            if (m.type == AS_REAL) { 
+                m.realval -= 1; 
+            } else if (m.type == AS_INT) {
+                m.intval -= 1; 
+            }
+            string id = getNameAndScopeFromNode(node->child[0]).name;
+            int scope = getNameAndScopeFromNode(node->child[0]).scope;
+            updateContext(id, m, scope);
+        } return m;
         case TK_SQRT: {
                 if (m.type == AS_REAL) m.realval = sqrt(m.realval);
                 else if (m.type == AS_INT) m = makeRealObject(sqrt(m.intval));

@@ -236,9 +236,20 @@ Token Lexer::checkSpecials() {
         sb.reverse();
         return Token(TK_MUL, "*");
     }
+    if (sb.get() == '+') {
+        if (sb.advance() == '+') {
+            return Token(TK_POST_INC, "++");
+        }
+        sb.reverse();
+        return Token(TK_ADD, "+");
+    }
     if (sb.get() == '-') {
-        if (sb.advance() == '>') {
-            return TK_PRODUCE;
+        sb.advance();
+        if (sb.get() == '>') {
+            return Token(TK_PRODUCE, "->");
+        }
+        if (sb.get() == '-') {
+            return Token(TK_POST_DEC, "--");
         }
         sb.reverse();
         return Token(TK_SUB, "-");

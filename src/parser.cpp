@@ -412,6 +412,12 @@ astnode* Parser::range() {
 
 astnode* Parser::subscript() {
     astnode* m = primary();
+    if (currSym() == TK_POST_INC || currSym() == TK_POST_DEC) {
+        astnode* t = makeExprNode(UNARYOP_EXPR, current);
+        match(currSym());
+        t->child[0] = m;
+        m = t;
+    }
     while (currSym() == TK_LSQUARE) {
         astnode* t = makeExprNode(SUBSCRIPT_EXPR, current);
         match(TK_LSQUARE);
