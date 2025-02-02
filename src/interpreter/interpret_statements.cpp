@@ -87,9 +87,9 @@ Object ASTInterpreter::performStructDefStatement(astnode* node) {
 }
  
 Object ASTInterpreter::performBlockStatement(astnode* node) {
-    cxt.scoped.push(Environment());
+    cxt.openScope();
     exec(node->child[0]);
-    cxt.scoped.pop();
+    cxt.closeScope();
     if (cxt.scoped.size() <= 1)
         gc.run(cxt);
     return makeNilObject();

@@ -23,6 +23,15 @@ struct Context {
         //cout<<"putAt("<<scope<<") - "<<id<<" "<<m<<endl;
         scoped.get(scoped.size() - 1 - depth)[id] = m;
     }
+    void openScope() {
+        scoped.push(Environment());
+    }
+    void openScope(Environment& env) {
+        scoped.push(env);
+    }
+    void closeScope() {
+        scoped.pop();
+    }
 };
 
 #endif

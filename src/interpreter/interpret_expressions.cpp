@@ -267,10 +267,10 @@ Object ASTInterpreter::evalFunctionExpr(LambdaObj* lambdaObj, astnode* args) {
     enter("[execute lambda]");
     Environment env;
     prepareEnvForFunctionCall(lambdaObj, args, env);
-    cxt.scoped.push(env);
+    cxt.openScope(env);
     Object m = exec(lambdaObj->body);
     cleanUpAfterFunctionCall(lambdaObj, args);
-    cxt.scoped.pop();
+    cxt.closeScope();
     leave();
     return m;
 }

@@ -49,31 +49,47 @@ def colorFlip(var tree) {
     return tree;
 }
 
-def balance(var tree) {
-    let t := tree[left];
-    if (isRed(tree[right]) == true) {
-        println "single red";
-        tree := rotL(tree);
-        t := tree[left];
+def makeRedChildLean(var tree) {
+    if (isRed(tree[left]) && isRed(tree[left][right])) {
+        tree[left] := rotL(tree[left]);
     }
-    if (isRed(tree[left]) && isRed(t[left])) {
-        println "double red";
+    if (isRed(tree[right]) && isRed(tree[right][left])) {
+        tree[right] := rotR(tree[right]);
+    }
+    return tree;
+}
+
+
+def makeRedSibling(var tree) {
+    if (isRed(tree[left]) && isRed(tree[left][left])) {
         tree := rotR(tree);
-    } 
+    }
+    if (isRed(tree[right]) && isRed(tree[right][right])) {
+        tree := rotL(tree);
+    }
+    return tree;
+}
+
+def pushRedUp(var tree) {
     if (isRed(tree[left]) && isRed(tree[right])) {
         println "color flip";
         tree := colorFlip(tree);
-    } 
+    }
     return tree;
 }
+
+def balance(var tree) {
+    tree := pushRedUp(tree);
+    tree := makeRedChildLean(tree);
+    tree := makeRedSibling(tree);
+    return tree;
+}
+
 
 def insert(var tree, var v) {
     if (tree == nil) {
         println "base case, creating node for " + v;
         return makeNode(tree, v);
-    }
-    if (v == tree[info]) {
-        return tree;
     }
     print v + " < " + tree[info] + "? ";
     if (v < tree[info]) {
@@ -105,13 +121,47 @@ def bfs(var tree) {
             pop(fq);
             nc := nc - 1;
             if (t != nil) {
-                print t[info] + " ";
+                print t[info];
+                if (isRed(t)) {
+                    print "R";
+                }
+                print " ";
                 append(fq, t[left]);
                 append(fq, t[right]);
             }
         }
         println " ";
     }
+}
+
+def isValid(var tree, var bh) {
+    if (tree == nil) {
+        return bh == 0;
+    }
+    if (!isRed(tree)) {
+        bh := bh - 1;
+    }
+    if (isRed(tree) && (isRed(tree[left]) || isRed(tree[right]))) {
+            println "double red violation";
+            return false;
+    }
+    if (isRed(tree[left]) && isRed(tree[right])) {
+        println "red sibling violation";
+        return false;
+    }
+    return isValid(tree[left], bh) && isValid(tree[right], bh);
+}
+
+def validate(var tree) {
+    var bh := 0;
+    var x := tree;
+    while (x != nil) {
+        if (!isRed(tree)) {
+            bh := bh + 1;
+        }
+        x := x[left];
+    }
+    return isValid(tree, bh-1);
 }
 
 def main() {
@@ -127,4 +177,7 @@ def main() {
     bfs(root);
     visit(root);
     println " ";
+    if (validate(root)) {
+        println "black and red balanced.";
+    }
 }
