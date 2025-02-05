@@ -5,5 +5,10 @@ def x(var n) {
     return y(n);
 }
 def main() {
-    println x(1);
+    let i := 0;
+    while (i < 6) {
+        let t := i+1;
+        println x(t);
+        i++;
+    }
 }

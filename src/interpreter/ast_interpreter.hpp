@@ -64,7 +64,6 @@ class ASTInterpreter {
         Object performLetStatement(astnode* node);
         Object performCreateLambda(astnode* node);
         Object performFunctionCall(astnode* node);
-        Object performMakeReference(astnode* node);
         Object performBlockStatement(astnode* node);
         Object performWhileStatement(astnode* node);
         Object performPrintStatement(astnode* node);

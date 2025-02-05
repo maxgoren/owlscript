@@ -275,7 +275,13 @@ Token Lexer::checkSpecials() {
         sb.reverse();
         return Token(TK_PERIOD, ".");
     }
-    if (sb.get() == '%') return Token(TK_MOD, "%");
+    if (sb.get() == '%') {
+        if (sb.advance() == '{') {
+            return Token(TK_KVPAIR, "%{");
+        }
+        sb.reverse();
+        return Token(TK_MOD, "%");
+    }
     if (sb.get() == '^') return Token(TK_POW, "^");
     if (sb.get() == '+') return Token(TK_ADD, "+");
     if (sb.get() == '(') return Token(TK_LPAREN, "(");

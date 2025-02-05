@@ -134,34 +134,34 @@ def bfs(var tree) {
     }
 }
 
-def isValid(var tree, var bh) {
+def isValid23(var tree, var bh) {
     if (tree == nil) {
         return bh == 0;
     }
     if (!isRed(tree)) {
-        bh := bh - 1;
+        bh--;
     }
     if (isRed(tree) && (isRed(tree[left]) || isRed(tree[right]))) {
             println "double red violation";
             return false;
     }
     if (isRed(tree[left]) && isRed(tree[right])) {
-        println "red sibling violation";
-        return false;
+            println "red sibling violation";
+            return false;
     }
-    return isValid(tree[left], bh) && isValid(tree[right], bh);
+    return isValid23(tree[left], bh) && isValid23(tree[right], bh);
 }
 
 def validate(var tree) {
     var bh := 0;
     var x := tree;
     while (x != nil) {
-        if (!isRed(tree)) {
-            bh := bh + 1;
+        if (!isRed(x)) {
+            bh++;
         }
         x := x[left];
     }
-    return isValid(tree, bh-1);
+    return isValid23(tree, bh);
 }
 
 def main() {
@@ -172,9 +172,8 @@ def main() {
         println "inserting " + vals[i];
         root := insert(root, vals[i]);
         root[color] := 0;
-        i := i + 1;
+        i++;
     }
-    bfs(root);
     visit(root);
     println " ";
     if (validate(root)) {

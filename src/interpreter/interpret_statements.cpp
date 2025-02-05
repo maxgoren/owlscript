@@ -87,12 +87,13 @@ Object ASTInterpreter::performStructDefStatement(astnode* node) {
 }
  
 Object ASTInterpreter::performBlockStatement(astnode* node) {
+    Object m;
     cxt.openScope();
-    exec(node->child[0]);
+    m = exec(node->child[0]);
     cxt.closeScope();
     if (cxt.scoped.size() <= 1)
         gc.run(cxt);
-    return makeNilObject();
+    return m;
 }
 
 Object ASTInterpreter::performLetStatement(astnode* node) {

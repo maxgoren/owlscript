@@ -3,7 +3,7 @@
 Parser::Parser(bool debug) {
     loud = false;
     listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_SHIFT, TK_UNSHIFT, TK_LSQUARE };
-    constExprs = { TK_NIL, TK_STRING, TK_NUM, TK_REALNUM, TK_TRUE, TK_FALSE };
+    constExprs = { TK_NIL, TK_STRING, TK_NUM, TK_REALNUM, TK_TRUE, TK_FALSE, TK_KVPAIR };
     builtInExprs = { TK_MAKE, TK_MATCH, TK_FOPEN, TK_EVAL, TK_TYPEOF };
 }
 
@@ -84,7 +84,7 @@ astnode* Parser::makeWhileStatement() {
     match(TK_LPAREN);
     m->child[0] = simpleExpr();
     match(TK_RPAREN);
-    m->child[1] = makeBlock();    
+    m->child[1] = makeBlockStatement();    
     return m;
 }
 
@@ -118,10 +118,10 @@ astnode* Parser::makeIfStatement() {
     match(TK_LPAREN);
     m->child[0] = simpleExpr();
     match(TK_RPAREN);
-    m->child[1] = makeBlock();
+    m->child[1] = makeBlockStatement();
     if (currSym() == TK_ELSE) {
         match(TK_ELSE);
-        m->child[2] = makeBlock();
+        m->child[2] = makeBlockStatement();
     }
     return m;
 }
@@ -551,6 +551,17 @@ astnode* Parser::makeConstExpr() {
             match(TK_STRING);
         }
         break;
+        case TK_KVPAIR: {
+            m = makeExprNode(CONST_EXPR, current);
+            match(TK_KVPAIR);
+            cout<<"eh";
+            m->child[0] = simpleExpr();
+            match(TK_COMMA);
+           cout<<"aht";
+            m->child[1] = simpleExpr();
+            match(TK_RCURLY);
+            cout<<"meh";
+        } break;
         case TK_NUM: {
             m = makeExprNode(CONST_EXPR, current);
             match(TK_NUM);
@@ -602,9 +613,9 @@ astnode* Parser::makeListExpr() {
         case TK_UNSHIFT:
         case TK_POP:
         case TK_LENGTH:
-        case TK_EMPTY: 
+        case TK_EMPTY:      // listFunc(list)
         case TK_FIRST: 
-        case TK_REST: {
+        case TK_REST: { 
             m = makeExprNode(LIST_EXPR, current);
             match(currSym());
             match(TK_LPAREN);
@@ -613,9 +624,9 @@ astnode* Parser::makeListExpr() {
         }
         break;
         case TK_APPEND: 
-        case TK_PUSH: 
-        case TK_SHIFT:
-        case TK_MAP:
+        case TK_PUSH:       // listFunc(list, value)
+        case TK_SHIFT:      
+        case TK_MAP:        // listFunc(list, lambda)
         case TK_FILTER: {
             m = makeExprNode(LIST_EXPR, current);
             match(currSym());
@@ -624,7 +635,7 @@ astnode* Parser::makeListExpr() {
             match(TK_COMMA);
             m->child[1] = simpleExpr();
             match(TK_RPAREN);
-        }
+        } break;
         default:
             break;
     }

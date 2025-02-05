@@ -207,6 +207,9 @@ Object ASTInterpreter::getConstValue(astnode* node) {
     Object m;
     enter("[get const value: " + node->attributes.strval +"]");
     switch (node->attributes.symbol) {
+        case TK_KVPAIR:
+            m = makeKVPairObject(makeKVPairObj(evalExpression(node->child[0]), evalExpression(node->child[1])));
+            break;
         case TK_NUM:
             m = makeIntObject(atoi(node->attributes.strval.c_str()));
             break;
@@ -239,7 +242,7 @@ void ASTInterpreter::prepareEnvForFunctionCall(LambdaObj* lambdaObj, astnode* ar
     astnode* params = lambdaObj->params;
     VarList* freeVars = lambdaObj->freeVars;
     for (VarList* it = freeVars; it != nullptr; it = it->next) {
-        env[it->key] = it->value;
+        cxt.scoped.top()[it->key] = it->value;
     }
     astnode* itr = args;
     while (params != nullptr && itr != nullptr) {
@@ -260,7 +263,7 @@ void ASTInterpreter::cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args) {
     bailout = false;
     //update any closed-over variables before exiting.
     for (VarList* it = freeVars; it != nullptr; it = it->next) {
-        it->value = cxt.scoped.top()[it->key];
+        it->value = cxt.scoped.get(cxt.scoped.size()-2)[it->key];
     }
     lobj->freeVars = freeVars;
     astnode* itr = args;

@@ -35,6 +35,7 @@ Object ASTInterpreter::declareInContext(astnode* t, Environment& env, string id)
     } else {
         env[id] = makeNilObject();
         m = exec(t);
+        env[id] = m;
     }
     return m;
 }

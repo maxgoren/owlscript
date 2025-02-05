@@ -67,7 +67,6 @@ Object ASTInterpreter::execStatement(astnode* node) {
             bailout = true;
         } break;
         case STRUCT_STMT: m = performStructDefStatement(node); break;
-        case REF_STMT: m = performMakeReference(node); break;
         default:
             break;
     }
@@ -172,15 +171,6 @@ Object ASTInterpreter::performFunctionCall(astnode* node) {
     leave();
     return m;
 }
-
-Object ASTInterpreter::performMakeReference(astnode* node) {
-    Object m;
-    enter("[make reference]");
-    string id = getNameAndScopeFromNode(node->child[0]).name;
-    int scope = getNameAndScopeFromNode(node->child[0]).scope;
-    m = (getObjectByID(id, scope));
-    return m;
-} 
 
 void ASTInterpreter::say(string s) {
     if (!traceEval)

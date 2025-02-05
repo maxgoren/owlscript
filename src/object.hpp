@@ -9,12 +9,12 @@ enum ObjectType {
     AS_INT, AS_REAL, 
     AS_BOOL, AS_STRING, 
     AS_LIST, AS_LAMBDA, 
-    AS_STRUCT, AS_REF, 
+    AS_STRUCT, AS_KVPAIR,
     AS_FILE, AS_NIL
 };
 
 enum ObjType {
-    OT_STR, OT_LIST, OT_LAMBDA, OT_STRUCT, OT_FILE
+    OT_STR, OT_LIST, OT_LAMBDA, OT_STRUCT, OT_KVPAIR, OT_FILE
 };
 
 struct StringObj {
@@ -44,7 +44,7 @@ struct FileObj {
     ListObj* lines;
 };
 
-
+struct KVPair;
 struct StructObj;
 
 struct ObjBase {
@@ -55,6 +55,7 @@ struct ObjBase {
         LambdaObj* lambdaObj;
         StructObj* structObj;
         FileObj* fileObj;
+        KVPair* kvpairObj;
     };
     bool mark;
     int refCount;
@@ -67,7 +68,6 @@ struct Object {
         double realval;
         bool boolval;
         ObjBase* objval;
-        Object* refVal;
     };
     Object(ObjectType t = AS_INT) {
         type = t;
@@ -82,7 +82,7 @@ struct Object {
             case AS_LIST: { objval = ob.objval; } break;
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
-            case AS_REF: { refVal = ob.refVal; } break;
+            case AS_KVPAIR: { objval = ob.objval; } break;
             case AS_FILE: { objval = ob.objval; objval->fileObj = ob.objval->fileObj; objval->fileObj->lines = ob.objval->fileObj->lines; } break;
             case AS_NIL: intval = 0; break;
             default: 
@@ -100,7 +100,7 @@ struct Object {
             case AS_LIST: { objval = ob.objval; } break;
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
-            case AS_REF: { refVal = ob.refVal; } break;
+            case AS_KVPAIR: { objval = ob.objval; } break;
             case AS_FILE: { objval = ob.objval; objval->fileObj = ob.objval->fileObj; objval->fileObj->lines = ob.objval->fileObj->lines; } break;
             case AS_NIL: intval = 0; break;
             default: 
@@ -129,11 +129,18 @@ struct StructObj {
     bool blessed;
 };
 
+struct KVPair {
+    Object key;
+    Object value;
+};
+
+
 StructObj* makeStructObj();
 LambdaObj* makeLambdaObj(astnode* body, astnode* params);
 StringObj* makeStringObj(string str);
 ListObj*   makeListObj();
 FileObj*   makeFileObj(StringObj* filename);
+KVPair*    makeKVPairObj(Object key, Object value);
 ObjBase*   makeObjBase(ObjType ot);
 ListNode*  makeListNode(Object& m);
 VarList*   makeVarList(string key, Object val, VarList* list);
@@ -147,6 +154,7 @@ Object makeLambdaObject(LambdaObj* lambda);
 Object makeListObject(ListObj* list);
 Object makeStructObject(StructObj* structobj);
 Object makeFileObject(FileObj* fileObj);
+Object makeKVPairObject(KVPair* kvp);
 Object makeNilObject();
 Object makeReferenceObject(Object* obj);
 ListObj* getList(Object m);

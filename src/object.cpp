@@ -66,6 +66,13 @@ FileObj* makeFileObj(StringObj* fname) {
     return fo;
 }
 
+KVPair* makeKVPairObj(Object key, Object value) {
+    KVPair* kvp = new KVPair;
+    kvp->key = key;
+    kvp->value = value;
+    return kvp;
+}
+
 ObjBase* makeObjBase(ObjType ot) {
     ObjBase* m = new ObjBase;
     m->type = ot;
@@ -132,9 +139,10 @@ Object makeFileObject(FileObj* fobj) {
     return o;
 }
 
-Object makeReferenceObject(Object* objPtr) {
-    Object o(AS_REF);
-    o.refVal = objPtr;
+Object makeKVPairObject(KVPair* kvp) {
+    Object o(AS_KVPAIR);
+    o.objval = makeObjBase(OT_KVPAIR);
+    o.objval->kvpairObj = kvp;
     return o;
 }
 
@@ -306,6 +314,10 @@ string listToString(Object obj) {
     return liststr;
 }
 
+string kvpairToString(Object obj) {
+    return "{Key: " + toString(obj.objval->kvpairObj->key) + ", Value: " + toString(obj.objval->kvpairObj->value) + "}";
+}
+
 string structToString(Object obj) {
     StructObj* sobj = getStruct(obj);
     string ret = "\n{\n";
@@ -334,6 +346,7 @@ string toString(Object obj) {
         case AS_LIST:   return listToString(obj);
         case AS_LAMBDA: return "(lambda)";
         case AS_STRUCT: return structToString(obj);
+        case AS_KVPAIR: return kvpairToString(obj);
         case AS_FILE: {
             string tmp;
             for (ListNode* it = obj.objval->fileObj->lines->head; it != nullptr; it = it->next) {
@@ -359,6 +372,7 @@ string getTypeName(Object obj) {
         case AS_LAMBDA: return "lambda";
         case AS_STRUCT: return "struct";
         case AS_FILE:   return "file";
+        case AS_KVPAIR: return "kvpair";
         case AS_NIL:  
         default: 
             break;
