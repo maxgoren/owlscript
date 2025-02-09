@@ -8,6 +8,7 @@ class IndexedStack {
         int n;
         int maxn;
         void grow() {
+            cout<<"\n\n===== CALLSTACK GROWING =====\n\n"<<endl;
             Item* old = st;
             st = new Item[2*maxn];
             for (int i = 0; i < n; i++) {
@@ -22,8 +23,8 @@ class IndexedStack {
             st = new Item[maxn];
         }
     public:
-        IndexedStack() {
-            init(255);
+        IndexedStack(int maxn=3555) {
+            init(maxn);
         }
         IndexedStack(const IndexedStack& cs) {
             init(cs.maxn);

@@ -242,7 +242,9 @@ void ASTInterpreter::prepareEnvForFunctionCall(LambdaObj* lambdaObj, astnode* ar
     astnode* params = lambdaObj->params;
     VarList* freeVars = lambdaObj->freeVars;
     for (VarList* it = freeVars; it != nullptr; it = it->next) {
-        cxt.scoped.top()[it->key] = it->value;
+        if (!cxt.scoped.empty()) {
+            cxt.scoped.top()[it->key] = it->value;
+        } else cout<<"Aww snap."<<endl;
     }
     astnode* itr = args;
     while (params != nullptr && itr != nullptr) {
@@ -263,7 +265,9 @@ void ASTInterpreter::cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args) {
     bailout = false;
     //update any closed-over variables before exiting.
     for (VarList* it = freeVars; it != nullptr; it = it->next) {
-        it->value = cxt.scoped.get(cxt.scoped.size()-2)[it->key];
+        if (cxt.scoped.size() > 1) {
+            it->value = cxt.scoped.get(cxt.scoped.size()-2)[it->key];
+        }
     }
     lobj->freeVars = freeVars;
     astnode* itr = args;
@@ -274,7 +278,9 @@ void ASTInterpreter::cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args) {
         if (isStmtType(params, REF_STMT)) {
             Object m = cxt.scoped.top()[params->child[0]->attributes.strval];
             auto [id, scope]  = getNameAndScopeFromNode(itr);
-            updateContext(id, m, scope > -1 ? scope+1:scope);
+            if (scope > -1 && cxt.hasMain)
+                scope++;
+            updateContext(id, m, scope);
         }
         params = params->next;
         itr = itr->next;

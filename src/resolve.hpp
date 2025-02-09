@@ -36,6 +36,7 @@ class ResolveScope {
         void resolveDefStatement(astnode* node);
         void resolveForEachStatement(astnode* node);
         void resolveVariableDepth(astnode* node, string id);
+        void resolveLambdaExpression(astnode* node);
         void resolveExpressionScope(astnode* node);
         void resolveStatementScope(astnode* node);
         void resolve(astnode* node);

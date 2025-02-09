@@ -43,6 +43,11 @@ class StringBuffer : public Stream<char> {
             }
             return buff[spos];
         }
+        void skipLine() {
+            lpos++;
+            spos = 0;
+            buff = lines[lpos];
+        }
         char& advance() {
             spos++;
             if (spos >= buff.length()) {

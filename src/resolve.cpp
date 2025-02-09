@@ -68,21 +68,11 @@ void ResolveScope::resolveForEachStatement(astnode* node) {
 
 void ResolveScope::resolveStatementScope(astnode* node) {
     switch (node->stmtType) {
-        case BLOCK_STMT: {
-                resolveBlockStatement(node);
-            }
-            break;
-        case DEF_STMT: {
-                resolveDefStatement(node);
-            }
-            break;
-        case FOREACH_STMT: {
-            resolveForEachStatement(node);
-        } break;
-        case LET_STMT: {
-            resolveLetStatement(node);
-        }
-        break;
+        case BLOCK_STMT: resolveBlockStatement(node); break;
+        case DEF_STMT:     resolveDefStatement(node); break;
+        case FOREACH_STMT: resolveForEachStatement(node); break;
+        case LET_STMT: 
+            resolveLetStatement(node); break;
         case FOR_STMT:
             for (int i = 0; i < 3; i++)
                 resolve(node->child[i]);
@@ -112,44 +102,29 @@ void ResolveScope::resolveStatementScope(astnode* node) {
     }
 }
 
+void ResolveScope::resolveLambdaExpression(astnode* node) {
+    openScope();
+    for (auto it = node->child[1]; it != nullptr; it = it->next) {
+        declareVarName(it->attributes.strval);
+        defineVarName(it->attributes.strval);
+    }
+    resolve(node->child[0]);
+    closeScope();
+}
+
 void ResolveScope::resolveExpressionScope(astnode* node) {                                                
     switch (node->exprType) {
+        case LAMBDA_EXPR:
+            resolveLambdaExpression(node);
+            return;
         case ID_EXPR: 
             resolveVariableDepth(node, node->attributes.strval);
             break;
-        case ASSIGN_EXPR:
-            /*if (node->child[0]->exprType == SUBSCRIPT_EXPR) {
-                defineVarName(node->child[0]->child[0]->attributes.strval);
-                if (node->child[0]->child[1]->attributes.symbol == TK_ID) {
-                    defineVarName(node->child[0]->child[1]->attributes.strval);
-                }
-            }*/
-            //defineVarName(node->child[0]->attributes.strval);
+        case FUNC_EXPR:
+            resolveVariableDepth(node, node->attributes.strval);
             break;
-        case LAMBDA_EXPR: {
-                openScope();
-                for (auto it = node->child[1]; it != nullptr; it = it->next) {
-                    declareVarName(it->attributes.strval);
-                    defineVarName(it->attributes.strval);
-                }
-                resolve(node->child[0]);
-                closeScope();
-                return;
-            }
-            break;
-        case REF_EXPR: {
+        case REF_EXPR:
             defineVarName(node->child[0]->attributes.strval);
-        }
-        break;
-        case FUNC_EXPR: {
-                resolveVariableDepth(node, node->attributes.strval);
-            }
-            break;
-        case LIST_EXPR:
-        case OBJECT_DOT_EXPR:
-        case SUBSCRIPT_EXPR:
-            //if (node->child[0] != nullptr && !node->child[0]->attributes.strval.empty())
-            //    defineVarName(node->child[0]->attributes.strval);
             break;
         default:
             break;

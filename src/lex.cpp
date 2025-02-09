@@ -301,6 +301,10 @@ bool Lexer::shouldSkip(char c) {
 }
 
 void Lexer::skipWhiteSpace() {
+    if (sb.get() == '#') {
+        sb.skipLine();
+        cout<<"^.^ "<<sb.get()<<" ^.^"<<endl;
+    }
     while (shouldSkip(sb.get())) 
         sb.advance();
     if (sb.done())

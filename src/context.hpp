@@ -13,8 +13,12 @@ typedef unordered_map<string, Object> Environment;
 typedef IndexedStack<Environment> CallStack;
 
 struct Context {
+    bool hasMain;
     Environment globals;
     CallStack scoped;
+    Context(bool isMain = false) {
+        hasMain = isMain;
+    }
     Environment& getAt(int depth) {
         //cout<<"getAt("<<scope<<")"<<endl;
         return scoped.get(scoped.size() - 1 - depth);

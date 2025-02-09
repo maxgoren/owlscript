@@ -26,16 +26,16 @@ class ASTInterpreter {
     private:
         GC gc;
         Context cxt;
+        IndexedStack<Object> rtStack;
         bool traceEval;
         int recDepth;
         bool bailout;
-        Object declareInContext(astnode* t, Environment& env, string id);
         void updateContext(string id, Object m, int scope);
+        void resolveObjForExpression(astnode* node, string& id, Object& m);
+        Object declareInContext(astnode* t, Environment& env, string id);
         Object getConstValue(astnode* node);
         Object getObjectByID(string id, int scope);
-        Object getObjectByReference(astnode* node);
         NameAndScope getNameAndScopeFromNode(astnode* node);
-        void resolveObjForExpression(astnode* node, string& id, Object& m);
         
         ListNode* merge(ListNode* a, ListNode* b, LambdaObj* compfunc);
         ListNode* mergesort(ListNode* list, LambdaObj* compfunc);

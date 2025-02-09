@@ -1,3 +1,5 @@
+#!/usr/local/bin/owlscript -f 
+
 def fib(var n) {
     if (n < 2) {
         return n;

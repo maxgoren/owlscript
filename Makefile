@@ -32,5 +32,3 @@ debug:
 	g++ --std=c++17 -c -pg ./src/token.cpp
 	g++ --std=c++17 -c -pg ./src/main.cpp
 	g++ --std=c++17 -pg *.o -o owlscript -lreadline
-	rm *.o
-

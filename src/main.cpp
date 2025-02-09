@@ -53,6 +53,7 @@ void exec_file(string filename) {
     cout<<"----------------------------"<<endl;
     interpreter.execAST(ast);
     if (interpreter.getContext().globals.find("main") != interpreter.getContext().globals.end()) {
+        interpreter.getContext().hasMain = true;
         ast = builder.build("main();");
         traverse(ast, &printNode, &nullFunc);
         cout<<"----------------------------"<<endl;
