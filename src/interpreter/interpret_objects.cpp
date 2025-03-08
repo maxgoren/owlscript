@@ -112,7 +112,7 @@ Object ASTInterpreter::performSubscriptAssignment(astnode* node, astnode* expr, 
     }
     if (typeOf(m) == AS_LIST || typeOf(m) == AS_FILE) {
         m = performListAssignment(node, expr, m);
-    } else if (typeOf(m) == AS_STRUCT) {
+    } else if (typeOf(m) == AS_STRUCT || typeOf(m) == AS_KVPAIR) {
         m = performStructFieldAssignment(node, expr, m);
     } else if (typeOf(m) == AS_STRING) {
         m = performSubscriptStringAssignment(node, expr, m);
@@ -127,14 +127,14 @@ Object ASTInterpreter::performListAccess(astnode* node, Object m) {
     //cout<<"subscript list access"<<endl;
     Object subm = evalExpression(node->child[1]);
     ListObj* list = getList(m);
-    int subscript = atoi(toString(subm).c_str());
+    int subscript = stoi(toString(subm));
     return getListItem(list, subscript);
 }
 
 Object ASTInterpreter::performListAssignment(astnode* node, astnode* expr, Object& m) {
     ListObj* list = getList(m);
     Object subm = evalExpression(node->child[1]);
-    int sub = atoi(toString(subm).c_str());
+    int sub = stoi(toString(subm));
     list = updateListItem(list, sub, evalExpression(expr));
     if (typeOf(m) == AS_LIST) {
         m.objval->listObj = list;
@@ -146,35 +146,51 @@ Object ASTInterpreter::performListAssignment(astnode* node, astnode* expr, Objec
 }
 
 Object ASTInterpreter::performStructFieldAccess(astnode* node, string id, Object m) {
+    string vname = getAttributes(node->child[1]).strval;
+    Object t = makeNilObject();
+    if (typeOf(m) == AS_STRUCT) {
         StructObj* sobj = getStruct(m);
         if (!sobj->blessed) {
             cout<<"Structs must be instantiated before use."<<endl;
-            return makeNilObject();
+            return t;
         }
-        string vname = getAttributes(node->child[1]).strval;
         if (sobj->bindings.find(vname) == sobj->bindings.end()) {
             cout<<"Struct '"<<id<<"' has no such property '"<<vname<<"'."<<endl;
-            return makeNilObject();
+            return t;
         }
-        return sobj->bindings[vname];
+        t = sobj->bindings[vname];
+    } else {
+        KVPair* kvp = getKVPair(m);
+        if (vname == toString(kvp->key))
+            t = kvp->value;
+        else cout<<"No Object found with Key '"<<vname<<"'"<<endl;
+    }
+    return t;
 }
 
 Object ASTInterpreter::performStructFieldAssignment(astnode* node, astnode* expr, Object& m) {
     string vname = getAttributes(node->child[1]).strval;
-    StructObj* st = getStruct(m);
-    if (st->blessed) {
-        st->bindings[vname] = evalExpression(expr);
+    Object t = evalExpression(expr);
+    if (typeOf(m) == AS_STRUCT) {
+        StructObj* st = getStruct(m);
+        if (st->blessed) {
+            st->bindings[vname] = t;
+        } else {
+            cout<<"Structs must be instantiated before use."<<endl;
+            return makeNilObject();
+        }
     } else {
-        cout<<"Structs must be instantiated before use."<<endl;
-        return makeNilObject();
+        KVPair* kvp = getKVPair(m);
+        if (vname == toString(kvp->key))
+            kvp->value = t;
+        else cout<<"No Object found with Key '"<<toString(m)<<"'"<<endl;
     }
-    m.objval->structObj = st;
     return m;
 }
 
 Object ASTInterpreter::performSubscriptStringAccess(astnode* node, Object m) {
     Object subm = evalExpression(node->child[1]);
-    int subscript = atoi(toString(subm).c_str());
+    int subscript = stoi(toString(subm));
     StringObj* strobj = getString(m);
     if (subscript >= 0 && subscript < strobj->length) {
         string s;
@@ -189,7 +205,7 @@ Object ASTInterpreter::performSubscriptStringAccess(astnode* node, Object m) {
 
 Object ASTInterpreter::performSubscriptStringAssignment(astnode* node, astnode* expr, Object& m) {
     Object subm = evalExpression(node->child[1]);
-    int subscript = atoi(toString(subm).c_str());
+    int subscript = stoi(toString(subm));
     StringObj* strobj = getString(m);
     if (subscript >= 0 && subscript < strobj->length) {
         string s;
@@ -197,9 +213,9 @@ Object ASTInterpreter::performSubscriptStringAssignment(astnode* node, astnode* 
         for (i = 0; i < subscript; i++)
             s.push_back(strobj->str[i]);
         s += toString(evalExpression(expr));
-        for (int i = s.length(); i < strobj->length; i++)
+        for (int i = s.length()-1; i < strobj->length; i++)
             s.push_back(strobj->str[i]);
-        return makeStringObject(s); 
+        m = makeStringObject(s); 
     } else {
         cout<<"index "<<subscript<<" is out of range for string of length "<<strobj->length<<endl;
     }

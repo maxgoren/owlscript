@@ -1,4 +1,5 @@
 #include "object.hpp"
+#include <cmath>
 
 bool operator==(const Object& a, const Object b) {
     return toString(a) == toString(b);
@@ -37,6 +38,14 @@ ListObj* getList(Object m) {
         return m.objval->fileObj->lines;
     }
     return m.objval->listObj;
+}
+
+KVPair* getKVPair(Object m) {
+    return m.objval->kvpairObj;
+}
+
+StructObj* getStruct(Object m) {
+    return m.objval->structObj;
 }
 
 StructObj* makeStructObj() {
@@ -393,10 +402,6 @@ bool compareUnknownTypes(Object a, Object b) {
         a_is_winner = (toString(b) > toString(a));
     }
     return a_is_winner;
-}
-
-StructObj* getStruct(Object m) {
-    return m.objval->structObj;
 }
 
 void destroyList(ListObj* list) {

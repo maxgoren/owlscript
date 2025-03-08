@@ -79,6 +79,22 @@ Object ASTInterpreter::evalBinOp(astnode* node, Object& lhn, Object& rhn) {
                 return makeIntObject((int)lhs % (int)rhs);
             }
             case TK_POW: return makeRealObject(pow(lhs, rhs));
+            case TK_BIT_AND: {
+                int l = (int)lhs;
+                int r = (int)rhs;
+                return makeIntObject(l & r);
+            } break;
+            case TK_BIT_XOR: {
+                int l = (int)lhs;
+                int r = (int)rhs;
+                return makeIntObject(l ^ r);
+            } break;
+            case TK_BIT_OR:
+            case TK_PIPE: {
+                int l = (int)lhs;
+                int r = (int)rhs;
+                return makeIntObject(l | r);
+            } break;
             default: 
                 break;
         }
@@ -318,7 +334,7 @@ Object ASTInterpreter::evalSubscriptExpression(astnode* node) {
     }
     if (typeOf(m) == AS_LIST || typeOf(m) == AS_FILE) {
         m = performListAccess(node, m);
-    } else if (typeOf(m) == AS_STRUCT) {
+    } else if (typeOf(m) == AS_STRUCT || typeOf(m) == AS_KVPAIR) {
         m = performStructFieldAccess(node, id, m);
     } else if (typeOf(m) == AS_STRING) {
         m = performSubscriptStringAccess(node, m);
@@ -342,5 +358,16 @@ Object ASTInterpreter::evalBlessExpression(astnode* node) {
     }
     m = makeStructObject(ninst);
     gc.add(m.objval);
+    return m;
+}
+
+Object ASTInterpreter::evalTernaryExpression(astnode* node) {
+    Object m;
+    Object cond = evalExpression(node->child[0]);
+    if (cond.boolval) {
+        m = evalExpression(node->child[1]);
+    } else {
+        m = evalExpression(node->child[2]);
+    }
     return m;
 }

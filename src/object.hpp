@@ -163,6 +163,7 @@ StructObj* getStruct(Object m);
 StringObj* getString(Object m);
 FileObj* getFile(Object m);
 double getAsReal(Object m);
+KVPair* getKVPair(Object m);
 
 bool comparesAsOrdinal(Object m);
 string     toString(Object obj);

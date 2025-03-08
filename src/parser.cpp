@@ -2,6 +2,7 @@
 
 Parser::Parser(bool debug) {
     loud = false;
+    inListConstructor = false;
     listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_SHIFT, TK_UNSHIFT, TK_LSQUARE };
     constExprs = { TK_NIL, TK_STRING, TK_NUM, TK_REALNUM, TK_TRUE, TK_FALSE, TK_KVPAIR };
     builtInExprs = { TK_MAKE, TK_MATCH, TK_FOPEN, TK_EVAL, TK_TYPEOF };
@@ -300,9 +301,18 @@ astnode* Parser::simpleExpr() {
         t->child[0] = node;
         node = t;
         node->child[1] = simpleExpr();
+    } else if (currSym() == TK_QMARK) {
+        astnode* t = makeExprNode(TERNARY_EXPR, current);
+        match(TK_QMARK);
+        t->child[0] = node;
+        t->child[1] = simpleExpr();
+        match(TK_COLON);
+        t->child[2] = simpleExpr();
+        node = t;                                                   
     }
     return node;
 }
+
 astnode* Parser::relExpr() {
     astnode* node = compExpr();
     while (isEqualityOp(currSym())) {
@@ -314,11 +324,23 @@ astnode* Parser::relExpr() {
     }
     return node;
 }
-
+ 
 astnode* Parser::compExpr() {
-    astnode* node = expr();
+    astnode* node = bitExpr();
     while (isRelOp(currSym())) {
         astnode* m = makeExprNode(RELOP_EXPR, current);
+        match(currSym());
+        m->child[0] = node;
+        node = m;
+        node->child[1] = bitExpr();
+    }
+    return node;
+}
+
+astnode* Parser::bitExpr() {
+    astnode* node = expr();
+    while (currSym() == TK_BIT_AND || currSym() == TK_BIT_XOR || currSym() == TK_PIPE) {
+        astnode* m = makeExprNode(BINARYOP_EXPR, current);
         match(currSym());
         m->child[0] = node;
         node = m;
@@ -396,7 +418,7 @@ astnode* Parser::range() {
         node = t;
         t->child[1] = subscript();
     }
-    if (currSym() == TK_PIPE) {
+    if (currSym() == TK_PIPE && (isExprType(node, RANGE_EXPR) || inListConstructor)) {
         astnode* t = makeExprNode(LISTCOMP_EXPR, current);
         match(TK_PIPE);
         t->child[0] = node;
@@ -423,7 +445,7 @@ astnode* Parser::subscript() {
         match(TK_LSQUARE);
         t->child[0] = m;
         m = t;
-        m->child[1] = primary();
+        m->child[1] = simpleExpr();
         match(TK_RSQUARE);
     }
     if (currSym() == TK_LPAREN) {
@@ -459,7 +481,7 @@ astnode* Parser::primary() {
         match(TK_RPAREN);
         return m;
     }
-    if (currSym() == TK_LAMBDA || currSym() == TK_AMPER) {
+    if (currSym() == TK_LAMBDA) {
         return makeLambdaExpr();
     }
     if (builtInExprs.find(currSym()) != builtInExprs.end()) {
@@ -594,7 +616,9 @@ astnode* Parser::makeListExpr() {
         case TK_LSQUARE: {
             m = makeExprNode(LIST_EXPR, current);
             match(TK_LSQUARE);
+            inListConstructor = true;
             m->child[0] = argsList();
+            inListConstructor = false;
             match(TK_RSQUARE);
         }
         break;

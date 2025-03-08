@@ -96,6 +96,7 @@ Object ASTInterpreter::evalExpression(astnode* node) {
         case LISTCOMP_EXPR: m = performListComprehension(node); break;
         case FILE_EXPR:  m = performFileOpenExpression(node->child[0]); break;
         case META_EXPR: m = performMetaExpression(node); break;
+        case TERNARY_EXPR: m = evalTernaryExpression(node); break;
         default:
             break;
     }

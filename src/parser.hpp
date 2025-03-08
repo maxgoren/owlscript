@@ -17,6 +17,7 @@ class Parser {
         unordered_set<Symbol> builtInExprs;
         TokenStream ts;
         Token current;
+        bool inListConstructor;
         inline Symbol currSym();
         bool match(Symbol s);
         void advance();
@@ -39,6 +40,7 @@ class Parser {
         astnode* statementList();
         astnode* statement();
         astnode* simpleExpr(); //  :=
+        astnode* bitExpr();    // & | ^
         astnode* relExpr();    //  == !=
         astnode* compExpr();   //  <= < >= >
         astnode* expr();       //  + -

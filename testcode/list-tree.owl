@@ -1,15 +1,15 @@
 def makeTree(var key, var left, var right) {
     return [ key, left, right ];
-};
+}
 def getKey(var tree) {
     return tree[0];
-};
+}
 def getLeft(var tree) {
     return tree[1];
-};
+}
 def getRight(var tree) {
     return tree[2];
-};
+}
 def addTree(var tree, var key) {
     if (tree == nil) {
         return makeTree(key, nil, nil);

@@ -56,6 +56,7 @@ class ASTInterpreter {
         Object evalListExpression(astnode* node);
         Object evalSubscriptExpression(astnode* node);
         Object evalAssignmentExpression(astnode* node);
+        Object evalTernaryExpression(astnode* node);
         void prepareEnvForFunctionCall(LambdaObj* lobj, astnode* args, Environment& env);
         void cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args);
         Object performIfStatement(astnode* node);

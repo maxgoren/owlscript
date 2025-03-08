@@ -255,11 +255,15 @@ Token Lexer::checkSpecials() {
         return Token(TK_SUB, "-");
     }
     if (sb.get() == '&') {
-        if (sb.advance() == '&') {
+        sb.advance();
+        if (sb.get() == '&') {
             return Token(TK_LOGIC_AND, "&&");
+        } else if (sb.get() == '(') {
+            sb.reverse();
+            return Token(TK_LAMBDA, "&");
         }
         sb.reverse();
-        return Token(TK_AMPER, "&");
+        return Token(TK_BIT_AND, "&");
     }
     if (sb.get() == '|') {
         if (sb.advance() == '|') {
@@ -282,7 +286,13 @@ Token Lexer::checkSpecials() {
         sb.reverse();
         return Token(TK_MOD, "%");
     }
-    if (sb.get() == '^') return Token(TK_POW, "^");
+    if (sb.get() == '^') {
+        if (sb.advance() == '^') {
+            return Token(TK_POW, "^^");
+        }
+        sb.reverse();
+        return Token(TK_BIT_XOR, "^");
+    }
     if (sb.get() == '+') return Token(TK_ADD, "+");
     if (sb.get() == '(') return Token(TK_LPAREN, "(");
     if (sb.get() == ')') return Token(TK_RPAREN, ")");
@@ -292,6 +302,7 @@ Token Lexer::checkSpecials() {
     if (sb.get() == ']') return Token(TK_RSQUARE, "]");
     if (sb.get() == ',') return Token(TK_COMMA, ",");
     if (sb.get() == ';') return Token(TK_SEMI, ";");
+    if (sb.get() == '?') return Token(TK_QMARK, "?");
     state = ERROR;
     return Token(TK_ERROR, "<error>");
 }

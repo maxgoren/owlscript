@@ -1,5 +1,5 @@
 def C(var i) {
-    return &(i) -> i;
+    return lambda() -> i;
 }
 
 def A(var k, var inout x1, var inout x2, var inout x3, var inout x4, var inout x5) {
@@ -10,12 +10,13 @@ def A(var k, var inout x1, var inout x2, var inout x3, var inout x4, var inout x
     }
     println "K: " + k;
     if (k <= 0) {
+        println "x4() + x5()";
         return x4() + x5();
     }
     println "Calling B from A with k = " + k;
     return B(); 
 }
 
-def main() {
-    println A(4,C(1), C(-1), C(-1), C(1), C(0));
+def main() { 
+    println A(25,C(1), C(-1), C(-1), C(1), C(0));
 }
