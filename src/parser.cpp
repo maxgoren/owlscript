@@ -134,28 +134,32 @@ astnode* Parser::makeReturnStatement() {
     return m;
 }
 
-astnode* Parser::paramList() {
+
+astnode* Parser::parameter() {
+    astnode* node;
     match(TK_VAR);
-    astnode* m = nullptr, *c = nullptr;
     if (currSym() == TK_INOUT) {
         match(TK_INOUT);
-        m = makeStmtNode(REF_STMT, current);
-        m->child[0] = simpleExpr();
+        node = makeExprNode(REF_EXPR, current);
+        node->child[0] = simpleExpr();
+    } else if (currSym() == TK_LAZY) {
+        match(TK_LAZY);
+        node = makeExprNode(LAZY_EXPR, current);
+        node->child[0] = simpleExpr();
     } else {
-        m = simpleExpr();
+        node = simpleExpr();
     }
+    return node;
+}
+
+astnode* Parser::paramList() {
+    astnode* m = nullptr, *c = nullptr;
+    m = parameter();
     c = m;
     if (currSym() == TK_COMMA) {
         do {
             match(TK_COMMA);
-            match(TK_VAR);
-            if (currSym() == TK_INOUT) {
-                match(TK_INOUT);
-                c->next = makeStmtNode(REF_STMT, current);
-                c->next->child[0] = simpleExpr();
-            } else {
-                c->next = simpleExpr();
-            }
+            c->next = parameter();
             c = c->next;
         }  while (currSym() != TK_RPAREN && currSym() == TK_COMMA);
     }

@@ -54,12 +54,11 @@ Object ASTInterpreter::evalRelop(astnode* node, Object& lhn, Object& rhn) {
 }
 
 Object ASTInterpreter::evalBinOp(astnode* node, Object& lhn, Object& rhn) {
-    enter("eval binary op: " + node->attributes.strval);
+    say("eval binary op: " + node->attributes.strval);
     if (comparesAsOrdinal(lhn) && comparesAsOrdinal(rhn)) {
         double lhs = getAsReal(lhn);
         double rhs = getAsReal(rhn);
         //cout<<lhs<<" <op> "<<rhs<<endl;
-        leave();
         switch (node->attributes.symbol) {
             case TK_ADD: return makeRealObject(lhs + rhs);
             case TK_SUB: return makeRealObject(lhs - rhs);
@@ -163,6 +162,7 @@ Object ASTInterpreter::evalUnaryOp(astnode* node) {
             string id = getNameAndScopeFromNode(node->child[0]).name;
             int scope = getNameAndScopeFromNode(node->child[0]).scope;
             updateContext(id, m, scope);
+            leave();
         } return m;
         case TK_POST_DEC: {
             if (m.type == AS_REAL) { 
@@ -173,6 +173,7 @@ Object ASTInterpreter::evalUnaryOp(astnode* node) {
             string id = getNameAndScopeFromNode(node->child[0]).name;
             int scope = getNameAndScopeFromNode(node->child[0]).scope;
             updateContext(id, m, scope);
+            leave();
         } return m;
         case TK_SQRT: {
                 if (m.type == AS_REAL) m.realval = sqrt(m.realval);
@@ -256,15 +257,15 @@ Object ASTInterpreter::getConstValue(astnode* node) {
 /// @param env 
 void ASTInterpreter::prepareEnvForFunctionCall(LambdaObj* lambdaObj, astnode* args, Environment& env) {
     astnode* params = lambdaObj->params;
-    VarList* freeVars = lambdaObj->freeVars;
-    for (VarList* it = freeVars; it != nullptr; it = it->next) {
+    BidingList* freeVars = lambdaObj->freeVars;
+    for (BidingList* it = freeVars; it != nullptr; it = it->next) {
         if (!cxt.scoped.empty()) {
             cxt.scoped.top()[it->key] = it->value;
         } else cout<<"Aww snap."<<endl;
     }
     astnode* itr = args;
     while (params != nullptr && itr != nullptr) {
-        string vname = isStmtType(params,REF_STMT) ? getAttributes(params->child[0]).strval:getAttributes(params).strval;
+        string vname = isExprType(params,REF_EXPR) ? getAttributes(params->child[0]).strval:getAttributes(params).strval;
         env[vname] = evalExpression(itr);
         //cout<<"Assigning: "<<vname<<" value "<<env[vname]<<endl;
         params = params->next;
@@ -277,10 +278,10 @@ void ASTInterpreter::prepareEnvForFunctionCall(LambdaObj* lambdaObj, astnode* ar
 /// @param args 
 void ASTInterpreter::cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args) {
     astnode* params = lobj->params;
-    VarList* freeVars = lobj->freeVars;
+    BidingList* freeVars = lobj->freeVars;
     bailout = false;
     //update any closed-over variables before exiting.
-    for (VarList* it = freeVars; it != nullptr; it = it->next) {
+    for (BidingList* it = freeVars; it != nullptr; it = it->next) {
         if (cxt.scoped.size() > 1) {
             it->value = cxt.scoped.get(cxt.scoped.size()-2)[it->key];
         }
@@ -291,7 +292,7 @@ void ASTInterpreter::cleanUpAfterFunctionCall(LambdaObj* lobj, astnode* args) {
     //pass by reference is unexpectedly hard to implement with 
     //the current environment schemea
     while (params != nullptr && itr != nullptr) {
-        if (isStmtType(params, REF_STMT)) {
+        if (isExprType(params, REF_EXPR)) {
             Object m = cxt.scoped.top()[params->child[0]->attributes.strval];
             auto [id, scope]  = getNameAndScopeFromNode(itr);
             if (scope > -1 && cxt.hasMain)
@@ -358,6 +359,7 @@ Object ASTInterpreter::evalBlessExpression(astnode* node) {
     }
     m = makeStructObject(ninst);
     gc.add(m.objval);
+    leave();
     return m;
 }
 

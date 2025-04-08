@@ -10,6 +10,7 @@ Object ASTInterpreter::getObjectByID(string id, int scope) {
             m = env[id];
             resolved_in_scoped = true;
             say("[Resolved " + id + " as " + toString(m) + " from scope level: " + to_string(scope)  +"]");
+            leave();
             return env[id];
         }
     }
@@ -17,6 +18,7 @@ Object ASTInterpreter::getObjectByID(string id, int scope) {
         if (cxt.globals.find(id) != cxt.globals.end()) {
             say("[Resolved " + id + " from global scope.]");
             m = cxt.globals[id];
+            leave();
             return cxt.globals[id];
         } else {
             cout<<"Unknown Identifier: "<<id<<endl;
@@ -86,11 +88,13 @@ Object ASTInterpreter::evalAssignmentExpression(astnode* node) {
         if (scope > -1) {
             if (!cxt.scoped.empty() && cxt.getAt(scope).find(id) == cxt.getAt(scope).end()) {
                 cout<<"Undeclared Identifier: "<<id<<endl;
+                leave();
                 return makeNilObject();
             } 
         } else {
             if (cxt.globals.find(id) == cxt.globals.end()) {
                 cout<<"Undeclared Identifier: "<<id<<endl;
+                leave();
                 return makeNilObject();
             } 
         }

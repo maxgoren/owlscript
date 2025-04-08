@@ -240,8 +240,10 @@ Object ASTInterpreter::execFilter(astnode* node) {
 Object ASTInterpreter::performListComprehension(astnode* node) {
     enter("[List Comprehension]");
     Object il = evalExpression(node->child[0]);
-    if (typeOf(il) != AS_LIST)
+    if (typeOf(il) != AS_LIST) {
+        leave();
         return makeNilObject();
+    }
     Object lm = evalExpression(node->child[1]);
     Object prd = evalExpression(node->child[2]);
     LambdaObj* lmbd = getLambda(lm);
@@ -323,7 +325,6 @@ Object ASTInterpreter::performCreateUnNamedList(astnode* node) {
     ListObj* list = makeListObj();
     if (isExprType(node->child[0],RANGE_EXPR) || isExprType(node->child[0], LISTCOMP_EXPR)) {
             m = evalExpression(node->child[0]);
-        
     } else {
         for (astnode* it = node->child[0]; it != nullptr; it = it->next) {
             Object m = evalExpression(it);

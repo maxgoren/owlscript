@@ -34,6 +34,7 @@ class Parser {
         astnode* makeReturnStatement();
         astnode* makeStructStatement();
         astnode* makeDefStatement();
+        astnode* parameter();
         astnode* paramList();   // ,
         astnode* argsList();   //  ,
         astnode* program();

@@ -4,8 +4,16 @@ def fib(var n) {
     }
     return fib(n-1)+fib(n-2);
 }
+
+def fibo(var curr, var prev, var rnd, var max) {
+    if (rnd == max) {
+        return curr;
+    }
+    return fibo(curr+prev, curr, rnd+1, max);
+}
+
 def main() {
-    for (let i := 5; i <= 13; i++) {
-        println i + ": " + fib(i);
+    for (let i := 1; i <= 50; i++) {
+        println i + ": " + fibo(0, 1, 0, i);
     }
 }

@@ -79,7 +79,6 @@ void printNode(astnode* n) {
             case EXPR_STMT: cout<<"[expr statment]"; break;
             case DEF_STMT:  cout<<"[def statement]"; break;
             case RETURN_STMT: cout<<"[return statement]"; break;
-            case REF_STMT: cout<<"[reference statement]"; break;
             case STRUCT_STMT: cout<<"[struct def statement]"; break;
             case BLOCK_STMT:  cout<<"[Open New Scope]"; break;
             default:

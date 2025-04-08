@@ -10,11 +10,11 @@ enum ObjectType {
     AS_BOOL, AS_STRING, 
     AS_LIST, AS_LAMBDA, 
     AS_STRUCT, AS_KVPAIR,
-    AS_FILE, AS_NIL
+    AS_FILE, AS_THUNK, AS_NIL
 };
 
 enum ObjType {
-    OT_STR, OT_LIST, OT_LAMBDA, OT_STRUCT, OT_KVPAIR, OT_FILE
+    OT_STR, OT_LIST, OT_LAMBDA, OT_STRUCT, OT_KVPAIR, OT_FILE, OT_THUNK
 };
 
 struct StringObj {
@@ -22,10 +22,10 @@ struct StringObj {
     int length;
 };
 
-struct VarList;
+struct BidingList;
 
 struct LambdaObj {
-    VarList* freeVars;
+    BidingList* freeVars;
     astnode* params;
     astnode* body;
 };
@@ -46,6 +46,7 @@ struct FileObj {
 
 struct KVPair;
 struct StructObj;
+struct Thunk;
 
 struct ObjBase {
     ObjType type;
@@ -56,6 +57,7 @@ struct ObjBase {
         StructObj* structObj;
         FileObj* fileObj;
         KVPair* kvpairObj;
+        Thunk*  thunkObj;
     };
     bool mark;
     int refCount;
@@ -83,7 +85,12 @@ struct Object {
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
             case AS_KVPAIR: { objval = ob.objval; } break;
-            case AS_FILE: { objval = ob.objval; objval->fileObj = ob.objval->fileObj; objval->fileObj->lines = ob.objval->fileObj->lines; } break;
+            case AS_THUNK: { objval = ob.objval; } break;
+            case AS_FILE: { 
+                objval = ob.objval; 
+                objval->fileObj = ob.objval->fileObj; 
+                objval->fileObj->lines = ob.objval->fileObj->lines; 
+            } break;
             case AS_NIL: intval = 0; break;
             default: 
                 break;
@@ -101,6 +108,7 @@ struct Object {
             case AS_LAMBDA: { objval = ob.objval; } break;
             case AS_STRUCT: { objval = ob.objval; } break;
             case AS_KVPAIR: { objval = ob.objval; } break;
+            case AS_THUNK: { objval = ob.objval; } break;
             case AS_FILE: { objval = ob.objval; objval->fileObj = ob.objval->fileObj; objval->fileObj->lines = ob.objval->fileObj->lines; } break;
             case AS_NIL: intval = 0; break;
             default: 
@@ -110,10 +118,10 @@ struct Object {
     }
 };
 
-struct VarList {
+struct BidingList {
     string key;
     Object value;
-    VarList* next;
+    BidingList* next;
 };
 
 struct ListNode {
@@ -134,6 +142,12 @@ struct KVPair {
     Object value;
 };
 
+struct Thunk {
+    Object memoResult;
+    bool beenEvald;
+    astnode* code;
+};
+
 
 StructObj* makeStructObj();
 LambdaObj* makeLambdaObj(astnode* body, astnode* params);
@@ -143,7 +157,8 @@ FileObj*   makeFileObj(StringObj* filename);
 KVPair*    makeKVPairObj(Object key, Object value);
 ObjBase*   makeObjBase(ObjType ot);
 ListNode*  makeListNode(Object& m);
-VarList*   makeVarList(string key, Object val, VarList* list);
+BidingList*   makeVarList(string key, Object val, BidingList* list);
+Thunk*     makeThunkObj(astnode* code);
 
 bool isRealAnInteger(double);
 Object makeIntObject(int intVal);
@@ -156,6 +171,7 @@ Object makeStructObject(StructObj* structobj);
 Object makeFileObject(FileObj* fileObj);
 Object makeKVPairObject(KVPair* kvp);
 Object makeNilObject();
+Object makeThunk(Thunk* thunk);
 Object makeReferenceObject(Object* obj);
 ListObj* getList(Object m);
 LambdaObj* getLambda(Object m);

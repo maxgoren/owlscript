@@ -61,6 +61,14 @@ LambdaObj* makeLambdaObj(astnode* body, astnode* params) {
     return lam;
 }
 
+Thunk* makeThunkObj(astnode* node) {
+    Thunk* thunk = new Thunk;
+    thunk->beenEvald = false;
+    thunk->memoResult = makeNilObject();
+    thunk->code = node;
+    return thunk;
+}
+
 ListObj* makeListObj() {
     ListObj* list = new ListObj;
     list->length = 0;
@@ -197,8 +205,8 @@ double getAsReal(Object m) {
     return 0.0;
 }
 
-VarList* makeVarList(string key, Object val, VarList* list) {
-    VarList* nn = new VarList;
+BidingList* makeVarList(string key, Object val, BidingList* list) {
+    BidingList* nn = new BidingList;
     nn->key = key;
     nn->value = val;
     nn->next = list;
@@ -427,7 +435,7 @@ void destroyLambda(LambdaObj* lambda) {
     if (lambda == nullptr)
         return;
     while (lambda->freeVars != nullptr) {
-        VarList* x = lambda->freeVars;
+        BidingList* x = lambda->freeVars;
         lambda->freeVars = lambda->freeVars->next;
         delete x;
     }
