@@ -89,6 +89,7 @@ class ASTInterpreter {
         Object execPushList(astnode* node);
         Object execPopList(astnode* node);
         Object execLength(astnode* node);
+        Object execReduce(astnode* node);
         Object execFilter(astnode* node);
         Object execFirst(astnode* node);
         Symbol getSymbol(Object m);

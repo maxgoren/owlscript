@@ -123,6 +123,7 @@ Object ASTInterpreter::evalListExpression(astnode* node) {
             case TK_REST: m = execRest(node); break;
             case TK_MAP: m = execMap(node); break;
             case TK_FILTER: m = execFilter(node); break;
+            case TK_REDUCE: m = execReduce(node); break;
             case TK_EMPTY: m = execIsEmptyList(node); break;
             default:
                 break;

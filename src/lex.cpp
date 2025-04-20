@@ -41,6 +41,7 @@ Lexer::Lexer(bool debug) {
     reserved["eval"] = TK_EVAL;
     reserved["typeOf"] = TK_TYPEOF;
     reserved["of"] = TK_OF;
+    reserved["reduce"] = TK_REDUCE;
     state = DONE;
 }
 

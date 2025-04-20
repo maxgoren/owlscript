@@ -237,6 +237,26 @@ Object ASTInterpreter::execFilter(astnode* node) {
     return m;
 }
 
+Object ASTInterpreter::execReduce(astnode* node) {
+    enter("Map list");
+    Object m;
+    string id;
+    resolveObjForExpression(node, id, m);
+    Object lm = evalExpression(node->child[1]);
+    LambdaObj* lmbd = getLambda(lm);
+    Object result = getList(m)->head->info;
+    for (ListNode* it = getList(m)->head->next; it != nullptr; it = it->next) {
+        astnode* t = makeExprNode(CONST_EXPR, Token(getSymbol(result), toString(result)));
+        t->next = makeExprNode(CONST_EXPR, Token(getSymbol(it->info), toString(it->info)));
+        result = evalFunctionExpr(lmbd, t);
+    }
+    if (typeOf(result) == AS_FILE) {
+        saveFile(result);
+    }
+    leave();
+    return result;
+}
+
 Object ASTInterpreter::performListComprehension(astnode* node) {
     enter("[List Comprehension]");
     Object il = evalExpression(node->child[0]);

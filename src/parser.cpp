@@ -3,7 +3,7 @@
 Parser::Parser(bool debug) {
     loud = false;
     inListConstructor = false;
-    listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_PUSH, TK_POP, TK_APPEND, TK_SHIFT, TK_UNSHIFT, TK_LSQUARE };
+    listExprs = { TK_LENGTH, TK_EMPTY, TK_REST, TK_FIRST, TK_SORT, TK_MAP, TK_FILTER, TK_REDUCE, TK_PUSH, TK_POP, TK_APPEND, TK_SHIFT, TK_UNSHIFT, TK_LSQUARE };
     constExprs = { TK_NIL, TK_STRING, TK_NUM, TK_REALNUM, TK_TRUE, TK_FALSE, TK_KVPAIR };
     builtInExprs = { TK_MAKE, TK_MATCH, TK_FOPEN, TK_EVAL, TK_TYPEOF };
 }
@@ -655,7 +655,8 @@ astnode* Parser::makeListExpr() {
         case TK_PUSH:       // listFunc(list, value)
         case TK_SHIFT:      
         case TK_MAP:        // listFunc(list, lambda)
-        case TK_FILTER: {
+        case TK_FILTER: 
+        case TK_REDUCE: {
             m = makeExprNode(LIST_EXPR, current);
             match(currSym());
             match(TK_LPAREN);
