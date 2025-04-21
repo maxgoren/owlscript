@@ -162,7 +162,7 @@ Object ASTInterpreter::performFunctionCall(astnode* node) {
     enter("[function call]");
     string id = getNameAndScopeFromNode(node).name;
     int scope = getNameAndScopeFromNode(node).scope;
-    Object lmbd = getObjectByID(id, scope);
+    Object lmbd = (id == "_rc") ? cxt.scoped.top()["_rc"]:getObjectByID(id, scope);
     if (lmbd.type != AS_LAMBDA) {
         leave();
         cout<<"Error: No function '"<<id<<"' coult be found."<<endl;

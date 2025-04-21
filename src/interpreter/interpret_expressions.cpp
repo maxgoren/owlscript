@@ -314,6 +314,7 @@ Object ASTInterpreter::evalFunctionExpr(LambdaObj* lambdaObj, astnode* args) {
     Environment env;
     prepareEnvForFunctionCall(lambdaObj, args, env);
     cxt.openScope(env);
+    cxt.scoped.top().emplace("_rc", makeLambdaObject(lambdaObj));
     Object m = exec(lambdaObj->body);
     cleanUpAfterFunctionCall(lambdaObj, args);
     cxt.closeScope();

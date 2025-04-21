@@ -95,7 +95,7 @@ Token Lexer::nextToken() {
                 state = IN_STRING;
                 sb.advance();
                 next = extractString();
-            } else if (isalpha(sb.get())) {
+            } else if (isalpha(sb.get()) || sb.get() == '_') {
                 state = IN_ID;
                 next = extractIdentifier();
             } else {
@@ -149,7 +149,7 @@ Token Lexer::extractNumber() {
 
 Token Lexer::extractIdentifier() {
     string id;
-    while (!sb.done() && (isalpha(sb.get()) || isdigit(sb.get()))) {
+    while (!sb.done() && (isalpha(sb.get()) || isdigit(sb.get()) || sb.get() == '_')) {
         id.push_back(sb.get());
         sb.advance();
     }
