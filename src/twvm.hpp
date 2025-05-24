@@ -10,6 +10,9 @@
 #include "regex/patternmatcher.hpp"
 using namespace std;
 
+const int MAJOR_VERSION = 0;
+const int MINOR_VERSION = 6;
+
 class TWVM {
     private:
         bool bailout;

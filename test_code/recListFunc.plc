@@ -8,5 +8,5 @@ def printThatThang(let x,let i) {
     }
     return i;
 }
-let t := ["oh", "ye of", 420, 69, "sir fades"];
+let t := ["oh", "ye of", 420, 69, "fades"];
 println printThatThang(t, 0);

@@ -1,7 +1,0 @@
-func g() {
-    return 420;
-}
-func f(i) {
-    return i + g();
-}
-println f(1);
