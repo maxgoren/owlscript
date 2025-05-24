@@ -19,7 +19,7 @@ class ASTBuilder {
         astnode* buildFromFile(string filename);
 };
 
-ASTBuilder::ASTBuilder(bool debug = false) {
+ASTBuilder::ASTBuilder(bool debug) {
     loud = debug;
 }
 
