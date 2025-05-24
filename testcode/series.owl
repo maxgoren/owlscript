@@ -1,5 +1,0 @@
-let doubleAndInc := lambda(i) -> 2*i+1;
-let series := lambda(x) { let y := []; let q := 5*doubleAndInc(x); while (x < q) { x := doubleAndInc(x); append(y, x); } return y; };
-let seriesOfSeries := lambda(x) { let y := []; while (x > 0) { append(y, series(x)); x := x - 1; } return y; };
-let t := seriesOfSeries(6);
-println t;

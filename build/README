@@ -1,5 +1,0 @@
-this file containes object artifacts created during the build process, and can be removed.
-to build smolz on linux/macos enter the following commands in you terminal:
- make && sudo make install
-
-you can then run smolz from the command line by typing 'smolz'

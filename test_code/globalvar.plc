@@ -1,0 +1,6 @@
+let x := 13;
+func printIt() {
+    let y := x + 1;
+    println y;
+}
+printIt();
