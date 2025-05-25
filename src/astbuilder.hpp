@@ -26,6 +26,11 @@ ASTBuilder::ASTBuilder(bool debug) {
 astnode* ASTBuilder::build(string str) {
     sb.init(str);
     TokenStream ts = lexer.lex(sb);
+    if (loud) {
+        for (ts.start(); !ts.done(); ts.advance()) {
+            printToken(ts.get());
+        }
+    }
     astnode* ast = parser.parse(ts);
     if (loud) {
         preorder(ast, 0);

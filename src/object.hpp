@@ -346,6 +346,24 @@ Object makeNil() {
     return Object();
 }
 
+Object bwAnd(Object lhs, Object rhs) {
+    int lhn = getPrimitive(lhs);
+    int rhn = getPrimitive(rhs);
+    return makeInt(lhn & rhn);
+}
+
+Object bwOr(Object lhs, Object rhs) {
+    int lhn = getPrimitive(lhs);
+    int rhn = getPrimitive(rhs);
+    return makeInt(lhn | rhn);
+}
+
+Object bwXor(Object lhs, Object rhs) {
+    int lhn = getPrimitive(lhs);
+    int rhn = getPrimitive(rhs);
+    return makeInt(lhn ^ rhn);
+}
+
 Object add(Object lhs, Object rhs) {
     double lhn = getPrimitive(lhs);
     double rhn = getPrimitive(rhs);

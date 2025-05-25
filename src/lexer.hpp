@@ -47,7 +47,7 @@ Lexer::Lexer() {
     reserved["struct"] = Token(TK_STRUCT, "struct");
     reserved["append"] = Token(TK_APPEND, "append"); 
     reserved["filter"] = Token(TK_FILTER, "filter");
-    reserved["reduce"] = Token(TK_REDUCE, "reduce");
+    reserved["reduce"] = Token(TK_REDUCE, "reduce"); 
     reserved["typeOf"] = Token(TK_TYPEOF, "typeOf");
     reserved["matchre"] = Token(TK_MATCHRE, "matchre");
     reserved["println"] = Token(TK_PRINTLN, "println");
@@ -98,19 +98,37 @@ Token Lexer::checkSpecials(StringBuffer& sb) {
         sb.rewind();
         return Token(TK_ADD, "+");
     }
+    if (sb.get() == '&') {
+        sb.advance();
+        if (sb.get() == '(') {
+            return Token(TK_LAMBDA, "&(");
+        } else if (sb.get() == '&') {
+            return Token(TK_AND, "&&");
+        }
+        sb.rewind();
+        return Token(TK_BIT_AND, "&");
+    }
     if (sb.get() == '|') {
         sb.advance();
         if (sb.get() == '|') {
             return Token(TK_OR, "||");
+        } else if (sb.get() == '&') {
+            return Token(TK_PIPE, "|");
         }
         sb.rewind();
-        return Token(TK_PIPE, "|");
+        return Token(TK_BIT_OR, "|");
+    }
+    if (sb.get() == '^') {
+        sb.advance();
+        if (sb.get() == '^') {
+            return Token(TK_POW, "^^");
+        }
+        sb.rewind();
+        return Token(TK_BIT_XOR, "^");
     }
     if (sb.get() == '*') {
         sb.advance();
-        if (sb.get() == '*') {
-            return Token(TK_POW, "**");
-        } else if (sb.get() == '=') {
+        if (sb.get() == '=') {
             return Token(TK_ASSIGN_PROD, "*=");
         }
         sb.rewind();
@@ -158,6 +176,7 @@ Token Lexer::checkSpecials(StringBuffer& sb) {
             return Token(TK_EQU, "==");
         }
         sb.rewind();
+        return Token(TK_ERR, "=");
     }
     if (sb.get() == '!') {
         sb.advance();
@@ -174,16 +193,6 @@ Token Lexer::checkSpecials(StringBuffer& sb) {
         }
         sb.rewind();
         return Token(TK_COLON, ":");
-    }
-    if (sb.get() == '&') {
-        sb.advance();
-        if (sb.get() == '(') {
-            return Token(TK_LAMBDA, "&(");
-        } else if (sb.get() == '&') {
-            return Token(TK_AND, "&&");
-        }
-        sb.rewind();
-        return Token(TK_AMPER, "&");
     }
     return Token(TK_ERR, "err");
 }

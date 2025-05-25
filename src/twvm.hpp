@@ -203,6 +203,9 @@ class TWVM {
                 case TK_LTE: push(lte(lhs, rhs)); break;
                 case TK_GT:  push(gt(lhs, rhs)); break;
                 case TK_GTE: push(gte(lhs, rhs)); break;
+                case TK_BIT_AND: push(bwAnd(lhs, rhs)); break;
+                case TK_BIT_XOR: push(bwXor(lhs, rhs)); break;
+                case TK_BIT_OR:  push(bwOr(lhs, rhs)); break;
                 default:
                     break;
             }
@@ -628,6 +631,7 @@ class TWVM {
                     case BINOP_EXPR: binaryOperation(node); break;
                     case TERNARY_EXPR: ternaryConditional(node); break;
                     case LOGIC_EXPR: booleanOperation(node); break;
+                    case BITWISE_EXPR: binaryOperation(node); break;
                     case ASSIGN_EXPR: assignExpr(node); break;
                     case CONST_EXPR: constExpr(node); break;
                     case ID_EXPR:    idExpr(node); break;

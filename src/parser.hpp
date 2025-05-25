@@ -25,6 +25,9 @@ class Parser {
         astnode* relOpExpression();
         astnode* equOpExpression();
         astnode* logicOpExpression();
+        astnode* bitwiseAnd();
+        astnode* bitwiseOr();
+        astnode* bitwiseXor();
         astnode* expression();
         astnode* makeBlock();
         astnode* statement();
@@ -258,9 +261,45 @@ astnode* Parser::expression() {
 }
 
 astnode* Parser::logicOpExpression() {
-    astnode* node = equOpExpression();
+    astnode* node = bitwiseAnd();
     while (expect(TK_AND) || expect(TK_OR)) {
         astnode* t = makeExprNode(LOGIC_EXPR, current());
+        match(lookahead());
+        t->child[0] = node;
+        t->child[1] = bitwiseAnd();
+        node = t;
+    }
+    return node;
+}
+
+astnode* Parser::bitwiseAnd() {
+    astnode* node = bitwiseOr();
+    while (expect(TK_BIT_AND)) {
+        astnode* t = makeExprNode(BITWISE_EXPR, current());
+        match(lookahead());
+        t->child[0] = node;
+        t->child[1] = bitwiseOr();
+        node = t;
+    }
+    return node;
+}
+
+astnode* Parser::bitwiseOr() {
+    astnode* node = bitwiseXor();
+    while (expect(TK_BIT_OR)) {
+        astnode* t = makeExprNode(BITWISE_EXPR, current());
+        match(lookahead());
+        t->child[0] = node;
+        t->child[1] = bitwiseXor();
+        node = t;
+    }
+    return node;
+}
+
+astnode* Parser::bitwiseXor() {
+    astnode* node = equOpExpression();
+    while (expect(TK_BIT_XOR)) {
+        astnode* t = makeExprNode(BITWISE_EXPR, current());
         match(lookahead());
         t->child[0] = node;
         t->child[1] = equOpExpression();
@@ -372,6 +411,13 @@ astnode* Parser::val() {
         t->child[1] = expression();
         node = t;
         match(TK_RB);
+    }
+    while (expect(TK_PERIOD)) {
+        astnode* t = makeExprNode(SUBSCRIPT_EXPR, current());
+        match(TK_PERIOD);
+        t->child[0] = node;
+        t->child[1] = primary();
+        node = t;
     }
     while (expect(TK_POW)) {
         astnode* t = makeExprNode(BINOP_EXPR, current());
