@@ -13,21 +13,20 @@ void runScript(string filename) {
 }
 
 
-void repl() {
-    cout<<"[OwlscriptSV 0.6b]"<<endl;
+void repl(bool debug) {
+    cout<<"[OwlScript 0.6b]"<<endl;
     bool running = true;
     string input;
-    ASTBuilder astbuilder;
-    TWVM vm(true);
+    ASTBuilder astbuilder(debug);
+    TWVM vm(debug);
     int i = 1;
     while (running) {
-        cout<<"OwlScriptSV("<<i++<<")> ";
+        cout<<"OwlScript("<<i++<<")> ";
         getline(cin, input);
         if (input == "quit") {
             running = false;
         } else {
             astnode* ast = astbuilder.build(input);
-            preorder(ast, 1);
             vm.exec(ast);
             cleanUpTree(ast); 
         }
@@ -37,9 +36,11 @@ void repl() {
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        repl();
+        repl(false);
     } else {
-        runScript(argv[1]);
+        if (argv[1][0] != '-')
+            runScript(argv[1]);
+        else repl(true);
     }
     return 0;
 }
