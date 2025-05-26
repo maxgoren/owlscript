@@ -16,4 +16,8 @@ owlscript:
 	g++ --std=c++17 *.o -o owlscript
 
 install:
-	mv ./owlscript /usr/local/bin
+	cp ./owlscript /usr/local/bin
+
+clean:
+	rm ./owlscript
+	rm *.o
