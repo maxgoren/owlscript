@@ -21,7 +21,7 @@ enum ExprType {
 
 enum StmtType {
     PRINT_STMT, EXPR_STMT, BLOCK_STMT, 
-    IF_STMT, WHILE_STMT, LET_STMT, 
+    IF_STMT, WHILE_STMT, FOREACH_STMT, LET_STMT, 
     FUNC_DEF_STMT, STRUCT_DEF_STMT, RETURN_STMT
 };
 
@@ -42,99 +42,17 @@ struct astnode {
 
 
 
-void preorder(astnode* expr, int d) {
-    if (expr != nullptr) {
-        for (int i = 0; i < d; i++) cout<<" ";
-        switch(expr->nk) {
-            case EXPR_NODE:
-                switch (expr->type.expr) {
-                    case ID_EXPR:      cout<<"[id expr]"; break;
-                    case CONST_EXPR:   cout<<"[cosnt expr]"; break;
-                    case UNOP_EXPR:    cout<<"[unop expr]"; break;
-                    case BINOP_EXPR:   cout<<"[binop expr]"; break;
-                    case RELOP_EXPR:   cout<<"[relop expr]"; break;
-                    case LOGIC_EXPR:   cout<<"[logic expr]"; break;
-                    case FUNC_EXPR:    cout<<"[func expr]"; break;
-                    case ASSIGN_EXPR:  cout<<"[assign expr]"; break;
-                    case LAMBDA_EXPR:  cout<<"[lambda expr]"; break;
-                    case REG_EXPR:     cout<<"[regular expr]"; break;
-                    case REF_EXPR:     cout<<"[reference expr]"; break;
-                    case LIST_EXPR:    cout<<"[list expr]"; break;
-                    case RANGE_EXPR:   cout<<"[range expr]"; break;
-                    case ZF_EXPR:      cout<<"[list comprehension]"; break;
-                    case BLESS_EXPR:   cout<<"[bless expr]"; break;
-                    case TERNARY_EXPR: cout<<"[ternary expr]"; break;
-                    case SUBSCRIPT_EXPR: cout<<"[subscript expr]"; break;
-                    default:
-                        break;
-                } break;
-            case STMT_NODE:
-                switch (expr->type.stmt) {
-                    case IF_STMT:     cout<<"[if stmt]"; break;
-                    case LET_STMT:    cout<<"[let statement]"; break;
-                    case EXPR_STMT:   cout<<"[expr stmt]"; break;
-                    case PRINT_STMT:  cout<<"[print stmt]"; break;
-                    case WHILE_STMT:  cout<<"[while stmt]";break;
-                    case BLOCK_STMT:  cout<<"[block statement]"; break;
-                    case RETURN_STMT: cout<<"[return statement]"; break;
-                    case FUNC_DEF_STMT: cout<<"[def stmt]"; break;
-                    case STRUCT_DEF_STMT: cout<<"[struct definition stmt]"; break;
+void preorder(astnode* expr, int d);
 
-                    default:
-                        break;
-                } break;
-            default:
-                break;
-        }
-        printToken(expr->token);
-        for (int i = 0; i < MAX_CHILD; i++)
-            preorder(expr->child[i], d+1);
-        preorder(expr->next, d);
-    }
-}
+astnode* makeExprNode(ExprType type, Token tk);
 
-astnode* makeExprNode(ExprType type, Token tk) {
-    astnode* node = new astnode(EXPR_NODE, tk);
-    node->type.expr = type;
-    return node;
-}
+astnode* makeStmtNode(StmtType type, Token tk);
 
-astnode* makeStmtNode(StmtType type, Token tk) {
-    astnode* node = new astnode(STMT_NODE, tk);
-    node->type.stmt = type;
-    return node;
-}
+astnode* copyTree(astnode* node);
 
-astnode* copyTree(astnode* node) {
-    if (node == nullptr)
-        return nullptr;
-    astnode* t = new astnode(node->nk, node->token);
-    t->type = node->type;
-    for (int i = 0; i < MAX_CHILD; i++)
-        t->child[i] = copyTree(node->child[i]);
-    t->next = copyTree(node->next);
-    return t;
-}
+void cleanUpTree(astnode* node);
 
-void cleanUpTree(astnode* node) {
-    if (node == nullptr)
-        return;
-    for (int i = 0; i < MAX_CHILD; i++)
-        cleanUpTree(node->child[i]);
-    cleanUpTree(node->next);
-    delete node;
-}
+bool isExprType(astnode* node, ExprType type);
 
-bool isExprType(astnode* node, ExprType type) {
-    if (node == nullptr)
-        return false;
-    return node->nk == EXPR_NODE && node->type.expr == type;
-}
-
-bool isStmtType(astnode* node, StmtType type) {
-    if (node == nullptr)
-        return false;
-    return node->nk == STMT_NODE && node->type.stmt == type;
-}
-
+bool isStmtType(astnode* node, StmtType type);
 #endif

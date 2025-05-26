@@ -11,7 +11,7 @@ enum RegExSymbol {
     RE_SPECIFIEDRANGE, RE_QUANTIFIER, RE_NONE
 };
 
-vector<string> reSymStr = { 
+inline vector<string> reSymStr = { 
     "TK_CHAR", "TK_LPAREN", "TK_RPAREN", "RE_LSQUARE", "RE_RSQUARE", 
     "RE_STAR", "RE_PLUS", "RE_QUESTION", "RE_CONCAT", "RE_OR", "RE_SPECIFIEDSET", "RE_SPECIFIEDRANGE", "RE_QUANTIFIER", "TK_NONE"
 };
