@@ -21,7 +21,7 @@ struct GCObject;
 struct Object {
     StoreAs type;
     union {
-        int intval;
+        long intval;
         double realval;
         bool boolval;
         char charval;
@@ -32,6 +32,7 @@ struct Object {
     Object(double val) { type = AS_REAL; data.realval = val; }
     Object(bool val) { type = AS_BOOL; data.boolval = val; }
     Object(int val) { type = AS_INT; data.intval = val; }
+    Object(long val) { type = AS_INT; data.intval = val; }
     Object(WeakRef* obj) { type = AS_REF; data.reference = obj; }
     Object() { type = AS_NULL; data.intval = 0; }
     Object(const Object& obj) {
@@ -124,62 +125,57 @@ struct GCObject {
     GCObject() : marked(false), type(GC_EMPTY) { }
 };
 
+
+//Accessors
 bool getBoolean(Object m);
-int getInteger(Object m);
-
+long getInteger(Object m);
 int getReal(Object m);
-
 char getChar(Object m);
 
 extern List dummylist;
-List* getList(Object m);
-Function* getFunction(Object m);
-
 extern string dummystring;
-string* getString(Object m);
 extern Struct dummystruct;
 
+List* getList(Object m);
+Function* getFunction(Object m);
+string* getString(Object m);
 Struct* getStruct(Object m);
-
 WeakRef* getReference(Object m);
+double getPrimitive(Object obj);
 
-void printGCObject(GCObject* x);
 
+//List operations
 List* appendList(List* list, Object obj);
-
 bool listEmpty(List* list);
 int listSize(List* list);
-
 List* pushList(List* list, Object obj);
-
 List* updateListAt(List* list, int index, Object obj);
 ListNode* getListItemAt(List* list, int index) ;
 
+//stringify
 string listToString(List* list);
-
 string toString(GCObject* obj);
-
 string toString(Object obj);
 
+void printGCObject(GCObject* x);
 ostream& operator<<(ostream& os, const Object& obj);
 
 StoreAs typeOf(Object obj);
 bool compareOrdinal(Object obj) ;
 
-double getPrimitive(Object obj);
 
+//non-GC type Constructos
 Object makeInt(int val) ;
-
+Object makeInt(long val) ;
 Object makeReal(double val);
-
 Object makeNumber(double val) ;
 Object makeBool(bool val) ;
-
 Object makeReference(string id, int scope) ;
 Object makeNil();
 
+Object neg(Object lhs);
+//binary operators
 Object bwAnd(Object lhs, Object rhs);
-
 Object bwOr(Object lhs, Object rhs);
 Object bwXor(Object lhs, Object rhs) ;
 Object add(Object lhs, Object rhs) ;
@@ -188,18 +184,11 @@ Object div(Object lhs, Object rhs) ;
 Object mod(Object lhs, Object rhs) ;
 Object mul(Object lhs, Object rhs) ;
 Object pow(Object lhs, Object rhs);
-
-Object neg(Object lhs);
-
 Object lt(Object lhs, Object rhs) ;
-
 Object lte(Object lhs, Object rhs);
-
 Object gt(Object lhs, Object rhs);
-
 Object gte(Object lhs, Object rhs);
 Object equ(Object lhs, Object rhs);
-
 Object neq(Object lhs, Object rhs);
 Object logicAnd(Object lhs, Object rhs) ;
 Object logicOr(Object lhs, Object rhs);

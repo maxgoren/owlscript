@@ -8,7 +8,7 @@ int Allocator::nextGC() {
     return NEXT_GC_LIMIT;
 }
 int Allocator::liveCount() {
-    return liveObjectSets.size();
+    return liveObjects.size();
 }
 
 bool Allocator::isCollectable(Object& m) {
@@ -26,14 +26,14 @@ bool Allocator::isCollectable(Object& m) {
 
 void Allocator::registerObject(GCObject* object) {
     object->marked = false;
-    liveObjectSets.insert(object);
+    liveObjects.insert(object);
 }
 
 Object Allocator::makeString(string val) {
     Object m;
     m.type = AS_STRING;
-    if (liveObjectSets.stringExists(val)) {
-        m.data.gcobj = liveObjectSets.getString(val);
+    if (liveObjects.stringExists(val)) {
+        m.data.gcobj = liveObjects.getString(val);
         m.data.gcobj->marked = false;
         return m;
     }
@@ -141,19 +141,19 @@ void Allocator::mark(ActivationRecord* callStack, IndexedStack<Object>& rtStack)
 
 void Allocator::sweep() {
     int collected = 0;
-    for (auto & x : liveObjectSets.sweepStructSet()) {
+    for (auto & x : liveObjects.sweepStructSet()) {
         destroyObject(x);
         collected++;
     }
-    for (auto & x : liveObjectSets.sweepListSet()) {
+    for (auto & x : liveObjects.sweepListSet()) {
         destroyObject(x);
         collected++;
     }
-    for (auto & x : liveObjectSets.sweepStringSet()) {
+    for (auto & x : liveObjects.sweepStringSet()) {
         destroyObject(x);
         collected++;
     }
-    for (auto & x : liveObjectSets.sweepFuncSet()) {
+    for (auto & x : liveObjects.sweepFuncSet()) {
         destroyObject(x);
         collected++;
     }

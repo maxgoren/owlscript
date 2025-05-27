@@ -1,11 +1,11 @@
-let cache := [ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+let cache := [ 0, 1]
 def fib(let x, let cache) {
 	if (x < 2) {
 		return 1;
 	}
-	if (x > size(cache)) {
+	if (x >= size(cache)) {
 			let t := size(cache) - 1;
-			while (t < x) {
+			while (t <= x) {
 				append(cache, fib(t, cache)+fib(t-1, cache));
 				t++;
 			}
@@ -15,5 +15,7 @@ def fib(let x, let cache) {
 	}
 	return cache[x];
 }
-println fib(41, cache);
-println size(cache);
+
+foreach (let i in 1 .. 42) {
+	println fib(i, cache);
+}

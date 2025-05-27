@@ -4,7 +4,7 @@ bool getBoolean(Object m) {
     return m.data.boolval;
 }
 
-int getInteger(Object m) {
+long getInteger(Object m) {
     return m.data.intval;
 }
 
@@ -103,10 +103,12 @@ string toString(Object m);
 string listToString(List* list) {
     string str;
     str = "[ ";
+    if (list != nullptr) {
     for (ListNode* it = list->head; it != nullptr; it = it->next) {
         str += toString(it->info);
         if (it->next != nullptr) 
             str += ", ";
+    }
     }
     str += " ]";
     return str;
@@ -184,6 +186,13 @@ double getPrimitive(Object obj) {
 }
 
 Object makeInt(int val) {
+    Object m;
+    m.type = AS_INT;
+    m.data.intval = val;
+    return m;
+}
+
+Object makeInt(long val) {
     Object m;
     m.type = AS_INT;
     m.data.intval = val;

@@ -3,9 +3,9 @@
 #include "twvm.hpp"
 using namespace std;
 
-void runScript(string filename) {
-    ASTBuilder astbuilder;
-    TWVM vm(false);
+void runScript(string filename, bool trace) {
+    ASTBuilder astbuilder(trace);
+    TWVM vm(trace);
     vm.exec(astbuilder.buildFromFile(filename));
     if (vm.context().existsInScope("main")) {
         vm.exec(astbuilder.build("main();"));
@@ -34,13 +34,26 @@ void repl(bool debug) {
     cout<<"[hoot!]"<<endl;
 }
 
-int main(int argc, char* argv[]) {
+void parseOptions(int argc, char* argv[]) {
+    bool trace_eval = false;
+    if (argv[1][0] == '-') {
+        switch (argv[1][1]) {
+            case 'v': { trace_eval = true; } break;
+            default: break;
+        }
+        if (argc == 3) {
+            runScript(argv[2], trace_eval);
+        } else repl(trace_eval);
+    } else {
+        runScript(argv[1], trace_eval);
+    }
+}
+
+int main(int argc, char *argv[]) {
     if (argc < 2) {
         repl(false);
     } else {
-        if (argv[1][0] != '-')
-            runScript(argv[1]);
-        else repl(true);
+        parseOptions(argc, argv);
     }
     return 0;
 }

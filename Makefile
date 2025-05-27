@@ -15,6 +15,23 @@ owlscript:
 	g++ --std=c++17 -c src/main.cpp 
 	g++ --std=c++17 *.o -o owlscript
 
+debug:
+	g++ --std=c++17 -c -g src/allocator.cpp
+	g++ --std=c++17 -c -g src/ast.cpp
+	g++ --std=c++17 -c -g src/astbuilder.cpp
+	g++ --std=c++17 -c -g src/context.cpp
+	g++ --std=c++17 -c -g src/lexer.cpp
+	g++ --std=c++17 -c -g src/regex/nfa.cpp
+	g++ --std=c++17 -c -g src/regex/patternmatcher.cpp
+	g++ --std=c++17 -c -g src/regex/re_parser.cpp
+	g++ --std=c++17 -c -g src/object.cpp
+	g++ --std=c++17 -c -g src/parser.cpp
+	g++ --std=c++17 -c -g src/resolve.cpp
+	g++ --std=c++17 -c -g src/token.cpp
+	g++ --std=c++17 -c -g src/twvm.cpp
+	g++ --std=c++17 -c -g src/main.cpp 
+	g++ --std=c++17 -g *.o -o owlscript_debug_ver
+
 install:
 	cp ./owlscript /usr/local/bin
 

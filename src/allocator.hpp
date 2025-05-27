@@ -103,7 +103,7 @@ class LiveObjectSets {
 class Allocator {
     private:
         int NEXT_GC_LIMIT;
-        LiveObjectSets liveObjectSets;
+        LiveObjectSets liveObjects;
         bool isCollectable(Object& m);
         void markObject(Object& obj);
         void mark(ActivationRecord* callStack, IndexedStack<Object>& rtStack);
