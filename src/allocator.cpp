@@ -70,20 +70,25 @@ Object Allocator::makeList(List* list) {
 void Allocator::rungc(ActivationRecord* callStack, IndexedStack<Object>& rtStack) {
     mark(callStack, rtStack);
     sweep();
-    NEXT_GC_LIMIT = 1.5*NEXT_GC_LIMIT;
+    NEXT_GC_LIMIT += (NEXT_GC_LIMIT/2);
 }
 
-void Allocator::markObject(Object& object) {
-    object.data.gcobj->marked = true;
-    if (object.type == AS_LIST) {
-        for (ListNode* ln = getList(object)->head; ln != nullptr; ln = ln->next) {
-            if (isCollectable(ln->info))
-                markObject(ln->info);
-        }
-    } else if (object.type == AS_STRUCT && getStruct(object)->blessed) {
-        for (auto & m : getStruct(object)->fields) {
-            if (isCollectable(m.second))
-                markObject(m.second);
+void Allocator::markObject(Object& obj) {
+    IndexedStack<Object*> sf;
+    sf.push(&obj);
+    while (!sf.empty()) {
+        Object object = *sf.pop();
+        object.data.gcobj->marked = true;
+        if (object.type == AS_LIST) {
+            for (ListNode* ln = getList(object)->head; ln != nullptr; ln = ln->next) {
+                if (isCollectable(ln->info) && ln->info.data.gcobj->marked == false)
+                    sf.push(&ln->info);
+            }
+        } else if (object.type == AS_STRUCT && getStruct(object)->blessed) {
+            for (auto & m : getStruct(object)->fields) {
+                if (isCollectable(m.second) && m.second.data.gcobj->marked == false)
+                    sf.push(&m.second);
+            }
         }
     }
 }
@@ -157,5 +162,5 @@ void Allocator::sweep() {
         destroyObject(x);
         collected++;
     }
-    //cout<<collected<<" items collected, "<<liveObjectSets.size()<<" objects survive."<<endl;
+    //cout<<collected<<" items collected, "<<liveObjects.size()<<" objects survive."<<endl;
 }

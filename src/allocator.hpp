@@ -11,10 +11,11 @@ using namespace std;
 
 class LiveObjectSets {
     private:
+        using set_type = unordered_set<GCObject*>;
         unordered_map<string, GCObject*> stringSet;
-        unordered_set<GCObject*> listSet;
-        unordered_set<GCObject*> structSet;
-        unordered_set<GCObject*> funcSet;
+        set_type listSet;
+        set_type structSet;
+        set_type funcSet;
     public:
         LiveObjectSets() {
 
@@ -38,9 +39,9 @@ class LiveObjectSets {
         GCObject* getString(string str) {
             return stringSet[str];
         }
-        unordered_set<GCObject*> sweepListSet() {
-            unordered_set<GCObject*> kill;
-            unordered_set<GCObject*> next;
+        set_type sweepListSet() {
+            set_type kill;
+            set_type next;
             for (auto & m : listSet) {
                 if (m->marked == false) {
                     auto x = m;
@@ -53,9 +54,9 @@ class LiveObjectSets {
             listSet = next;
             return kill;
         }     
-        unordered_set<GCObject*> sweepStructSet() {
-            unordered_set<GCObject*> kill;
-            unordered_set<GCObject*> next;
+        set_type sweepStructSet() {
+            set_type kill;
+            set_type next;
             for (auto & m : structSet) {
                 if (m->marked == false) {
                     auto x = m;
@@ -68,9 +69,9 @@ class LiveObjectSets {
             structSet = next;
             return kill;
         }
-        unordered_set<GCObject*> sweepFuncSet() {
-            unordered_set<GCObject*> kill;
-            unordered_set<GCObject*> next;
+        set_type sweepFuncSet() {
+            set_type kill;
+            set_type next;
             for (auto & m : funcSet) {
                 if (m->marked == false) {
                     auto x = m;
@@ -83,8 +84,8 @@ class LiveObjectSets {
             funcSet = next;
             return kill;
         }
-        unordered_set<GCObject*> sweepStringSet() {
-            unordered_set<GCObject*> kill;
+        set_type sweepStringSet() {
+            set_type kill;
             unordered_map<string, GCObject*> next;
             for (auto & m : stringSet) {
                 if (m.second->marked == false) {

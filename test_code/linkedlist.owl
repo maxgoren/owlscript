@@ -1,0 +1,36 @@
+struct node {
+    var info;
+    var next;
+};
+def makeNode(var info) {
+    var x := bless node;
+    x.info := info;
+    return x;
+}
+def addSorted(var list, var x) {
+    if (list == nil) {
+        return makeNode(x);
+    }
+    if (x > list.info) {
+        list.next := addSorted(list.next, x);
+    } else {
+        let t := makeNode(x);
+        t.next := list;
+        list := t;
+    }
+    return list;
+}
+def printList(var x) {
+    if (x != nil) {
+        print x.info + " ";
+        printList(x.next);
+    } else {
+        println " ";
+    }
+}
+let head := nil;
+let nums := [ 13, 42, 101, 86, 19, 77, 32, 4];
+foreach (var x in nums) {
+    head := addSorted(head, x);
+}
+printList(head);

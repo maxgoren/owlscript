@@ -57,7 +57,9 @@ class TWVM {
         void doMap(astnode* node);
         void doFilter(astnode* node);
         void doReduce(astnode* node);
-        ListNode* mergesort(ListNode* head, Function* cmplambda);
+        void doCompare(ListNode* front, ListNode* back, Function* cmp);
+        ListNode* mergesort(ListNode* head, Function* cmp);
+        ListNode* merge(ListNode* front, ListNode* back, Function* cmp);
         void doSort(astnode* node);
         void makeAnonymousList(astnode* node);
         void listComprehension(astnode* node);

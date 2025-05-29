@@ -15,6 +15,7 @@ class ASTBuilder {
         ScopeLevelResolver resolver;
     public:
         ASTBuilder(bool debug = false);
+        astnode* build(StringBuffer& sb);
         astnode* build(string str);
         astnode* buildFromFile(string filename);
 };

@@ -71,7 +71,7 @@ void Context::closeScope() {
     if (current != globals) {
         current = current->controlLink;
     }
-    if (alloc.liveCount() > alloc.nextGC()) {
+    if (current == globals) {
         alloc.rungc(current, operands);
     }
 }

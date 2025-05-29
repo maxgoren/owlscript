@@ -137,19 +137,16 @@ void TWVM::lambdaExpression(astnode* node) {
 }
 
 void TWVM::evalFunctionArguments(astnode* args, astnode* params, ActivationRecord*& env) {
-    int i = 0;
     while (params != nullptr && args != nullptr) {
         if (isExprType(params, REF_EXPR)) {
-            cout<<"Bound arg as reference."<<endl;
-            env->bindings[params->child[0]->token.strval] = makeReference(args->token.strval, args->token.depth);
+            cout<<"Bound arg '"<<args->token.strval<<"' as Reference "<<endl;
+            env->bindings.insert(make_pair(params->child[0]->token.strval, makeReference(args->token.strval, args->token.depth)));
         } else {
             evalExpr(args);
-            Object tmp = pop();
-            env->bindings.insert(make_pair(params->token.strval, tmp)); 
+            env->bindings.insert(make_pair(params->token.strval, pop())); 
         }
         params = params->next;
         args = args->next;
-        i++;
     }
 }
 
@@ -297,7 +294,7 @@ void TWVM::subscriptExpression(astnode* node) {
     }
 }
 
-ListNode* TWVM::mergesort(ListNode* head, Function* cmplambda) {
+ListNode* TWVM::mergesort(ListNode* head, Function* cmp) {
     if (head == nullptr || head->next == nullptr)
         return head;
     ListNode* fast = head->next;
@@ -308,27 +305,32 @@ ListNode* TWVM::mergesort(ListNode* head, Function* cmplambda) {
     }
     ListNode* back = slow->next;
     slow->next = nullptr;
-    head = mergesort(head, cmplambda);
-    back = mergesort(back, cmplambda);
+    return merge(mergesort(head, cmp), mergesort(back, cmp), cmp);
+}
+
+void TWVM::doCompare(ListNode* front, ListNode* back, Function* cmp) {
+    if (cmp != nullptr) {
+        astnode* t = makeExprNode(CONST_EXPR, Token(getSymbol(front->info), toString(front->info)));
+        t->next = makeExprNode(CONST_EXPR, Token(getSymbol(back->info), toString(back->info)));
+        funcExpression(cmp, t);
+    } else {
+        push(gt(back->info, front->info));
+    }
+}
+
+ListNode* TWVM::merge(ListNode* front, ListNode* back, Function* cmp) {  
     ListNode d; ListNode* c = &d;
-    while (head != nullptr && back != nullptr) {
-        if (cmplambda != nullptr) {
-            astnode* t = makeExprNode(CONST_EXPR, Token(getSymbol(head->info), toString(head->info)));
-            t->next = makeExprNode(CONST_EXPR, Token(getSymbol(back->info), toString(back->info)));
-            funcExpression(cmplambda, t);
-        } else {
-            push(gt(back->info, head->info));
-        }
+    while (front != nullptr && back != nullptr) {
+        doCompare(front, back, cmp);
         Object result = pop();
         if (result.data.boolval) {
-            c->next = head; head = head->next; c = c->next;
+            c->next = front; front = front->next; c = c->next;
         } else {
             c->next = back; back = back->next; c = c->next;
         }
     }
-    c->next = (head == nullptr) ? back:head;
-    head = d.next;
-    return head;
+    c->next = (front == nullptr) ? back:front;
+    return d.next;
 }
 
 void TWVM::doSort(astnode* node) {
@@ -548,8 +550,10 @@ void TWVM::rangeExpression(astnode* node) {
 void TWVM::idExpr(astnode* node) {
     Object m = cxt.get(node->token.strval, node->token.depth);
     if (typeOf(m) == AS_REF) {
-        cout<<"Oh snap, a reference! "<<node->token.strval<<" is pointing to something else! "<<endl;
-        push(cxt.get(m.data.reference->identifier, m.data.reference->scopelevel));
+        cout<<"Oh snap, a reference! "<<node->token.strval<<" is pointing to something else: "<<m.data.reference->identifier<<endl;
+        Object t = cxt.get(m.data.reference->identifier, m.data.reference->scopelevel);
+        cout<<"Found: "<<toString(t)<<endl;
+        push(t);
     } else push(m);
 }
 
@@ -558,8 +562,19 @@ void TWVM::unaryOperation(astnode* node) {
     switch (node->token.symbol) {
         case TK_NOT: push(makeBool(!pop().data.boolval)); break;
         case TK_SUB: push(neg(pop())); break;
+        case TK_PRE_DEC: {
+            Object m = pop();
+            if (m.type == AS_INT) {
+                m.data.intval -= 1;
+            } else if (m.type == AS_REAL) {
+                m.data.realval -= 1;
+            }
+            push(m);
+            cxt.put(node->child[0]->token.strval, node->child[0]->token.depth, m);
+        } break;
         case TK_POST_DEC: {
             Object m = pop();
+            push(m);
             if (m.type == AS_INT) {
                 m.data.intval -= 1;
             } else if (m.type == AS_REAL) {
@@ -567,8 +582,19 @@ void TWVM::unaryOperation(astnode* node) {
             }
             cxt.put(node->child[0]->token.strval, node->child[0]->token.depth, m);
         } break;
+        case TK_PRE_INC: {
+            Object m = pop();
+            if (m.type == AS_INT) {
+                m.data.intval += 1;
+            } else if (m.type == AS_REAL) {
+                m.data.realval += 1;
+            }
+            push(m);
+            cxt.put(node->child[0]->token.strval, node->child[0]->token.depth, m);
+        } break;
         case TK_POST_INC: {
             Object m = pop();
+            push(m);
             if (m.type == AS_INT) {
                 m.data.intval += 1;
             } else if (m.type == AS_REAL) {

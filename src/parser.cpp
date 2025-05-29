@@ -340,6 +340,16 @@ astnode* Parser::unopExpression() {
         node = makeExprNode(UNOP_EXPR, current());
         match(TK_NOT);
         node->child[0] = unopExpression();
+    } else if (expect(TK_POST_INC)) {
+        node = makeExprNode(UNOP_EXPR, current());
+        match(TK_POST_INC);
+        node->token.symbol = TK_PRE_INC;
+        node->child[0] = unopExpression();
+    } else if (expect(TK_POST_DEC)) {
+        node = makeExprNode(UNOP_EXPR, current());
+        match(TK_POST_DEC);
+        node->token.symbol = TK_PRE_DEC;
+        node->child[0] = unopExpression();
     } else {
         node = range();
     }

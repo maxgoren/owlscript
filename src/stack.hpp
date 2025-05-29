@@ -22,7 +22,7 @@ class IndexedStack {
             st = new Item[maxn];
         }
     public:
-        IndexedStack(int maxN=200000) {
+        IndexedStack(int maxN=20000) {
             init(maxN);
         }
         IndexedStack(const IndexedStack& cs) {

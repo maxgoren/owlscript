@@ -12,11 +12,24 @@ enum NodeKind {
 };
 
 enum ExprType {
-    ID_EXPR, CONST_EXPR, 
-    UNOP_EXPR, BINOP_EXPR, RELOP_EXPR, LOGIC_EXPR, BITWISE_EXPR,
-    REG_EXPR, REF_EXPR, LAMBDA_EXPR, FUNC_EXPR, BLESS_EXPR,
-    ASSIGN_EXPR, SUBSCRIPT_EXPR, RANGE_EXPR,
-    LIST_EXPR, ZF_EXPR, TERNARY_EXPR
+    ASSIGN_EXPR, 
+    BINOP_EXPR, 
+    BITWISE_EXPR, 
+    BLESS_EXPR, 
+    CONST_EXPR, 
+    FUNC_EXPR,   
+    ID_EXPR, 
+    LAMBDA_EXPR, 
+    LIST_EXPR, 
+    LOGIC_EXPR,
+    RANGE_EXPR, 
+    REF_EXPR, 
+    REG_EXPR, 
+    RELOP_EXPR, 
+    SUBSCRIPT_EXPR, 
+    TERNARY_EXPR, 
+    UNOP_EXPR, 
+    ZF_EXPR  
 };
 
 enum StmtType {
@@ -40,19 +53,18 @@ struct astnode {
     }
 };
 
-
-
+void printExprNode(astnode* expr);
+void printStmtNode(astnode* stmt);
+void printNode(astnode* node, int d);
 void preorder(astnode* expr, int d);
 
 astnode* makeExprNode(ExprType type, Token tk);
-
 astnode* makeStmtNode(StmtType type, Token tk);
 
 astnode* copyTree(astnode* node);
-
 void cleanUpTree(astnode* node);
 
 bool isExprType(astnode* node, ExprType type);
-
 bool isStmtType(astnode* node, StmtType type);
+
 #endif
