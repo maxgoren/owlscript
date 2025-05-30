@@ -22,6 +22,7 @@ Lexer::Lexer() {
     reserved["print"] = Token(TK_PRINT, "print");
     reserved["false"] = Token(TK_FALSE, "false");
     reserved["bless"] = Token(TK_BLESS, "bless");
+    reserved["break"] = Token(TK_BREAK, "break");
     reserved["return"] = Token(TK_RETURN, "return");
     reserved["struct"] = Token(TK_STRUCT, "struct");
     reserved["append"] = Token(TK_APPEND, "append"); 
@@ -31,6 +32,7 @@ Lexer::Lexer() {
     reserved["matchre"] = Token(TK_MATCHRE, "matchre");
     reserved["println"] = Token(TK_PRINTLN, "println");
     reserved["foreach"] = Token(TK_FOREACH, "foreach");
+    reserved["continue"] = Token(TK_CONTINUE, "continue");
 }
 
 TokenStream Lexer::lex(StringBuffer sb) {

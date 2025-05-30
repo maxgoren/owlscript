@@ -15,6 +15,7 @@ const int MINOR_VERSION = 6;
 
 class TWVM {
     private:
+        bool breakloop;
         bool bailout;
         bool loud;
         Context cxt;
@@ -25,6 +26,7 @@ class TWVM {
         void letStatement(astnode* node);
         void ifStatement(astnode* node);
         void whileStatement(astnode* node);
+        void breakStatement(astnode* node);
         void foreachStatement(astnode* node);
         void printStatement(astnode* node);
         void defineFunction(astnode* node);

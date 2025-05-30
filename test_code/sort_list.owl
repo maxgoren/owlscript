@@ -3,10 +3,10 @@ def exch(var xs, var l, var r) {
     xs[l] := xs[r];
     xs[r] := tmp;
 }
-def bubblesort(var xs) {
-    let i := 0;
-    while (i < size(xs)) {
-        let j := size(xs) - 1;
+def bubblesort(var xs, var l, var r) {
+    let i := l;
+    while (i < r) {
+        let j := r;
         while (j > i) {
             if (xs[j] < xs[j-1]) {
                 exch(xs, j, j-1);
@@ -16,7 +16,7 @@ def bubblesort(var xs) {
         i++;
     }
 }
-def insertionsort(var x) {
+def inssort(var x) {
     let i := 1; 
     while (i < size(x)) {
         let j := i; let val := x[i];
@@ -28,38 +28,10 @@ def insertionsort(var x) {
         i++;
     }
 }
-def part(var xs, var l, var r) {
-    let i := l;
-    let j := r;
-    let v := xs[r];
-    let go := 3;
-    while (go == 3) {
-        {* print xs[i] + " > " + v + "? ";
-        println xs[j] + " < " + v + "? "; *}
-        while (xs[i] < v && i <= r) { i++; }
-        while (xs[j] > v && j >= l) { j--; }
-        if (i >= j) {
-            go := 1;
-        } else {
-            exch(xs, i, j);
-            i++; j--;
-        }
-    }
-    exch(xs, i, r);
-    println i;    
-    return i;
-}
-def quicksort(var xs, var l, var r) {
-    if (r >= l) {
-        let i := part(xs, l, r);
-        quicksort(xs, l, i-1);
-        quicksort(cs, i+1, r);
-    }
-}
 def main() {
-    let lst := [ 11, 3, 24, 86, 42, 19, 101, 13];
+    let lst := [ 11, 3, 24, 86, 42, 19, 101, 13, 22, 47, 63, 19, 81, 5];
     println lst;
-    quicksort(lst, 0, size(lst)-1);
+    inssort(lst);
     println lst;
     sort(lst, &(i,j) -> i > j);
     println lst;

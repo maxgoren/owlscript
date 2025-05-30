@@ -6,7 +6,7 @@ def delay(var i) {
 def A(var k, var x1, var x2, var x3, var x4, var x5, var d) {
     let i := 0;
     def B() {
-        k--;
+        k := k - 1;
         {* let i := 0; while (i < d) { print "| "; i++; }
         println "A() From B, k: " + k; *}
         return A(k, B, x1, x2, x3, x4, d + 1);

@@ -132,6 +132,11 @@ astnode* Parser::statement() {
             match(TK_RP);
             node->child[1] = makeBlock();
         } break;
+        case TK_CONTINUE: { } break;
+        case TK_BREAK: {
+            node = makeStmtNode(BREAK_STMT, current());
+            match(TK_BREAK);
+        } break;
         case TK_RETURN: {
             node = makeStmtNode(RETURN_STMT, current());
             match(TK_RETURN);

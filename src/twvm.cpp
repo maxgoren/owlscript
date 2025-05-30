@@ -91,6 +91,7 @@ void TWVM::evalStmt(astnode* node) {
         case RETURN_STMT:   returnStatement(node); break;
         case BLOCK_STMT:    blockStatement(node); break;
         case STRUCT_DEF_STMT: defineStruct(node); break;
+        case BREAK_STMT:    breakStatement(node); break;
         default:
             break;
     }
@@ -680,12 +681,22 @@ void TWVM::ifStatement(astnode* node) {
         exec(node->child[2]);
     }
 }
+
+void TWVM::breakStatement(astnode* node) {
+    breakloop = true;
+}
+
 void TWVM::whileStatement(astnode* node) {
     evalExpr(node->child[0]);
+    breakloop = false;
     while (pop().data.boolval) {
         exec(node->child[1]);
+        if (breakloop) {
+            break;
+        }
         exec(node->child[0]);
     }
+    breakloop = false;
 }
 void TWVM::foreachStatement(astnode* node) {
     evalExpr(node->child[1]);

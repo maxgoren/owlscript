@@ -31,6 +31,8 @@ void printStmtNode(astnode* stmt) {
         case EXPR_STMT:   cout<<"[expr statement]"; break;
         case PRINT_STMT:  cout<<"[print statement]"; break;
         case WHILE_STMT:  cout<<"[while statement]";break;
+        case BREAK_STMT:  cout<<"[break statement]"; break;
+        case CONTINUE_STMT: cout<<"[continue statement]"; break;
         case FOREACH_STMT: cout<<"[foreach statement]"; break;
         case BLOCK_STMT:  cout<<"[block statement]"; break;
         case RETURN_STMT: cout<<"[return statement]"; break;
