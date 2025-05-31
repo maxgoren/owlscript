@@ -16,6 +16,7 @@ def fib(let x, let cache) {
 	return cache[x];
 }
 
-foreach (let i in 1 .. 42) {
-	println fib(i, cache);
+let xs := 1 .. 42;
+foreach (let i in xs) {
+    println fib(i, cache);
 }

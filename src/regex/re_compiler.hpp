@@ -4,7 +4,7 @@
 #include "re_parser.hpp"
 #include "nfa.hpp"
 using namespace std;
-
+// Algorithm 3.3 (Thompson's Construction) Aho, Sethi, & Ullman
 class NFACompiler {
     private:
         int l;
@@ -20,11 +20,11 @@ class NFACompiler {
             nnfa.makeState(nend);
             nnfa.setAccept(nend);
         }
-        void copyTransitions(NFA& nnfa, NFA onfa) {
-            for (auto state : onfa.getStates()) {
-                nnfa.makeState(state.first);
-                for (auto trans : onfa.getTransitions(state.first)) {
-                    nnfa.addTransition(trans);
+        void copyTransitions(NFA& dest, NFA src) {
+            for (auto state : src.getStates()) {
+                dest.makeState(state.first);
+                for (auto trans : src.getTransitions(state.first)) {
+                    dest.addTransition(trans);
                 }
             }
         }

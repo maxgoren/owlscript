@@ -1,8 +1,7 @@
 def makeCounter() {
 	let idx := 0;
 	let count := &() {
-		idx := idx + 1;
-		return idx;
+		return ++idx;
 	}
 	return count;
 }

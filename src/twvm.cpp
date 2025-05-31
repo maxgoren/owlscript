@@ -551,9 +551,9 @@ void TWVM::rangeExpression(astnode* node) {
 void TWVM::idExpr(astnode* node) {
     Object m = cxt.get(node->token.strval, node->token.depth);
     if (typeOf(m) == AS_REF) {
-        cout<<"Oh snap, a reference! "<<node->token.strval<<" is pointing to something else: "<<m.data.reference->identifier<<endl;
+        //cout<<"Oh snap, a reference! "<<node->token.strval<<" is pointing to something else: "<<m.data.reference->identifier<<endl;
         Object t = cxt.get(m.data.reference->identifier, m.data.reference->scopelevel);
-        cout<<"Found: "<<toString(t)<<endl;
+        //cout<<"Found: "<<toString(t)<<endl;
         push(t);
     } else push(m);
 }
@@ -645,7 +645,13 @@ void TWVM::assignExpr(astnode* node) {
         evalExpr(node->child[1]);
         switch (node->token.symbol) {
             case TK_ASSIGN: {
-                cxt.put(node->child[0]->token.strval, node->child[0]->token.depth, pop());
+                Object t = cxt.get(node->child[0]->token.strval, node->child[0]->token.depth);
+                if (t.type == AS_REF) {
+                    cout<<"Oh snap, implicit deref"<<endl;
+                    cxt.put(t.data.reference->identifier, t.data.reference->scopelevel, pop());
+                } else {
+                    cxt.put(node->child[0]->token.strval, node->child[0]->token.depth, pop());
+                }
             } break;
             case TK_ASSIGN_SUM: {
                 Object lhs = cxt.get(node->child[0]->token.strval, node->child[0]->token.depth);

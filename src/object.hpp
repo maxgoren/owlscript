@@ -46,6 +46,7 @@ struct Object {
             case AS_BOOL: data.boolval = obj.data.boolval; break;
             case AS_INT: data.intval = obj.data.intval; break;
             case AS_REAL: data.realval = obj.data.realval; break;
+            case AS_REF: data.reference = obj.data.reference; break;
             default:
                 break;
         }

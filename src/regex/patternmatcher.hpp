@@ -6,6 +6,9 @@
 using namespace std;
 
 void printEdge(Transition& t);
+
+//Algorithm 3.4, Simulating
+
 class RegExPatternMatcher {
     private:
         NFA nfa;
@@ -48,7 +51,18 @@ class RegExPatternMatcher {
             }
             return nextStates;
         }
+        int spos;
+        string inputText;
+        char nextChar() {
+            return inputText[spos++];
+        }
+        char init(const string& text) {
+            inputText = text;
+            spos = 0;
+            return nextChar();
+        }
         bool loud;
+        const static char eOf = '\0';
     public:
         RegExPatternMatcher(NFA& fa, bool trace = false) : nfa(fa), loud(trace) {
 
@@ -57,12 +71,12 @@ class RegExPatternMatcher {
             nfa = fa;
         }
         bool match(string text) {
-            unordered_set<State> curr, next;
-            next.insert(nfa.getStart());
-            curr = e_closure(next);
-            for (int i = 0; i < text.length(); i++) {
-                next = move(curr, text[i]);
-                curr = e_closure(next);
+            unordered_set<State> curr;
+            char a = init(text);
+            curr = e_closure({nfa.getStart()});
+            while (a != eOf) {
+                curr = e_closure(move(curr, a));
+                a = nextChar();
             }
             return curr.find(nfa.getAccept()) != curr.end();
         }
