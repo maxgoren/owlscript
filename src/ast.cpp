@@ -1,53 +1,55 @@
 #include "ast.hpp"
 
-void printExprNode(astnode* expr) {
+string exprNodeToString(astnode* expr) {
     switch (expr->type.expr) {
-        case ID_EXPR:      cout<<"[id expr]"; break;
-        case CONST_EXPR:   cout<<"[cosnt expr]"; break;
-        case UNOP_EXPR:    cout<<"[unop expr]"; break;
-        case BINOP_EXPR:   cout<<"[binop expr]"; break;
-        case RELOP_EXPR:   cout<<"[relop expr]"; break;
-        case LOGIC_EXPR:   cout<<"[logic expr]"; break;
-        case FUNC_EXPR:    cout<<"[func expr]"; break;
-        case ASSIGN_EXPR:  cout<<"[assign expr]"; break;
-        case LAMBDA_EXPR:  cout<<"[lambda expr]"; break;
-        case REG_EXPR:     cout<<"[regular expr]"; break;
-        case REF_EXPR:     cout<<"[reference expr]"; break;
-        case LIST_EXPR:    cout<<"[list expr]"; break;
-        case RANGE_EXPR:   cout<<"[range expr]"; break;
-        case ZF_EXPR:      cout<<"[list comprehension]"; break;
-        case BLESS_EXPR:   cout<<"[bless expr]"; break;
-        case TERNARY_EXPR: cout<<"[ternary expr]"; break;
-        case SUBSCRIPT_EXPR: cout<<"[subscript expr]"; break;
+        case ID_EXPR:      return "[id expr]"; break;
+        case CONST_EXPR:   return "[cosnt expr]"; break;
+        case UNOP_EXPR:    return "[unop expr]"; break;
+        case BINOP_EXPR:   return "[binop expr]"; break;
+        case RELOP_EXPR:   return "[relop expr]"; break;
+        case LOGIC_EXPR:   return "[logic expr]"; break;
+        case FUNC_EXPR:    return "[func expr]"; break;
+        case ASSIGN_EXPR:  return "[assign expr]"; break;
+        case LAMBDA_EXPR:  return "[lambda expr]"; break;
+        case REG_EXPR:     return "[regular expr]"; break;
+        case REF_EXPR:     return "[reference expr]"; break;
+        case LIST_EXPR:    return "[list expr]"; break;
+        case RANGE_EXPR:   return "[range expr]"; break;
+        case ZF_EXPR:      return "[list comprehension]"; break;
+        case BLESS_EXPR:   return "[bless expr]"; break;
+        case TERNARY_EXPR: return "[ternary expr]"; break;
+        case SUBSCRIPT_EXPR: return "[subscript expr]"; break;
         default:
             break;
     }
+    return "";
 }
 
-void printStmtNode(astnode* stmt) {
+string stmtNodeToString(astnode* stmt) {
     switch (stmt->type.stmt) {
-        case IF_STMT:     cout<<"[if statement]"; break;
-        case LET_STMT:    cout<<"[let statement]"; break;
-        case EXPR_STMT:   cout<<"[expr statement]"; break;
-        case PRINT_STMT:  cout<<"[print statement]"; break;
-        case WHILE_STMT:  cout<<"[while statement]";break;
-        case BREAK_STMT:  cout<<"[break statement]"; break;
-        case CONTINUE_STMT: cout<<"[continue statement]"; break;
-        case FOREACH_STMT: cout<<"[foreach statement]"; break;
-        case BLOCK_STMT:  cout<<"[block statement]"; break;
-        case RETURN_STMT: cout<<"[return statement]"; break;
-        case FUNC_DEF_STMT: cout<<"[def statement]"; break;
-        case STRUCT_DEF_STMT: cout<<"[struct definition statement]"; break;
+        case IF_STMT:     return "[if stmt]"; break;
+        case LET_STMT:    return "[let stmt]"; break;
+        case EXPR_STMT:   return "[expr stmt]"; break;
+        case PRINT_STMT:  return "[print stmt]"; break;
+        case WHILE_STMT:  return "[while stmt]";break;
+        case BREAK_STMT:  return "[break stmt]"; break;
+        case CONTINUE_STMT: return "[continue stmt]"; break;
+        case FOREACH_STMT: return "[foreach stmt]"; break;
+        case BLOCK_STMT:  return "[block stmt]"; break;
+        case RETURN_STMT: return "[return stmt]"; break;
+        case FUNC_DEF_STMT: return "[func def stmt]"; break;
+        case STRUCT_DEF_STMT: return "[struct def stmt]"; break;
         default:
             break;
     }
+    return "";
 }
 
 void printNode(astnode* node, int d) {
     for (int i = 0; i < d; i++) cout<<" ";
     switch(node->nk) {
-        case EXPR_NODE: printExprNode(node); break;
-        case STMT_NODE: printStmtNode(node); break;
+        case EXPR_NODE: cout<<exprNodeToString(node); break;
+        case STMT_NODE: cout<<stmtNodeToString(node); break;
         default:
             break;
     }

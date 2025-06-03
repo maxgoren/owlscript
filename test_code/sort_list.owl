@@ -28,37 +28,11 @@ def inssort(var x) {
         i++;
     }
 }
-def part(var xs, var l, var r) {
-    let i := l;
-    let j := r;
-    let v := xs[r];
-    while (true) {
-        println i + ", " + j;
-        while (xs[++i] > v) { print ".";  }
-        while (xs[--j] < v) { print "-"; }
-        println " ";
-        if (i >= j) {
-            break;
-        }
-        exch(xs, i, j);
-    }
-    exch(xs, i, r);
-    return i;
-}
-def quicksort(var xs, var l, var r) {
-    if (r > l) {
-        let i := part(xs, l, r);
-        quicksort(xs, l, i - 1);
-        quicksort(xs, i+1, r);
-    }
-}
 def main() {
     let lst := [ 11, 3, 24, 86, 42, 19, 101, 13, 22, 47, 63, 19, 81, 5];
     println lst;
-   {* inssort(lst);
+    inssort(lst, 0, size(lst)-1);
     println lst;
     sort(lst, &(i,j) -> i > j);
-    println lst; *}
-    quicksort(lst, 0, size(lst)-1);
     println lst;
 }

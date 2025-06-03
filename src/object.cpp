@@ -17,25 +17,25 @@ char getChar(Object m) {
 }
 
 List dummylist;
-List* getList(Object m) {
+List* getList(const Object& m) {
     return m.data.gcobj->listval == nullptr ? &dummylist:m.data.gcobj->listval;
 }
 
-Function* getFunction(Object m) {
+Function* getFunction(const Object& m) {
     return m.data.gcobj ? m.data.gcobj->funcval:nullptr;
 }
 
 string dummystring;
-string* getString(Object m) {
+string* getString(const Object& m) {
     return m.data.gcobj->strval == nullptr ? &dummystring:m.data.gcobj->strval;
 }
 
 Struct dummystruct;
-Struct* getStruct(Object m) {
+Struct* getStruct(const Object& m) {
     return m.data.gcobj->structval == nullptr ? &dummystruct:m.data.gcobj->structval;
 }
 
-WeakRef* getReference(Object m) {
+WeakRef* getReference(const Object& m) {
     return m.data.reference;
 }
 

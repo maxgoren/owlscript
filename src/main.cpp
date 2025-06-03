@@ -21,14 +21,17 @@ void repl(bool debug) {
     TWVM vm(debug);
     int i = 1;
     while (running) {
-        cout<<"OwlScript("<<i++<<")> ";
+        cout<<"OwlScript("<<i<<")> ";
         getline(cin, input);
-        if (input == "quit") {
-            running = false;
-        } else {
-            astnode* ast = astbuilder.build(input);
-            vm.exec(ast);
-            cleanUpTree(ast); 
+        if (!input.empty()) {
+            if (input == "quit") {
+                running = false;
+            } else {
+                astnode* ast = astbuilder.build(input);
+                vm.exec(ast);
+                cleanUpTree(ast); 
+            }
+            i++;
         }
     }
     cout<<"[hoot!]"<<endl;

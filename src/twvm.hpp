@@ -11,10 +11,14 @@
 using namespace std;
 
 const int MAJOR_VERSION = 0;
-const int MINOR_VERSION = 6;
+const int MINOR_VERSION = 61;
 
 class TWVM {
     private:
+        int depth;
+        void enter(string s);
+        void leave(string s);
+        void say(string s);
         bool breakloop;
         bool bailout;
         bool loud;

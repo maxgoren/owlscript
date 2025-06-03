@@ -3,7 +3,26 @@
 TWVM::TWVM(bool debug) {
     loud = debug;
     bailout = false;
+    depth = 0;
 }
+
+void TWVM::enter(string s) {
+    depth++;
+    say(s);
+}
+
+void TWVM::leave(string s) {
+    say(s);
+    depth--;
+}
+
+void TWVM::say(string s) {
+    if (loud && !s.empty()) {
+        for (int i = 0; i < depth; i++) cout<<" ";
+        cout<<s;
+    }
+}
+
 
 void TWVM::push(Object info) {
     cxt.getOperandStack().push(info);
@@ -54,6 +73,7 @@ void TWVM::listExpression(astnode* node) {
     }
 }
 void TWVM::evalExpr(astnode* node) {
+    enter("eval " + exprNodeToString(node) + " (" + node->token.strval + ")\n");
     if (node != nullptr) {
         switch (node->type.expr) {
             case UNOP_EXPR:     unaryOperation(node); break;
@@ -78,8 +98,10 @@ void TWVM::evalExpr(astnode* node) {
                 break;
         }
     }
+    leave("");
 }
 void TWVM::evalStmt(astnode* node) {
+    enter("exec: " + stmtNodeToString(node) + " (" + node->token.strval + ")\n");
     switch (node->type.stmt) {
         case LET_STMT:      letStatement(node); break;
         case IF_STMT:       ifStatement(node); break;
@@ -95,6 +117,7 @@ void TWVM::evalStmt(astnode* node) {
         default:
             break;
     }
+    leave("");
 }
 
 Object TWVM::resolveFunction(astnode* node) {
@@ -103,11 +126,7 @@ Object TWVM::resolveFunction(astnode* node) {
         evalExpr(node->child[0]);
         m = pop();
     } else if (node->child[0]->token.strval == "_rc") {
-        if (!cxt.getCallStack()->accessLink) {
-            m = cxt.getCallStack()->bindings["_rc"];
-        } else {
-            cout<<"Current scope is in the wrong context to re-call."<<endl;
-        }
+        m = cxt.getCallStack()->bindings["_rc"];
     } else { 
         m = cxt.get(node->child[0]->token.strval, node->child[0]->token.depth);
     }
@@ -140,7 +159,7 @@ void TWVM::lambdaExpression(astnode* node) {
 void TWVM::evalFunctionArguments(astnode* args, astnode* params, ActivationRecord*& env) {
     while (params != nullptr && args != nullptr) {
         if (isExprType(params, REF_EXPR)) {
-            cout<<"Bound arg '"<<args->token.strval<<"' as Reference "<<endl;
+            cout<<"Bound arg '"<<params->child[0]->token.strval<<"' as Reference to "<<args->token.strval<<" at scope depth "<<args->token.depth<<endl;
             env->bindings.insert(make_pair(params->child[0]->token.strval, makeReference(args->token.strval, args->token.depth)));
         } else {
             evalExpr(args);
@@ -336,7 +355,7 @@ ListNode* TWVM::merge(ListNode* front, ListNode* back, Function* cmp) {
 
 void TWVM::doSort(astnode* node) {
     evalExpr(node->child[0]);
-    Object listObj = pop();
+    Object listObj = peek(0);
     if (listObj.type != AS_LIST) {
         cout<<"Error: sort expects a list"<<endl;
         return;
@@ -353,7 +372,6 @@ void TWVM::doSort(astnode* node) {
         while (x->next != nullptr) x = x->next;
         list->tail = x;
     }
-    push(listObj);
 }
 
 void TWVM::makeAnonymousList(astnode* node) { 
@@ -367,7 +385,7 @@ void TWVM::makeAnonymousList(astnode* node) {
 
 void TWVM::listComprehension(astnode* node) {
     evalExpr(node->child[0]);
-    Object listobj = pop();
+    Object listobj = peek(0);
     if (listobj.type != AS_LIST) {
         cout<<"Error: list comprehensions only work on lists."<<endl;
         return;
@@ -394,27 +412,31 @@ void TWVM::listComprehension(astnode* node) {
             result = appendList(result, pop());
         }
     }
+    pop();
     push(cxt.getAlloc().makeList(result));
 }
 
 void TWVM::doAppendList(astnode* node) {
     evalExpr(node->child[0]);
-    List* list = getList(pop());
+    List* list = getList(peek(0));
     evalExpr(node->child[1]);
     list = appendList(list, pop());
+    pop();
 }
 void TWVM::doPushList(astnode* node) {
     evalExpr(node->child[0]);
-    List* list = getList(pop());
+    List* list = getList(peek(0));
     evalExpr(node->child[1]);
     list = pushList(list, pop());
+    pop();
 }
 void TWVM::getListSize(astnode* node) {
     evalExpr(node->child[0]);
     int size = 0;
-    Object m = pop();
+    Object m = peek(0);
     if (m.type != AS_LIST && m.type != AS_STRING) {
         cout<<"Error: incorrect type supplied to size()."<<endl;
+        pop();
         push(makeNil());
         return;
     }
@@ -423,6 +445,7 @@ void TWVM::getListSize(astnode* node) {
         case AS_STRING: size = m.data.gcobj->strval->size(); break;
         default: break;
     }
+    pop();
     push(makeInt(size));
 }
 void TWVM::getListEmpty(astnode* node) {
@@ -435,10 +458,11 @@ void TWVM::getFirstListElement(astnode* node) {
 }
 void TWVM::getRestOfList(astnode* node) {
     evalExpr(node->child[0]);
-    List* list = getList(pop());
+    List* list = getList(peek(0));
     List* nl = new List();
     for (ListNode* it = list->head->next; it != nullptr; it = it->next)
         nl = appendList(nl, it->info);
+    pop();
     push(cxt.getAlloc().makeList(nl));
 }
 Symbol TWVM::getSymbol(Object m) {
@@ -456,7 +480,7 @@ Symbol TWVM::getSymbol(Object m) {
 }
 void TWVM::doMap(astnode* node) {
     evalExpr(node->child[0]);
-    List* list = getList(pop());
+    List* list = getList(peek(0));
     evalExpr(node->child[1]);
     Function* func = getFunction(pop());
     List* result = new List();
@@ -465,11 +489,12 @@ void TWVM::doMap(astnode* node) {
         funcExpression(func, t);
         result = appendList(result, pop());
     }
+    pop();
     push(cxt.getAlloc().makeList(result));
 }
 void TWVM::doFilter(astnode* node) {
     evalExpr(node->child[0]);
-    List* list = getList(pop());
+    List* list = getList(peek(0));
     evalExpr(node->child[1]);
     Function* func = getFunction(pop());
     List* result = new List();
@@ -479,11 +504,12 @@ void TWVM::doFilter(astnode* node) {
         if (pop().data.boolval)
             result = appendList(result, it->info);
     }
+    pop();
     push(cxt.getAlloc().makeList(result));
 }
 void TWVM::doReduce(astnode* node) {
     evalExpr(node->child[0]);
-    List* list = getList(pop());
+    List* list = getList(peek(0));
     evalExpr(node->child[1]);
     Function* func = getFunction(pop());
     ListNode* it = list->head; 
@@ -496,6 +522,7 @@ void TWVM::doReduce(astnode* node) {
         result = pop();
         it = it->next;
     }
+    pop();
     push(result);
 }
 
@@ -551,9 +578,9 @@ void TWVM::rangeExpression(astnode* node) {
 void TWVM::idExpr(astnode* node) {
     Object m = cxt.get(node->token.strval, node->token.depth);
     if (typeOf(m) == AS_REF) {
-        //cout<<"Oh snap, a reference! "<<node->token.strval<<" is pointing to something else: "<<m.data.reference->identifier<<endl;
+        cout<<"Oh snap, a reference! "<<node->token.strval<<" is pointing to something else: "<<m.data.reference->identifier<<" at "<<m.data.reference->scopelevel<<endl;
         Object t = cxt.get(m.data.reference->identifier, m.data.reference->scopelevel);
-        //cout<<"Found: "<<toString(t)<<endl;
+        cout<<"Found: "<<toString(t)<<endl;
         push(t);
     } else push(m);
 }
@@ -647,8 +674,11 @@ void TWVM::assignExpr(astnode* node) {
             case TK_ASSIGN: {
                 Object t = cxt.get(node->child[0]->token.strval, node->child[0]->token.depth);
                 if (t.type == AS_REF) {
-                    cout<<"Oh snap, implicit deref"<<endl;
-                    cxt.put(t.data.reference->identifier, t.data.reference->scopelevel, pop());
+                    cout<<"Oh snap, implicit deref to "<<t.data.reference->identifier<<" at "<<t.data.reference->scopelevel<<endl;
+                    cxt.get(t.data.reference->identifier, t.data.reference->scopelevel+1);
+                    Object r = pop();
+                    cout<<"Found: "<<toString(t)<<", assigning "<<toString(r)<<endl;
+                    cxt.put(t.data.reference->identifier, t.data.reference->scopelevel, r);
                 } else {
                     cxt.put(node->child[0]->token.strval, node->child[0]->token.depth, pop());
                 }
@@ -706,13 +736,28 @@ void TWVM::whileStatement(astnode* node) {
 }
 void TWVM::foreachStatement(astnode* node) {
     evalExpr(node->child[1]);
-    List* list = getList(pop());
-    string itername = node->child[0]->token.strval;
-    for (auto it = list->head; it != nullptr; it = it->next) {
-        cxt.insert(itername, it->info);
-        exec(node->child[2]);
+    if (typeOf(peek(0)) == AS_LIST) {
+        List* list = getList(peek(0));
+        string itername = node->child[0]->token.strval;
+        for (auto it = list->head; it != nullptr; it = it->next) {
+            cxt.insert(itername, it->info);
+            exec(node->child[2]);
+        }
+        pop();
+        cxt.remove(itername);
+    } else if (typeOf(peek(0)) == AS_STRING) {
+        string itername = node->child[0]->token.strval;
+        for (char c : *getString(peek(0))) {
+            string tmpstr; tmpstr.push_back(c);
+            cxt.insert(itername, cxt.getAlloc().makeString(tmpstr));
+            exec(node->child[2]);
+        }
+        pop();
+        cxt.remove(itername);
+    } else {
+        cout<<"Error: object isnt iterable"<<endl;
+        pop();
     }
-    cxt.remove(itername);
 }
 void TWVM::printStatement(astnode* node) {
     evalExpr(node->child[0]);

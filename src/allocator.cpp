@@ -32,11 +32,6 @@ void Allocator::registerObject(GCObject* object) {
 Object Allocator::makeString(string val) {
     Object m;
     m.type = AS_STRING;
-    if (liveObjects.stringExists(val)) {
-        m.data.gcobj = liveObjects.getString(val);
-        m.data.gcobj->marked = false;
-        return m;
-    }
     m.data.gcobj = new GCObject(new string(val));   
     m.data.gcobj->marked = false;
     registerObject(m.data.gcobj);
@@ -146,21 +141,21 @@ void Allocator::mark(ActivationRecord* callStack, IndexedStack<Object>& rtStack)
 
 void Allocator::sweep() {
     int collected = 0;
-    for (auto & x : liveObjects.sweepStructSet()) {
-        destroyObject(x);
-        collected++;
-    }
-    for (auto & x : liveObjects.sweepListSet()) {
-        destroyObject(x);
-        collected++;
-    }
-    for (auto & x : liveObjects.sweepStringSet()) {
-        destroyObject(x);
-        collected++;
-    }
-    for (auto & x : liveObjects.sweepFuncSet()) {
-        destroyObject(x);
-        collected++;
-    }
     //cout<<collected<<" items collected, "<<liveObjects.size()<<" objects survive."<<endl;
+    unordered_set<GCObject*> kill;
+    unordered_set<GCObject*> next;
+    for (auto & m : liveObjects) {
+        if (m->marked == false) {
+            auto x = m;
+            kill.insert(x);
+        } else {
+            m->marked = false;
+            next.insert(m);
+        }
+    }
+    for (auto & m : kill) {
+        destroyObject(m);
+        collected++;
+    }
+    liveObjects = next;
 }

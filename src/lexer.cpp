@@ -94,11 +94,9 @@ Token Lexer::checkSpecials(StringBuffer& sb) {
         sb.advance();
         if (sb.get() == '|') {
             return Token(TK_OR, "||");
-        } else if (sb.get() == '&') {
-            return Token(TK_PIPE, "|");
         }
         sb.rewind();
-        return Token(TK_BIT_OR, "|");
+        return Token(TK_PIPE, "|");
     }
     if (sb.get() == '^') {
         sb.advance();

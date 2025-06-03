@@ -137,11 +137,11 @@ extern List dummylist;
 extern string dummystring;
 extern Struct dummystruct;
 
-List* getList(Object m);
-Function* getFunction(Object m);
-string* getString(Object m);
-Struct* getStruct(Object m);
-WeakRef* getReference(Object m);
+List* getList(const Object& m);
+Function* getFunction(const Object& m);
+string* getString(const Object& m);
+Struct* getStruct(const Object& m);
+WeakRef* getReference(const Object& m);
 double getPrimitive(Object obj);
 
 

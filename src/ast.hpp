@@ -53,8 +53,8 @@ struct astnode {
     }
 };
 
-void printExprNode(astnode* expr);
-void printStmtNode(astnode* stmt);
+string exprNodeToString(astnode* expr);
+string stmtNodeToString(astnode* stmt);
 void printNode(astnode* node, int d);
 void preorder(astnode* expr, int d);
 

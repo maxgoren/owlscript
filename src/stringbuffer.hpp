@@ -69,6 +69,17 @@ private:
             }
             return buff[spos];
         }
+        char peek(int spaces) {
+            if (spos+spaces >= buff.length() && lpos >= lines.size())
+                return eosChar;
+            char ret;
+            for (int i = 0; i < spaces; i++)
+                advance();
+            ret = get();
+            for (int i = 0; i < spaces; i++)
+                rewind();
+            return ret;
+        }
         char advance() {
             spos++;
             if (spos >= buff.length()) {

@@ -68,6 +68,10 @@ void ScopeLevelResolver::resolveStatementScope(astnode* node) {
             for (int i = 0; i < 3; i++)
                 resolve(node->child[i]);
             break;
+        case FOREACH_STMT:
+            for (int i = 0; i < 3; i++)
+                resolve(node->child[i]);
+            break;
         case WHILE_STMT:
             resolve(node->child[0]);
             resolve(node->child[1]);

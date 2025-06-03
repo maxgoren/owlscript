@@ -18,6 +18,18 @@ ActivationRecord* Context::enclosingAt(int distance) {
     return curr;
 }
 
+ActivationRecord* Context::staticAt(int distance) {
+    ActivationRecord* curr = current;
+    while (distance > 0 && curr != nullptr) {
+        curr = curr->controlLink;
+        distance--;
+    }
+    if (distance > 0 || curr == nullptr) {
+        cout<<"Hmm... Something wrong with scope distance."<<endl;
+    }
+    return curr;
+}
+
 void Context::insert(string name, Object info) {
     current->bindings[name] = info;
 }
@@ -29,6 +41,13 @@ void Context::remove(string name) {
 }
 
 Object& Context::get(string name, int depth) {
+    if (depth == GLOBAL_SCOPE_DEPTH) {
+        return globals->bindings[name];
+    }
+    return enclosingAt(depth)->bindings[name];
+}
+
+Object& Context::getReference(string name, int depth) {
     if (depth == GLOBAL_SCOPE_DEPTH) {
         return globals->bindings[name];
     }

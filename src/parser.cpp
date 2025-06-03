@@ -264,7 +264,7 @@ astnode* Parser::bitwiseAnd() {
 
 astnode* Parser::bitwiseOr() {
     astnode* node = bitwiseXor();
-    while (expect(TK_BIT_OR)) {
+    while (expect(TK_BIT_OR) && !isExprType(node, RANGE_EXPR)) {
         astnode* t = makeExprNode(BITWISE_EXPR, current());
         match(lookahead());
         t->child[0] = node;
