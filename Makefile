@@ -12,6 +12,9 @@ owlscript:
 	g++ --std=c++17 -c src/resolve.cpp
 	g++ --std=c++17 -c src/token.cpp
 	g++ --std=c++17 -c src/twvm.cpp
+	g++ --std=c++17 -c src/twvm_expr.cpp
+	g++ --std=c++17 -c src/twvm_listexpr.cpp
+	g++ --std=c++17 -c src/twvm_stmt.cpp
 	g++ --std=c++17 -c src/main.cpp 
 	g++ --std=c++17 *.o -o owlscript
 
@@ -29,6 +32,9 @@ debug:
 	g++ --std=c++17 -c -g src/resolve.cpp
 	g++ --std=c++17 -c -g src/token.cpp
 	g++ --std=c++17 -c -g src/twvm.cpp
+	g++ --std=c++17 -c src/twvm_expr.cpp
+	g++ --std=c++17 -c src/twvm_listexpr.cpp
+	g++ --std=c++17 -c src/twvm_stmt.cpp
 	g++ --std=c++17 -c -g src/main.cpp 
 	g++ --std=c++17 -g *.o -o owlscript_debug_ver
 

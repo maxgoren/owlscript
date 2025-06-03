@@ -148,10 +148,18 @@ astnode* Parser::statement() {
             match(TK_LP);
             node->child[0] = expression();
             match(TK_RP);
-            node->child[1] = makeBlock();
+            if (expect(TK_LC)) {
+                node->child[1] = makeBlock();
+            } else {
+                node->child[1] = statement();
+            }
             if (expect(TK_ELSE)) {
                 match(TK_ELSE);
-                node->child[2] = makeBlock();
+                if (expect(TK_LC)) {
+                    node->child[2] = makeBlock();
+                } else {
+                    node->child[2] = statement();
+                }
             }
         } break;
         case TK_WHILE: {
