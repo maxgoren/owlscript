@@ -1,6 +1,22 @@
 #include "twvm.hpp"
 
 void TWVM::letStatement(astnode* node) {
+    string id; int depth;
+    if (isExprType(node->child[0], ID_EXPR)) {
+        id = node->child[0]->token.strval;
+        depth = node->child[0]->token.depth;
+    } else if (isExprType(node->child[0], ASSIGN_EXPR)) {
+        astnode* x = node;
+        while (!isExprType(x, ID_EXPR)) x = x->child[0];
+        id = x->token.strval;
+        depth = x->token.depth;
+    }
+    if (cxt.exists(id, depth)) {
+        cout<<"Error: the variable name "<<id<<" already exists in this scope."<<endl;
+        return;
+    } else {
+        cxt.put(id, depth, makeNil());
+    }
     evalExpr(node->child[0]);
 }
 

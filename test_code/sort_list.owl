@@ -19,7 +19,8 @@ def bubblesort(var xs, var l, var r) {
 def inssort(var x) {
     let i := 1; 
     while (i < size(x)) {
-        let j := i; let val := x[i];
+        let j := i; 
+        let val := x[i];
         while (j > 0 && x[j-1] > val) {
             x[j] := x[j - 1];
             j--;
@@ -31,7 +32,7 @@ def inssort(var x) {
 def main() {
     let lst := [ 11, 3, 24, 86, 42, 19, 101, 13, 22, 47, 63, 19, 81, 5];
     println lst;
-    inssort(lst, 0, size(lst)-1);
+    inssort(lst);
     println lst;
     sort(lst, &(i,j) -> i > j);
     println lst;

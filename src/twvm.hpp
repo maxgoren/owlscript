@@ -39,6 +39,7 @@ class TWVM {
         void expressionStatement(astnode* node);
         void returnStatement(astnode* node) ;
         /* Expression Handlers */
+        bool checkFunctionArity(astnode* params, astnode* args);
         Object resolveFunction(astnode* node);
         void getType(astnode* node);
         void constExpr(astnode* node);
@@ -51,7 +52,7 @@ class TWVM {
         void subscriptExpression(astnode* node);
         void functionCall(astnode* node);
         void lambdaExpression(astnode* node);
-        void evalFunctionArguments(astnode* args, astnode* params, ActivationRecord*& env);
+        bool evalFunctionArguments(astnode* args, astnode* params, ActivationRecord*& env);
         void funcExpression(Function* func, astnode* params);
         void doAppendList(astnode* node);
         void doPushList(astnode* node);

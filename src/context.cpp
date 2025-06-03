@@ -47,11 +47,18 @@ Object& Context::get(string name, int depth) {
     return enclosingAt(depth)->bindings[name];
 }
 
+bool Context::exists(string name, int depth) {
+    if (depth == GLOBAL_SCOPE_DEPTH) {
+        return globals->bindings.find(name) != globals->bindings.end();
+    }
+    return enclosingAt(depth)->bindings.find(name) != enclosingAt(depth)->bindings.end();
+}
+
 Object& Context::getReference(string name, int depth) {
     if (depth == GLOBAL_SCOPE_DEPTH) {
         return globals->bindings[name];
     }
-    return enclosingAt(depth)->bindings[name];
+    return enclosingAt(depth)->bindings[name];    
 }
 
 void Context::put(string name, int depth, Object info) {

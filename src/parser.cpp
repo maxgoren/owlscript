@@ -100,6 +100,73 @@ astnode* Parser::makeBlock() {
     return node;
 }
 
+astnode* Parser::makeBlockStatement() {
+    astnode* node = makeStmtNode(BLOCK_STMT, current());
+    match(TK_LC);
+    node->child[0] = statementList();
+    match(TK_RC);
+    return node;
+}
+
+astnode* Parser::ifStatement() {
+    astnode* node = makeStmtNode(IF_STMT, current());
+    match(TK_IF);
+    match(TK_LP);
+    node->child[0] = expression();
+    match(TK_RP);
+    if (expect(TK_LC)) {
+        node->child[1] = makeBlock();
+    } else {
+        node->child[1] = statement();
+    }
+    if (expect(TK_ELSE)) {
+        match(TK_ELSE);
+        if (expect(TK_LC)) {
+            node->child[2] = makeBlock();
+        } else {
+            node->child[2] = statement();
+        }
+    }
+    return node;
+}
+
+astnode* Parser::whileStatement() {
+    astnode* node = makeStmtNode(WHILE_STMT, current());
+    match(TK_WHILE);
+    match(TK_LP);
+    node->child[0] = expression();
+    match(TK_RP);
+    node->child[1] = makeBlock();
+    return node;
+}
+
+astnode* Parser::foreachStatement() {
+    astnode* node = makeStmtNode(FOREACH_STMT, current());
+    match(TK_FOREACH);
+    match(TK_LP);
+    match(TK_LET);
+    node->child[0] = expression();
+    match(TK_IN);
+    node->child[1] = expression();
+    match(TK_RP);
+    node->child[2] = makeBlock();
+    return node;
+}
+
+astnode* Parser::funcDefStatement() {
+    astnode* node = makeStmtNode(FUNC_DEF_STMT, current());
+    match(TK_FUNC);
+    node->token = current();
+    match(TK_ID);
+    match(TK_LP);
+    if (!expect(TK_RP)) {
+        node->child[0] = argList();
+    }
+    match(TK_RP);
+    node->child[1] = makeBlock();
+    return node;
+}
+
 astnode* Parser::statement() {
     astnode* node = nullptr;
     switch (lookahead()) {
@@ -121,16 +188,7 @@ astnode* Parser::statement() {
             node->child[1] = makeBlock();
         } break;
         case TK_FUNC: {
-            node = makeStmtNode(FUNC_DEF_STMT, current());
-            match(TK_FUNC);
-            node->token = current();
-            match(TK_ID);
-            match(TK_LP);
-            if (!expect(TK_RP)) {
-                node->child[0] = argList();
-            }
-            match(TK_RP);
-            node->child[1] = makeBlock();
+            node = funcDefStatement();
         } break;
         case TK_CONTINUE: { } break;
         case TK_BREAK: {
@@ -143,47 +201,16 @@ astnode* Parser::statement() {
             node->child[0] = expression();
         } break;
         case TK_IF: {
-            node = makeStmtNode(IF_STMT, current());
-            match(TK_IF);
-            match(TK_LP);
-            node->child[0] = expression();
-            match(TK_RP);
-            if (expect(TK_LC)) {
-                node->child[1] = makeBlock();
-            } else {
-                node->child[1] = statement();
-            }
-            if (expect(TK_ELSE)) {
-                match(TK_ELSE);
-                if (expect(TK_LC)) {
-                    node->child[2] = makeBlock();
-                } else {
-                    node->child[2] = statement();
-                }
-            }
+            node = ifStatement();
         } break;
         case TK_WHILE: {
-            node = makeStmtNode(WHILE_STMT, current());
-            match(TK_WHILE);
-            match(TK_LP);
-            node->child[0] = expression();
-            match(TK_RP);
-            node->child[1] = makeBlock();
+            node = whileStatement();
         } break;
         case TK_FOREACH: {
-            node = makeStmtNode(FOREACH_STMT, current());
-            match(TK_FOREACH);
-            match(TK_LP);
-            match(TK_LET);
-            node->child[0] = expression();
-            match(TK_IN);
-            node->child[1] = expression();
-            match(TK_RP);
-            node->child[2] = makeBlock();
+            node = foreachStatement();
         } break;
         case TK_LC: {
-            node = makeStmtNode(BLOCK_STMT, current());
-            node->child[0] = makeBlock();
+            node = makeBlockStatement();
         } break;
         case TK_EOI: break;
         case TK_RC: break;

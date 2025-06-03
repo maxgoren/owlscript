@@ -30,6 +30,11 @@ class Parser {
         astnode* bitwiseXor();
         astnode* expression();
         astnode* makeBlock();
+        astnode* makeBlockStatement();
+        astnode* ifStatement();
+        astnode* whileStatement();
+        astnode* foreachStatement();
+        astnode* funcDefStatement();
         astnode* statement();
         astnode* statementList();
         astnode* program();

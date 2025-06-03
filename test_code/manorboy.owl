@@ -24,7 +24,7 @@ def main() {
     let ans := [];
     while (i <= 13) {
         print i + ": ";
-        t := A(i, delay(1), delay(-1), delay(-1), delay(1), delay(0));
+        t := A(i, delay(1), delay(-1), delay(-1), delay(1), delay(0), 0);
         println t;
         append(ans, t);
         i := i + 1;

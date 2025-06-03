@@ -36,7 +36,20 @@ void TWVM::lambdaExpression(astnode* node) {
     push(cxt.getAlloc().makeFunction(func));
 }
 
-void TWVM::evalFunctionArguments(astnode* args, astnode* params, ActivationRecord*& env) {
+bool TWVM::checkFunctionArity(astnode* args, astnode* params) {
+    astnode* x = args, *y = params;
+    while (x != nullptr && y != nullptr) {
+        x = x->next;
+        y = y->next;
+    }
+    return (x == nullptr && y == nullptr);
+}
+
+bool TWVM::evalFunctionArguments(astnode* args, astnode* params, ActivationRecord*& env) {
+    if (!checkFunctionArity(args, params)) {
+        cout<<"Error: Mismatched arguments"<<endl;
+        return false;
+    }
     while (params != nullptr && args != nullptr) {
         if (isExprType(params, REF_EXPR)) {
             cout<<"Bound arg '"<<params->child[0]->token.strval<<"' as Reference to "<<args->token.strval<<" at scope depth "<<args->token.depth<<endl;
@@ -48,16 +61,20 @@ void TWVM::evalFunctionArguments(astnode* args, astnode* params, ActivationRecor
         params = params->next;
         args = args->next;
     }
+    return true;
 }
 
 void TWVM::funcExpression(Function* func, astnode* params) {
     ActivationRecord* env = new ActivationRecord(func->closure, cxt.getCallStack());
-    evalFunctionArguments(params, func->params, env);
-    cxt.openScope(env);
-    cxt.insert("_rc", cxt.getAlloc().makeFunction(func));
-    exec(func->body);
-    bailout = false;
-    cxt.closeScope();
+    if (evalFunctionArguments(params, func->params, env)) {
+        cxt.openScope(env);
+        cxt.insert("_rc", cxt.getAlloc().makeFunction(func));
+        exec(func->body);
+        bailout = false;
+        cxt.closeScope();
+    } else {
+        delete env;
+    }
 }
 
 void TWVM::regularExpression(astnode* node) {
@@ -209,6 +226,12 @@ void TWVM::binaryOperation(astnode* node) {
 }
 
 void TWVM::assignExpr(astnode* node) {
+    astnode* x = node;
+    while (!isExprType(x, ID_EXPR)) x = x->child[0];
+    if (!cxt.exists(x->token.strval, x->token.depth)) {
+        cout<<"Unknown Identifier: "<<x->token.strval<<endl;
+        return;
+    }
     if (isExprType(node->child[0], ID_EXPR)) {
         evalExpr(node->child[1]);
         switch (node->token.symbol) {

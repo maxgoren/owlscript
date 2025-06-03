@@ -28,6 +28,7 @@ class Context {
         void openScope(ActivationRecord* scope);
         void closeScope();
         Object& get(string name, int depth);
+        bool exists(string name, int depth);
         Object& getReference(string name, int depth);
         void put(string name, int depth, Object info);
         void insert(string name, Object info);
