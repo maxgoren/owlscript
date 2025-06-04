@@ -37,6 +37,7 @@ Lexer::Lexer() {
 
 TokenStream Lexer::lex(StringBuffer sb) {
     TokenStream ts;
+    balanceStack.clear();
     while (!sb.done()) {
         skipWhiteSpace(sb);
         skipComments(sb);
@@ -47,9 +48,40 @@ TokenStream Lexer::lex(StringBuffer sb) {
         } else if (sb.get() == '"') {
             ts.append(extractString(sb));
         } else {
+            if (sb.get() == '(' || sb.get() == '[' || sb.get() == '{')
+                balanceStack.push(sb.get());
+            else if (sb.get() == ')') {
+                if (balanceStack.top() != '(') {
+                    ts.clear();
+                    cout<<"Error on line "<<sb.lineNo()<<": Mismatched parens!, got "<<balanceStack.top()<<" instead"<<endl;
+                    break;
+                } else {
+                    balanceStack.pop();
+                }
+            } else if (sb.get() == '}') {
+                if (balanceStack.top() != '{') {
+                    ts.clear();
+                    cout<<"Error on line "<<sb.lineNo()<<": Mismatched curly braces!"<<endl;
+                    break;
+                } else {
+                    balanceStack.pop();
+                }
+            } else if (sb.get() == ']') {
+                if (balanceStack.top() != '[') {
+                    ts.clear();
+                    cout<<"Error on line "<<sb.lineNo()<<": Mismatched brackets!"<<endl;
+                    break;
+                } else {
+                    balanceStack.pop();
+                }
+            }
             ts.append(checkSpecials(sb));
             sb.advance();
         }
+    }
+    if (!balanceStack.empty()) {
+        cout<<"Syntax error: mismatched tokens detected."<<endl;
+        ts.clear();
     }
     ts.append(Token(TK_EOI, "<fin.>"));
     return ts;
@@ -83,6 +115,7 @@ Token Lexer::checkSpecials(StringBuffer& sb) {
     if (sb.get() == '&') {
         sb.advance();
         if (sb.get() == '(') {
+            balanceStack.push(sb.get());
             return Token(TK_LAMBDA, "&(");
         } else if (sb.get() == '&') {
             return Token(TK_AND, "&&");

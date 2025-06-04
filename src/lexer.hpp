@@ -3,12 +3,14 @@
 #include <vector>
 #include <unordered_map>
 #include "token.hpp"
+#include "stack.hpp"
 #include "tokenstream.hpp"
 #include "stringbuffer.hpp"
 using namespace std;
 
 class Lexer {
     private:
+        IndexedStack<char> balanceStack;
         unordered_map<string, Token> reserved;
         void skipWhiteSpace(StringBuffer& sb);
         void skipComments(StringBuffer& sb);

@@ -8,9 +8,6 @@ void printEdge(Transition& t) {
     }
 }
 
-bool matchre(string text, string pattern) {
-    NFACompiler compiler;
-    NFA nfa = compiler.compile(pattern);
-    RegExPatternMatcher pm(nfa);
-    return pm.match(text);
+bool MatchRegEx::operator()(string text, string pattern, bool trace) {
+    return RegExPatternMatcher(compiler.compile(pattern), trace).match(text);
 }

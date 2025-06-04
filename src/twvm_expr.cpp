@@ -82,7 +82,7 @@ void TWVM::regularExpression(astnode* node) {
     string text = *getString(pop());
     evalExpr(node->child[1]);
     string pattern = *getString(pop());
-    push(makeBool(matchre(text, pattern)));
+    push(makeBool(MatchRegEx()(text, pattern, loud)));
 }
 
 void TWVM::blessExpression(astnode* node) {

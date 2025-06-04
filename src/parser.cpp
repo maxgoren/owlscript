@@ -115,14 +115,14 @@ astnode* Parser::ifStatement() {
     node->child[0] = expression();
     match(TK_RP);
     if (expect(TK_LC)) {
-        node->child[1] = makeBlock();
+        node->child[1] = makeBlockStatement();
     } else {
         node->child[1] = statement();
     }
     if (expect(TK_ELSE)) {
         match(TK_ELSE);
         if (expect(TK_LC)) {
-            node->child[2] = makeBlock();
+            node->child[2] = makeBlockStatement();
         } else {
             node->child[2] = statement();
         }
@@ -136,7 +136,7 @@ astnode* Parser::whileStatement() {
     match(TK_LP);
     node->child[0] = expression();
     match(TK_RP);
-    node->child[1] = makeBlock();
+    node->child[1] = makeBlockStatement();
     return node;
 }
 

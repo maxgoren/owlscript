@@ -4,7 +4,7 @@ struct node {
     var color; 
     var left; 
     var right; 
-}
+};
 def init(var tree, var key) {
     tree := bless node; 
     tree.key := key; 

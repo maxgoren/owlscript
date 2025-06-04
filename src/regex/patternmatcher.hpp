@@ -64,10 +64,10 @@ class RegExPatternMatcher {
         bool loud;
         const static char eOf = '\0';
     public:
-        RegExPatternMatcher(NFA& fa, bool trace = false) : nfa(fa), loud(trace) {
+        RegExPatternMatcher(const NFA& fa, bool trace = false) : nfa(fa), loud(trace) {
 
         }
-        void setNFA(NFA& fa) {
+        void setNFA(const NFA& fa) {
             nfa = fa;
         }
         bool match(string text) {
@@ -82,6 +82,9 @@ class RegExPatternMatcher {
         }
 };
 
-bool matchre(string text, string pattern);
+struct MatchRegEx {
+    NFACompiler compiler;
+    bool operator()(string text, string pattern, bool trace);
+};
 
 #endif

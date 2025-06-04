@@ -39,6 +39,10 @@ class TokenStream {
             if (tpos-1 >= 0)
                 tpos--;
         }
+        void clear() {
+            tokens.clear();
+            tpos = 0;
+        }
 };
 
 #endif
