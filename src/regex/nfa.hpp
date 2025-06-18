@@ -2,14 +2,22 @@
 #define nfa_hpp
 #include <iostream>
 #include <unordered_map>
-#include <unordered_set>
+#include <set>
 #include <vector>
 #include "../stack.hpp"
 #include "re_tokenizer.hpp"
 using namespace std;
 
+typedef int State;
+
 class Edge {
+    private:
+        State from;
+        State to;
     public:
+        Edge(State s, State t) : from(s), to(t) { }
+        State getFrom() const { return from; }
+        State getTo() const { return to; }
         virtual RegExToken getLabel() = 0;
         virtual bool matches(char c) = 0;
         virtual bool positionIs(int index) = 0;
@@ -41,7 +49,7 @@ class CharEdge : public Edge {
             return is_good;
         }
     public:
-        CharEdge(RegExToken c) {
+        CharEdge(State From, State To, RegExToken c) : Edge(From, To) {
             label = c;
         }
         ~CharEdge() {
@@ -72,7 +80,7 @@ class CharEdge : public Edge {
 
 class EpsilonEdge : public Edge {
     public:
-        EpsilonEdge() { }
+        EpsilonEdge(State From, State To) : Edge(From, To) { }
         ~EpsilonEdge() { }
         bool matches(char c) {
             return true;
@@ -89,60 +97,18 @@ class EpsilonEdge : public Edge {
 };
 
 
-typedef int State;
 
-struct Transition {
-    State from;
-    State to;
-    Edge* edge;
-    Transition(State s, State t, Edge* e) {
-        from = s; to = t; edge = e;
-    }
-    Transition(const Transition& t) {
-        from = t.from;
-        to = t.to;
-        if (t.edge->isEpsilon()) {
-            edge = new EpsilonEdge();
-        } else {
-            edge = new CharEdge(t.edge->getLabel());
-        }
-    }
-    ~Transition() {
-        delete edge;
-    }
-    Transition& operator=(const Transition& t) {
-        if (this != &t) {
-            from = t.from;
-            to = t.to;
-            if (t.edge->isEpsilon()) {
-                edge = new EpsilonEdge();
-            } else {
-                edge = new CharEdge(t.edge->getLabel());
-            }
-        }
-        return *this;
-    }
-};
 
-bool operator==(const Transition& s, const Transition& t);
-bool operator!=(const Transition& s, const Transition& t);
 
-namespace std {
-    template <> struct hash<Transition> {
-        std::size_t operator()(const Transition& t) const noexcept {
-            string tmp = to_string(t.from);
-            tmp += t.edge->getLabel().charachters;
-            tmp += to_string(t.to);
-            return std::hash<string>()(tmp);
-        }
-    };
-}
+bool operator<(const Edge& s, const Edge& t);
+bool operator==(const Edge& s, const Edge& t);
+bool operator!=(const Edge& s, const Edge& t);
 
 class NFA {
     private:
         State start;
         State accept;
-        unordered_map<State, unordered_set<Transition>> states;
+        unordered_map<State, set<Edge*>> states;
     public:
         NFA() {
             start = 0;
@@ -151,16 +117,16 @@ class NFA {
         NFA(const NFA& nfa) {
             start = nfa.start;
             accept = nfa.accept;
-            for (auto m : nfa.states) {
+            for (auto & m : nfa.states) {
                 makeState(m.first);
-                for (auto t : m.second) {
+                for (auto & t : m.second) {
                     addTransition(t);
                 }
             }
         }
         void makeState(State name) {
             if (states.find(name) == states.end()) {
-                states.insert(make_pair(name, unordered_set<Transition>()));
+                states.insert(make_pair(name, set<Edge*>()));
             }
         }
         void setStart(State ss) {
@@ -175,16 +141,17 @@ class NFA {
         State getAccept() {
             return accept;
         }
-        void addTransition(Transition t) {
-            states[t.from].insert(t);
+        void addTransition(Edge* t) {
+            if (states.at(t->getFrom()).find(t) == states.at(t->getFrom()).end())
+                states[t->getFrom()].insert(t);
         }
         int size() {
             return states.size();
         }
-        unordered_map<State, unordered_set<Transition>>& getStates() {
+        auto getStates() const {
             return states;
         }
-        unordered_set<Transition>& getTransitions(State state) {
+        set<Edge*>& getTransitions(State state) {
             return states[state];
         }
         NFA& operator=(const NFA& nfa) {

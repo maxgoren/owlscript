@@ -35,6 +35,10 @@ class Parser {
         astnode* whileStatement();
         astnode* foreachStatement();
         astnode* funcDefStatement();
+        astnode* structDefStatement();
+        astnode* letStatement();
+        astnode* printStatement();
+        astnode* returnStatement();
         astnode* statement();
         astnode* statementList();
         astnode* program();

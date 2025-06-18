@@ -1,9 +1,13 @@
 #include "nfa.hpp"
 
-bool operator==(const Transition& s, const Transition& t) {
-    return s.from == t.from && s.to == t.to && s.edge == t.edge;
+bool operator<(const Edge& s, const Edge& t) {
+    return s.getFrom() < t.getFrom() && s.getTo() < t.getTo();
 }
 
-bool operator!=(const Transition& s, const Transition& t) {
+bool operator==(const Edge& s, const Edge& t) {
+    return s.getFrom() == t.getFrom() && s.getTo() == t.getTo();
+}
+
+bool operator!=(const Edge& s, const Edge& t) {
     return !(s == t);
 }

@@ -4,6 +4,7 @@ owlscript:
 	g++ --std=c++17 -c src/astbuilder.cpp
 	g++ --std=c++17 -c src/context.cpp
 	g++ --std=c++17 -c src/lexer.cpp
+	g++ --std=c++17 -c src/owlscript.cpp
 	g++ --std=c++17 -c src/regex/nfa.cpp
 	g++ --std=c++17 -c src/regex/patternmatcher.cpp
 	g++ --std=c++17 -c src/regex/re_parser.cpp
@@ -24,6 +25,7 @@ debug:
 	g++ --std=c++17 -c -g src/astbuilder.cpp
 	g++ --std=c++17 -c -g src/context.cpp
 	g++ --std=c++17 -c -g src/lexer.cpp
+	g++ --std=c++17 -c -g src/owlscript.cpp
 	g++ --std=c++17 -c -g src/regex/nfa.cpp
 	g++ --std=c++17 -c -g src/regex/patternmatcher.cpp
 	g++ --std=c++17 -c -g src/regex/re_parser.cpp

@@ -1,28 +1,29 @@
 #ifndef patternmatcher_hpp
 #define patternmatcher_hpp
 #include <iostream>
+#include "../stringbuffer.hpp"
 #include "re_compiler.hpp"
 #include "nfa.hpp"
 using namespace std;
 
-void printEdge(Transition& t);
+void printEdge(Edge& t);
 
-//Algorithm 3.4, Simulating
+//Algorithm 3.4, Simulating the NFA
 
 class RegExPatternMatcher {
     private:
         NFA nfa;
         // Gathers a list of states reachable from those in 
         // currStates which have transition that consume ch
-        unordered_set<State> move(unordered_set<State> currStates, char ch) {
-            unordered_set<State> nextStates;
+        set<State> move(set<State> currStates, char ch) {
+            set<State> nextStates;
             if (loud) cout<<ch<<": "<<endl;
             for (State s : currStates) {
-                for (Transition t : nfa.getTransitions(s)) {
-                    if (t.edge->matches(ch) || t.edge->matches('.')) {
-                        if (t.edge->isEpsilon() == false && nextStates.find(t.to) == nextStates.end()) {
-                            if (loud) printEdge(t);
-                            nextStates.insert(t.to);
+                for (Edge* t : nfa.getTransitions(s)) {
+                    if (t->matches(ch) || t->matches('.')) {
+                        if (t->isEpsilon() == false && nextStates.find(t->getTo()) == nextStates.end()) {
+                            if (loud) printEdge(*t);
+                            nextStates.insert(t->getTo());
                         } 
                     }
                 }
@@ -32,19 +33,19 @@ class RegExPatternMatcher {
         //An interesting adaptation of Depth First Search.
         //Gathers a list of states reachable from those in 
         //currStates by using _only_ epsilon transitions.
-        unordered_set<State> e_closure(unordered_set<State> currStates) {
-            unordered_set<State> nextStates = currStates;
+        set<State> e_closure(set<State> currStates) {
+            set<State> nextStates = currStates;
             IndexedStack<State> sf;
             for (State s : currStates)
                 sf.push(s);
             while (!sf.empty()) {
                 State s = sf.pop();
-                for (Transition t : nfa.getTransitions(s)) {
-                    if (t.edge->isEpsilon()) {
-                        if (nextStates.find(t.to) == nextStates.end()) {
-                            if (loud) printEdge(t);
-                            nextStates.insert(t.to);
-                            sf.push(t.to);
+                for (Edge* t : nfa.getTransitions(s)) {
+                    if (t->isEpsilon()) {
+                        if (nextStates.find(t->getTo()) == nextStates.end()) {
+                            if (loud) printEdge(*t);
+                            nextStates.insert(t->getTo());
+                            sf.push(t->getTo());
                         }
                     }
                 }
@@ -67,24 +68,37 @@ class RegExPatternMatcher {
         RegExPatternMatcher(const NFA& fa, bool trace = false) : nfa(fa), loud(trace) {
 
         }
-        void setNFA(const NFA& fa) {
+        RegExPatternMatcher() {
+            loud = false;
+        }
+        void setNFA(NFA& fa) {
             nfa = fa;
         }
-        bool match(string text) {
-            unordered_set<State> curr;
-            char a = init(text);
-            curr = e_closure({nfa.getStart()});
-            while (a != eOf) {
-                curr = e_closure(move(curr, a));
-                a = nextChar();
+        bool match(StringBuffer& sb) {
+            set<State> curr = e_closure({nfa.getStart()});
+            while (!sb.done()) {
+                curr = e_closure(move(curr, sb.get()));
+                sb.advance();
             }
             return curr.find(nfa.getAccept()) != curr.end();
         }
+        RegExPatternMatcher& printNFA() {
+            int t = 0;
+            for (auto state : nfa.getStates()) {
+                cout<<state.first<<": \n";
+                for (auto m : state.second) {
+                    cout<<m->getFrom()<<" -> ("<<m->getLabel().charachters<<") -> "<<m->getTo()<<endl;
+                }
+                t += state.second.size();
+            }
+            cout<<t<<" transitions."<<endl;
+            return *this;
+        }
 };
 
-struct MatchRegEx {
+struct MatchRE {
     NFACompiler compiler;
-    bool operator()(string text, string pattern, bool trace);
+    bool operator()(StringBuffer& text, string pattern, bool trace);
 };
 
 #endif

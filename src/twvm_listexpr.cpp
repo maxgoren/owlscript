@@ -139,6 +139,24 @@ void TWVM::doSort(astnode* node) {
     }
 }
 
+void TWVM::doReverse(astnode* node) {
+    evalExpr(node->child[0]);
+    Object listObj = peek(0);
+    List* list = listObj.data.gcobj->listval;
+    ListNode* x = list->head;
+    ListNode* prev = nullptr;
+    while (x != nullptr) {
+        ListNode* t = x;
+        x = x->next;
+        t->next = prev;
+        prev = t;
+    }
+    list->head = prev;
+    x = list->head;
+    while (x->next != nullptr) x = x->next;
+    list->tail = x;
+}
+
 void TWVM::makeAnonymousList(astnode* node) { 
     List* list = new List();
     for (astnode* it = node->child[0]; it != nullptr; it = it->next) {

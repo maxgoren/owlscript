@@ -29,6 +29,7 @@ Lexer::Lexer() {
     reserved["filter"] = Token(TK_FILTER, "filter");
     reserved["reduce"] = Token(TK_REDUCE, "reduce"); 
     reserved["typeOf"] = Token(TK_TYPEOF, "typeOf");
+    reserved["reverse"] = Token(TK_REVERSE, "reverse");
     reserved["matchre"] = Token(TK_MATCHRE, "matchre");
     reserved["println"] = Token(TK_PRINTLN, "println");
     reserved["foreach"] = Token(TK_FOREACH, "foreach");

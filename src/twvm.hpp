@@ -68,6 +68,7 @@ class TWVM {
         ListNode* mergesort(ListNode* head, Function* cmp);
         ListNode* merge(ListNode* front, ListNode* back, Function* cmp);
         void doSort(astnode* node);
+        void doReverse(astnode* node);
         void makeAnonymousList(astnode* node);
         void listComprehension(astnode* node);
         void regularExpression(astnode* node);

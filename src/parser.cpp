@@ -167,38 +167,53 @@ astnode* Parser::funcDefStatement() {
     return node;
 }
 
+astnode* Parser::structDefStatement() {
+    astnode* node = makeStmtNode(STRUCT_DEF_STMT, current());
+    match(TK_STRUCT);
+    node->child[0] = expression();
+    node->child[1] = makeBlock();
+    return node;
+}
+
+astnode* Parser::letStatement() {
+    astnode* node = makeStmtNode(LET_STMT, current());
+    match(TK_LET);
+    node->child[0] = expression();
+    return node;
+}
+
+astnode* Parser::printStatement() {
+    astnode* node = makeStmtNode(PRINT_STMT, current());
+    match(lookahead());
+    node->child[0] = expression();
+    return node;
+}
+
+astnode* Parser::returnStatement() {
+    astnode* node = makeStmtNode(RETURN_STMT, current());
+    match(TK_RETURN);
+    node->child[0] = expression();
+    return node;
+}
+
 astnode* Parser::statement() {
     astnode* node = nullptr;
     switch (lookahead()) {
         case TK_PRINTLN:
         case TK_PRINT: {
-            node = makeStmtNode(PRINT_STMT, current());
-            match(lookahead());
-            node->child[0] = expression();
+            node = printStatement();
         } break;
         case TK_LET: {
-            node = makeStmtNode(LET_STMT, current());
-            match(TK_LET);
-            node->child[0] = expression();
+            node = letStatement();
+        } break;
+        case TK_RETURN: {
+            node = returnStatement();
         } break;
         case TK_STRUCT: {
-            node = makeStmtNode(STRUCT_DEF_STMT, current());
-            match(TK_STRUCT);
-            node->child[0] = expression();
-            node->child[1] = makeBlock();
+            node = structDefStatement();
         } break;
         case TK_FUNC: {
             node = funcDefStatement();
-        } break;
-        case TK_CONTINUE: { } break;
-        case TK_BREAK: {
-            node = makeStmtNode(BREAK_STMT, current());
-            match(TK_BREAK);
-        } break;
-        case TK_RETURN: {
-            node = makeStmtNode(RETURN_STMT, current());
-            match(TK_RETURN);
-            node->child[0] = expression();
         } break;
         case TK_IF: {
             node = ifStatement();
@@ -211,6 +226,10 @@ astnode* Parser::statement() {
         } break;
         case TK_LC: {
             node = makeBlockStatement();
+        } break;
+        case TK_BREAK: {
+            node = makeStmtNode(BREAK_STMT, current());
+            match(TK_BREAK);
         } break;
         case TK_EOI: break;
         case TK_RC: break;
@@ -487,7 +506,7 @@ astnode* Parser::primary() {
         match(TK_COMA);
         node->child[1] = expression();
         match(TK_RP);
-    } else if (expect(TK_SIZE) || expect(TK_EMPTY) || expect(TK_FIRST) || expect(TK_REST)) {
+    } else if (expect(TK_SIZE) || expect(TK_EMPTY) || expect(TK_FIRST) || expect(TK_REST) || expect(TK_REVERSE)) {
         node = makeExprNode(LIST_EXPR, current());
         match(lookahead());
         match(TK_LP);

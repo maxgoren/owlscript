@@ -80,6 +80,7 @@ void TWVM::listExpression(astnode* node) {
         case TK_FILTER: doFilter(node); break;
         case TK_REDUCE: doReduce(node); break;
         case TK_SORT:   doSort(node); break;
+        case TK_REVERSE: doReverse(node); break;
         default:
             break;
     }

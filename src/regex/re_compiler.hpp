@@ -4,6 +4,7 @@
 #include "re_parser.hpp"
 #include "nfa.hpp"
 using namespace std;
+
 // Algorithm 3.3 (Thompson's Construction) Aho, Sethi, & Ullman
 class NFACompiler {
     private:
@@ -24,25 +25,29 @@ class NFACompiler {
             for (auto state : src.getStates()) {
                 dest.makeState(state.first);
                 for (auto trans : src.getTransitions(state.first)) {
-                    dest.addTransition(trans);
+                        dest.addTransition(trans);
                 }
             }
         }
-        NFA singleTransitionNFA(Edge* edge) {
+        NFA singleTransitionNFA(RegExToken c) {
             NFA nfa;
             initNextNFA(nfa);
-            nfa.addTransition(Transition(nfa.getStart(), nfa.getAccept(), edge)); 
+            if (c.charachters.empty())
+                nfa.addTransition(new EpsilonEdge(nfa.getStart(), nfa.getAccept()));
+            else
+                nfa.addTransition(new CharEdge(nfa.getStart(), nfa.getAccept(), c)); 
             return nfa;
         }
 
         NFA emptyExpr() {
-            return singleTransitionNFA(new EpsilonEdge());
+            RegExToken c; 
+            return singleTransitionNFA(c);
         }
         /*
             A -> N(A)
         */
         NFA atomicNFA(RegExToken c) {
-            return singleTransitionNFA(new CharEdge(c));
+            return singleTransitionNFA(c);
         }
 
         /*
@@ -54,7 +59,7 @@ class NFACompiler {
             copyTransitions(nnfa, second);
             nnfa.setStart(first.getStart());
             nnfa.setAccept(second.getAccept());
-            nnfa.addTransition(Transition(first.getAccept(), second.getStart(), new EpsilonEdge()));
+            nnfa.addTransition(new EpsilonEdge(first.getAccept(), second.getStart()));
             return nnfa;
         }
         /*
@@ -68,11 +73,11 @@ class NFACompiler {
             NFA nnfa;
             initNextNFA(nnfa);
             copyTransitions(nnfa, torepeat);
-            nnfa.addTransition(Transition(torepeat.getAccept(), nnfa.getStart(), new EpsilonEdge()));
-            nnfa.addTransition(Transition(nnfa.getStart(), torepeat.getStart(), new EpsilonEdge()));
-            nnfa.addTransition(Transition(torepeat.getAccept(), nnfa.getAccept(), new EpsilonEdge()));
+            nnfa.addTransition(new EpsilonEdge(torepeat.getAccept(), nnfa.getStart()));
+            nnfa.addTransition(new EpsilonEdge(nnfa.getStart(), torepeat.getStart()));
+            nnfa.addTransition(new EpsilonEdge(torepeat.getAccept(), nnfa.getAccept()));
             if (!mustMatch)
-                nnfa.addTransition(Transition(nnfa.getStart(), nnfa.getAccept(), new EpsilonEdge()));
+                nnfa.addTransition(new EpsilonEdge(nnfa.getStart(), nnfa.getAccept()));
             return nnfa;
         }
         /* 
@@ -91,11 +96,11 @@ class NFACompiler {
             copyTransitions(nnfa, first);
             copyTransitions(nnfa, second);
             //Add new E-transitions from new start state to first and second NFAs
-            nnfa.addTransition(Transition(nnfa.getStart(), first.getStart(), new EpsilonEdge()));
-            nnfa.addTransition(Transition(nnfa.getStart(), second.getStart(), new EpsilonEdge()));
+            nnfa.addTransition(new EpsilonEdge(nnfa.getStart(), first.getStart()));
+            nnfa.addTransition(new EpsilonEdge(nnfa.getStart(), second.getStart()));
             //Add new E-transitions from first and second accept state to new accept state.
-            nnfa.addTransition(Transition(first.getAccept(), nnfa.getAccept(), new EpsilonEdge()));
-            nnfa.addTransition(Transition(second.getAccept(), nnfa.getAccept(), new EpsilonEdge()));
+            nnfa.addTransition(new EpsilonEdge(first.getAccept(), nnfa.getAccept()));
+            nnfa.addTransition(new EpsilonEdge(second.getAccept(), nnfa.getAccept()));
             return nnfa;
         }
         NFA zeroOrOnce(NFA onfa) {
@@ -103,10 +108,10 @@ class NFACompiler {
             initNextNFA(nnfa);
             copyTransitions(nnfa, onfa);
             //wire in match choice
-            nnfa.addTransition(Transition(nnfa.getStart(), onfa.getStart(), new EpsilonEdge()));
-            nnfa.addTransition(Transition(onfa.getAccept(), nnfa.getAccept(), new EpsilonEdge()));
+            nnfa.addTransition(new EpsilonEdge(nnfa.getStart(), onfa.getStart()));
+            nnfa.addTransition(new EpsilonEdge(onfa.getAccept(), nnfa.getAccept()));
             //wire in epsilon choice.
-            nnfa.addTransition(Transition(nnfa.getStart(), nnfa.getAccept(), new EpsilonEdge()));
+            nnfa.addTransition(new EpsilonEdge(nnfa.getStart(), nnfa.getAccept()));
             return nnfa;
         }
 
@@ -122,8 +127,8 @@ class NFACompiler {
                 NFA tnfa;
                 initNextNFA(tnfa);
                 copyTransitions(tnfa, a);
-                tnfa.addTransition(Transition(tnfa.getStart(), a.getStart(), new EpsilonEdge()));
-                tnfa.addTransition(Transition(a.getAccept(), tnfa.getAccept(), new EpsilonEdge()));
+                tnfa.addTransition(new EpsilonEdge(tnfa.getStart(), a.getStart()));
+                tnfa.addTransition(new EpsilonEdge(a.getAccept(), tnfa.getAccept()));
                 sf.push(tnfa);
             }
             NFA fnfa;
@@ -132,10 +137,10 @@ class NFACompiler {
             while (!sf.empty()) {
                 NFA tmp = sf.pop();
                 copyTransitions(fnfa, tmp);
-                fnfa.addTransition(Transition(prev, tmp.getStart(), new EpsilonEdge()));
+                fnfa.addTransition(new EpsilonEdge(prev, tmp.getStart()));
                 prev = tmp.getAccept();
             }
-            fnfa.addTransition(Transition(prev, fnfa.getAccept(), new EpsilonEdge()));
+            fnfa.addTransition(new EpsilonEdge(prev, fnfa.getAccept()));
             return fnfa;
         }
         NFA buildOperatorNFA(RegularExpression* ast) {
@@ -187,6 +192,9 @@ class NFACompiler {
         NFACompiler(bool trace = false) {
             l = 0;
             loud = trace;
+        }
+        void setTrace(bool shouldTrace) {
+            loud = shouldTrace;
         }
         NFA compile(string pattern) {
             REParser parser;

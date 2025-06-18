@@ -1,13 +1,14 @@
 #include "patternmatcher.hpp"
 
-void printEdge(Transition& t) {
-    if (t.edge->isEpsilon()) {
-        cout<<'\t'<<t.from<<" - ["<<t.edge->getLabel().charachters<<"] ->"<<t.to<<endl;
+void printEdge(Edge& t) {
+    if (t.isEpsilon()) {
+        cout<<'\t'<<t.getFrom()<<" - ["<<t.getLabel().charachters<<"] ->"<<t.getTo()<<endl;
     } else {
-        cout<<'\t'<<t.from<<" - ("<<t.edge->getLabel().charachters<<") ->"<<t.to<<endl;
+        cout<<'\t'<<t.getFrom()<<" - ("<<t.getLabel().charachters<<") ->"<<t.getTo()<<endl;
     }
 }
 
-bool MatchRegEx::operator()(string text, string pattern, bool trace) {
-    return RegExPatternMatcher(compiler.compile(pattern), trace).match(text);
+bool MatchRE::operator()(StringBuffer& text, string pattern, bool trace) {
+    compiler.setTrace(trace);
+    return RegExPatternMatcher(compiler.compile(pattern), trace).printNFA().match(text);
 }
