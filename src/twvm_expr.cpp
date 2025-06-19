@@ -98,6 +98,13 @@ void TWVM::blessExpression(astnode* node) {
         nextInstance->fields[m.first] = m.second;
     }
     nextInstance->blessed = true;
+    int i = 0;
+    if (node->child[1] != nullptr) {
+        for (auto x = node->child[1]; x != nullptr; x = x->next) {
+            evalExpr(x);
+            nextInstance->fields[st->constructorOrder[i++]] = pop();
+        }
+    }
     push(cxt.getAlloc().makeStruct(nextInstance));
 }
 

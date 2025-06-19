@@ -84,6 +84,7 @@ struct List {
 struct Struct {
     string typeName;
     bool blessed;
+    unordered_map<int,string> constructorOrder;
     unordered_map<string, Object> fields;
     Struct(string tn) : typeName(tn), blessed(false) { }
     Struct() : typeName("nil"), blessed(false) { }

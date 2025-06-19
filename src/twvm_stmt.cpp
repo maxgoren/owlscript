@@ -89,8 +89,10 @@ void TWVM::defineFunction(astnode* node) {
 
 void TWVM::defineStruct(astnode* node) {
     Struct* st = new Struct(node->child[0]->token.strval);
+    int i = 0;
     for (astnode* it = node->child[1]; it != nullptr; it = it->next) {
         st->fields[it->child[0]->token.strval] = makeNil();
+        st->constructorOrder[i++] = it->child[0]->token.strval; 
     }
     cxt.addStructType(st);
 }

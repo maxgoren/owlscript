@@ -3,9 +3,7 @@ struct node {
     var next;
 };
 def makeNode(var info) {
-    var x := bless node;
-    x.info := info;
-    return x;
+    return bless node(info, nil);
 }
 def addSorted(var list, var x) {
     if (list == nil) {

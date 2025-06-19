@@ -545,6 +545,11 @@ astnode* Parser::primary() {
         node = makeExprNode(BLESS_EXPR, current());
         match(TK_BLESS);
         node->child[0] = primary();
+        if (expect(TK_LP)) {
+            match(TK_LP);
+            node->child[1] = paramList();
+            match(TK_RP);
+        }
     } else if (expect(TK_TYPEOF)) {
         node = makeExprNode(CONST_EXPR, current());
         match(TK_TYPEOF);

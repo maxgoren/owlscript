@@ -6,10 +6,7 @@ struct node {
     var right; 
 };
 def init(var tree, var key) {
-    tree := bless node; 
-    tree.key := key; 
-    tree.color := true;
-    return tree;
+    return bless node(key, true, nil, nil); 
 }
 def isRed(var tree) {
     if (tree == nil) {
