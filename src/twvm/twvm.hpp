@@ -3,11 +3,11 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
-#include "allocator.hpp"
-#include "ast.hpp"
+#include "../allocator.hpp"
+#include "../ast.hpp"
 #include "context.hpp"
-#include "object.hpp"
-#include "regex/patternmatcher.hpp"
+#include "../object.hpp"
+#include "../regex/patternmatcher.hpp"
 using namespace std;
 
 const int MAJOR_VERSION = 0;
@@ -27,17 +27,17 @@ class TWVM {
         Object pop();
         Object& peek(int spaces);
         /* statement handlers */
-        void letStatement(astnode* node);
-        void ifStatement(astnode* node);
-        void whileStatement(astnode* node);
-        void breakStatement(astnode* node);
-        void foreachStatement(astnode* node);
-        void printStatement(astnode* node);
         void defineFunction(astnode* node);
         void defineStruct(astnode* node);
+        void letStatement(astnode* node);
+        void ifStatement(astnode* node);
+        void foreachStatement(astnode* node);
+        void whileStatement(astnode* node);
+        void breakStatement(astnode* node);
+        void printStatement(astnode* node);
         void blockStatement(astnode* node);
-        void expressionStatement(astnode* node);
         void returnStatement(astnode* node) ;
+        void expressionStatement(astnode* node);
         /* Expression Handlers */
         bool checkFunctionArity(astnode* params, astnode* args);
         Object resolveFunction(astnode* node);

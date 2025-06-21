@@ -1,9 +1,9 @@
 #ifndef context_hpp
 #define context_hpp
 #include <iostream>
-#include "allocator.hpp"
-#include "activationrecord.hpp"
-#include "stack.hpp"
+#include "../allocator.hpp"
+#include "../activationrecord.hpp"
+#include "../stack.hpp"
 using namespace std;
 
 const int GLOBAL_SCOPE_DEPTH = -1;

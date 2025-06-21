@@ -2,17 +2,14 @@ struct node {
     var info;
     var next;
 };
-def makeNode(var info) {
-    return bless node(info, nil);
-}
 def addSorted(var list, var x) {
     if (list == nil) {
-        return makeNode(x);
+        return bless node(x, list);
     }
     if (x > list.info) {
         list.next := addSorted(list.next, x);
     } else {
-        let t := makeNode(x);
+        let t := bless node(x, list);
         t.next := list;
         list := t;
     }
@@ -27,8 +24,7 @@ def printList(var x) {
     }
 }
 let head := nil;
-let nums := [ 13, 42, 101, 86, 19, 77, 32, 4];
-foreach (var x in nums) {
+foreach (var x in [ 13, 42, 101, 86, 19, 77, 32, 4]) {
     head := addSorted(head, x);
 }
 printList(head);

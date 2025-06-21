@@ -68,12 +68,10 @@ def preorder(var tree) {
     } 
 }
 let root := nil;
-let ins := "asearchingexample";
-let i := 0;
-while (i < size(ins)) {
-    root := put(root, ins[i]);
+foreach (var i in "asearchingexample") {
+    root := put(root, i);
     root.color := false;
-    i++;
+    println "foreach on " + i;
 }
 preorder(root);
 println " ";

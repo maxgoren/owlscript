@@ -1,4 +1,4 @@
-{* Knuths Man or boy test for Algol Translaters Used to test non-local references and recursion *}
+{* Knuths Man or boy test for Algol. Orginally used to test proper implementation of non-local references and recursion *}
 def delay(var i) {
     return &() -> i;
 }

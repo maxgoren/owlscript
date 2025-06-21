@@ -1,7 +1,7 @@
 #include <iostream>
 #include "owlscript.hpp"
 #include "astbuilder.hpp"
-#include "twvm.hpp"
+#include "twvm/twvm.hpp"
 using namespace std;
 
 void runScript(string filename, bool trace) {
