@@ -1,12 +1,15 @@
 #ifndef parser_hpp
 #define parser_hpp
 #include <iostream>
+#include <unordered_set>
 #include "ast.hpp"
 #include "tokenstream.hpp"
 using namespace std;
 
 class Parser {
     private:
+        unordered_set<Symbol> twoArgListOps;
+        unordered_set<Symbol> oneArgListOps;
         bool inListConstructor;
         TokenStream ts;
         Token& current();
@@ -16,6 +19,7 @@ class Parser {
         bool match(Symbol sym);
         astnode* paramList();
         astnode* argList();
+        astnode* builtIns();
         astnode* primary();
         astnode* val();
         astnode* unopExpression();

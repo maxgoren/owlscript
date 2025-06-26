@@ -6,14 +6,15 @@ using namespace std;
 
 
 enum RegExSymbol {
-    RE_CHAR, RE_LPAREN, RE_RPAREN, RE_LSQUARE, RE_RSQUARE, 
+    RE_CHAR, RE_LPAREN, RE_RPAREN, RE_LSQUARE, RE_RSQUARE, RE_WILDCARD,
     RE_STAR, RE_PLUS, RE_QUESTION, RE_CONCAT, RE_OR, RE_SPECIFIEDSET, 
     RE_SPECIFIEDRANGE, RE_QUANTIFIER, RE_NONE
 };
 
 inline vector<string> reSymStr = { 
-    "TK_CHAR", "TK_LPAREN", "TK_RPAREN", "RE_LSQUARE", "RE_RSQUARE", 
-    "RE_STAR", "RE_PLUS", "RE_QUESTION", "RE_CONCAT", "RE_OR", "RE_SPECIFIEDSET", "RE_SPECIFIEDRANGE", "RE_QUANTIFIER", "TK_NONE"
+    "RE_CHAR", "RE_LPAREN", "RE_RPAREN", "RE_LSQUARE", "RE_RSQUARE", "RE_WILDCARD",
+    "RE_STAR", "RE_PLUS", "RE_QUESTION", "RE_CONCAT", "RE_OR", "RE_SPECIFIEDSET", 
+    "RE_SPECIFIEDRANGE", "RE_QUANTIFIER", "TK_NONE"
 };
 
 struct RegExToken {
@@ -25,8 +26,8 @@ struct RegExToken {
 
 class Tokenizer {
     private:
-        bool isChar(char c) {
-            return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '.';
+        bool isLetter(char c) {
+            return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
         }
         void setToken(RegExToken& nt, char ch, RegExSymbol sym) {
             string buff;
@@ -59,7 +60,7 @@ class Tokenizer {
             vector<RegExToken> tokens;
             for (int i = 0; i < re.size(); i++) {
                 RegExToken nt;
-                if (isdigit(re[i]) || isChar(re[i])) {
+                if (isdigit(re[i]) || isLetter(re[i])) {
                     setToken(nt, re[i], RE_CHAR);
                 } else {
                     switch (re[i]) {
@@ -67,6 +68,7 @@ class Tokenizer {
                         case '|': { setToken(nt, re[i], RE_OR); } break;
                         case '+': { setToken(nt, re[i], RE_PLUS); } break;
                         case '*': { setToken(nt, re[i], RE_STAR); } break;
+                        case '.': { setToken(nt, re[i], RE_WILDCARD); break;}
                         case '?': { setToken(nt, re[i], RE_QUESTION); } break;
                         case '(': { setToken(nt, re[i], RE_LPAREN); } break;
                         case ')': { setToken(nt, re[i], RE_RPAREN); } break;

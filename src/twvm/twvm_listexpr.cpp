@@ -1,4 +1,5 @@
 #include "twvm.hpp"
+using namespace std;
 
 void TWVM::subscriptAssignment(astnode* node) {
     astnode* tnode = node->child[0];
@@ -15,6 +16,7 @@ void TWVM::subscriptAssignment(astnode* node) {
         }
         evalExpr(node->child[1]);
         if (itr != nullptr) itr->info = pop();
+        if (list->persist) { }
     } else if (peek(0).type == AS_STRUCT) {
         Struct* st = getStruct(pop());
         string name = tnode->child[1]->token.strval;
@@ -77,6 +79,19 @@ void TWVM::subscriptExpression(astnode* node) {
         tmp.push_back(c);
         push(cxt.getAlloc().makeString(tmp));
     }
+}
+
+void TWVM::fileExpression(astnode* node) {
+    evalExpr(node->child[0]);
+    string filename = *getString(pop());
+    StringBuffer sb; 
+    sb.readFromFile(filename);
+    List* list = new List();
+    for (string str : sb.getLines()) {
+        list = appendList(list, cxt.getAlloc().makeString(str));
+    }
+    list->persist = true;
+    push(cxt.getAlloc().makeList(list));
 }
 
 ListNode* TWVM::mergesort(ListNode* head, Function* cmp) {

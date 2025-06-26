@@ -10,5 +10,8 @@ void printEdge(Edge& t) {
 
 bool MatchRE::operator()(StringBuffer& text, string pattern, bool trace) {
     compiler.setTrace(trace);
-    return RegExPatternMatcher(compiler.compile(pattern), trace).printNFA().match(text);
+    if (trace) {
+        return RegExPatternMatcher(compiler.compile(pattern), trace).printNFA().match(text);
+    }
+    return RegExPatternMatcher(compiler.compile(pattern), trace).match(text);
 }

@@ -17,6 +17,7 @@ enum ExprType {
     BITWISE_EXPR, 
     BLESS_EXPR, 
     CONST_EXPR, 
+    FILE_EXPR,
     FUNC_EXPR,   
     ID_EXPR, 
     LAMBDA_EXPR, 

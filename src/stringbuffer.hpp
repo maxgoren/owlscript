@@ -92,6 +92,9 @@ private:
             }
             return buff[spos];
         }
+        vector<string> getLines() {
+            return lines;
+        }
 };
 
 #endif

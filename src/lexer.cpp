@@ -23,6 +23,7 @@ Lexer::Lexer() {
     reserved["false"] = Token(TK_FALSE, "false");
     reserved["bless"] = Token(TK_BLESS, "bless");
     reserved["break"] = Token(TK_BREAK, "break");
+    reserved["fopen"] = Token(TK_FOPEN, "fopen");
     reserved["return"] = Token(TK_RETURN, "return");
     reserved["struct"] = Token(TK_STRUCT, "struct");
     reserved["append"] = Token(TK_APPEND, "append"); 
@@ -188,6 +189,8 @@ Token Lexer::checkSpecials(StringBuffer& sb) {
         sb.advance();
         if (sb.get() == '=') {
             return Token(TK_EQU, "==");
+        } else if (sb.get() == '~') {
+            return Token(TK_REMATCH, "=~");
         }
         sb.rewind();
         return Token(TK_ERR, "=");

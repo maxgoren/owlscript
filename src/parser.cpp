@@ -2,6 +2,8 @@
 
 Parser::Parser() {
     inListConstructor = false;
+    twoArgListOps = {TK_APPEND, TK_PUSH, TK_MAP, TK_FILTER, TK_REDUCE};
+    oneArgListOps = {TK_SIZE, TK_EMPTY, TK_FIRST, TK_REST, TK_REVERSE};
 }
 
 astnode* Parser::parse(TokenStream& tokens) {
@@ -349,6 +351,13 @@ astnode* Parser::equOpExpression() {
         t->child[1] = relOpExpression();
         node = t;
     }
+    while (expect(TK_REMATCH)) {
+        astnode* t = makeExprNode(REG_EXPR, current());
+        match(TK_REMATCH);
+        t->child[0] = node;
+        t->child[1] = relOpExpression();
+        node = t;
+    }
     return node;
 }
 
@@ -498,38 +507,6 @@ astnode* Parser::primary() {
         node->child[0] = paramList();
         inListConstructor = false;
         match(TK_RB);
-    } else if (expect(TK_APPEND) || expect(TK_PUSH) || expect(TK_MAP) || expect(TK_FILTER) || expect(TK_REDUCE)) {
-        node = makeExprNode(LIST_EXPR, current());
-        match(lookahead());
-        match(TK_LP);
-        node->child[0] = expression();
-        match(TK_COMA);
-        node->child[1] = expression();
-        match(TK_RP);
-    } else if (expect(TK_SIZE) || expect(TK_EMPTY) || expect(TK_FIRST) || expect(TK_REST) || expect(TK_REVERSE)) {
-        node = makeExprNode(LIST_EXPR, current());
-        match(lookahead());
-        match(TK_LP);
-        node->child[0] = expression();
-        match(TK_RP);
-    } else if (expect(TK_SORT)) {
-        node = makeExprNode(LIST_EXPR, current());
-        match(lookahead());
-        match(TK_LP);
-        node->child[0] = expression();
-        if (expect(TK_COMA)) {
-            match(TK_COMA);
-            node->child[1] = expression();
-        }
-        match(TK_RP);
-    } else if (expect(TK_MATCHRE)) {
-        node = makeExprNode(REG_EXPR, current());
-        match(TK_MATCHRE);
-        match(TK_LP);
-        node->child[0] = expression();
-        match(TK_COMA);
-        node->child[1] = expression();
-        match(TK_RP);
     } else if (expect(TK_LAMBDA)) {
         node = makeExprNode(LAMBDA_EXPR, current());
         match(TK_LAMBDA);
@@ -550,9 +527,56 @@ astnode* Parser::primary() {
             node->child[1] = paramList();
             match(TK_RP);
         }
-    } else if (expect(TK_TYPEOF)) {
+    } else {
+        node = builtIns();
+    }
+    return node;
+}
+
+
+astnode* Parser::builtIns() {
+    astnode* node;
+    if (oneArgListOps.find(lookahead()) != oneArgListOps.end()) {
+        node = makeExprNode(LIST_EXPR, current());
+        match(lookahead());
+        match(TK_LP);
+        node->child[0] = expression();
+        match(TK_RP);
+    } else if (twoArgListOps.find(lookahead()) != twoArgListOps.end()) {
+        node = makeExprNode(LIST_EXPR, current());
+        match(lookahead());
+        match(TK_LP);
+        node->child[0] = expression();
+        match(TK_COMA);
+        node->child[1] = expression();
+        match(TK_RP);
+    } else if (expect(TK_SORT)) {
+        node = makeExprNode(LIST_EXPR, current());
+        match(lookahead());
+        match(TK_LP);
+        node->child[0] = expression();
+        if (expect(TK_COMA)) {
+            match(TK_COMA);
+            node->child[1] = expression();
+        }
+        match(TK_RP);
+    } else if (expect(TK_MATCHRE)) {
+        node = makeExprNode(REG_EXPR, current());
+        match(TK_MATCHRE);
+        match(TK_LP);
+        node->child[0] = expression();
+        match(TK_COMA);
+        node->child[1] = expression();
+        match(TK_RP);
+    }  else if (expect(TK_TYPEOF)) {
         node = makeExprNode(CONST_EXPR, current());
         match(TK_TYPEOF);
+        match(TK_LP);
+        node->child[0] = primary();
+        match(TK_RP);
+    } else if (expect(TK_FOPEN)) {
+        node = makeExprNode(FILE_EXPR, current());
+        match(TK_FOPEN);
         match(TK_LP);
         node->child[0] = primary();
         match(TK_RP);

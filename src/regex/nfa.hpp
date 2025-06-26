@@ -96,10 +96,6 @@ class EpsilonEdge : public Edge {
         }
 };
 
-
-
-
-
 bool operator<(const Edge& s, const Edge& t);
 bool operator==(const Edge& s, const Edge& t);
 bool operator!=(const Edge& s, const Edge& t);

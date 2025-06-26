@@ -60,6 +60,7 @@ void TWVM::evalExpr(astnode* node) {
             case RANGE_EXPR:    rangeExpression(node); break;
             case ZF_EXPR:       listComprehension(node); break;
             case BLESS_EXPR:    blessExpression(node); break;
+            case FILE_EXPR:     fileExpression(node); break;
             default:
                 break;
         }

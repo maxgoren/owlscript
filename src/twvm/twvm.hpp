@@ -76,6 +76,7 @@ class TWVM {
         void booleanOperation(astnode* node);
         void ternaryConditional(astnode* node);
         void referenceExpression(astnode* node);
+        void fileExpression(astnode* node);
         void listExpression(astnode* node);
         void evalExpr(astnode* node);
         void evalStmt(astnode* node);
