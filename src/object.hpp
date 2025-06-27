@@ -76,9 +76,16 @@ struct List {
     ListNode* head;
     ListNode* tail;
     int count;
-    bool persist;
-    List() : head(nullptr), tail(nullptr), persist(false) {
+    List() : head(nullptr), tail(nullptr) {
         count = 0;
+    }
+};
+
+struct COWList {
+    List* file;
+    string filepath;
+    COWList(string name) : filepath(name) {
+
     }
 };
 
@@ -99,7 +106,7 @@ struct WeakRef {
 
 
 enum GC_TYPE {
-    GC_LIST, GC_STRING, GC_FUNC, GC_STRUCT, GC_EMPTY
+    GC_LIST, GC_FILE, GC_STRING, GC_FUNC, GC_STRUCT, GC_EMPTY
 };
 
 struct GCObject {
@@ -109,17 +116,20 @@ struct GCObject {
         string* strval;
         Function* funcval;
         List* listval;
+        COWList* file;
         Struct* structval;
     };
     GCObject(string* s) : strval(s), marked(false), type(GC_STRING) { }
     GCObject(string s) : strval(new string(s)), marked(false), type(GC_STRING) { }
     GCObject(List* l) : listval(l), marked(false), type(GC_LIST) { }
+    GCObject(COWList* cl) : file(cl), marked(false), type(GC_FILE) { }
     GCObject(Function* f) : funcval(f), marked(false), type(GC_FUNC) { }
     GCObject(Struct* s) : structval(s), marked(false), type(GC_STRUCT) { }
     GCObject(const GCObject& ob) {
         switch (ob.type) {
             case GC_STRING: strval = ob.strval; break;
             case GC_LIST: listval = ob.listval; break;
+            case GC_FILE: file = ob.file; break;
             case GC_FUNC: funcval = ob.funcval; break;
             case GC_STRUCT: structval = ob.structval; break;
             default: break;

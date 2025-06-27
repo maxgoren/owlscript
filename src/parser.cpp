@@ -535,7 +535,7 @@ astnode* Parser::primary() {
 
 
 astnode* Parser::builtIns() {
-    astnode* node;
+    astnode* node = nullptr;
     if (oneArgListOps.find(lookahead()) != oneArgListOps.end()) {
         node = makeExprNode(LIST_EXPR, current());
         match(lookahead());
