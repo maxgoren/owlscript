@@ -76,7 +76,8 @@ struct List {
     ListNode* head;
     ListNode* tail;
     int count;
-    List() : head(nullptr), tail(nullptr) {
+    bool persist;
+    List() : head(nullptr), tail(nullptr), persist(false) {
         count = 0;
     }
 };
