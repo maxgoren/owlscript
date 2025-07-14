@@ -18,6 +18,7 @@ class ASTBuilder {
         astnode* build(StringBuffer& sb);
         astnode* build(string str);
         astnode* buildFromFile(string filename);
+        astnode* build(char* str);
 };
 
 

@@ -7,7 +7,9 @@
 #include "../ast.hpp"
 #include "context.hpp"
 #include "../object.hpp"
-#include "../regex/patternmatcher.hpp"
+//#include "../regex/patternmatcher.hpp"
+#include "../stringbuffer.hpp"
+#include "../re2dfa/src/re_to_dfa.h"
 using namespace std;
 
 const int MAJOR_VERSION = 0;

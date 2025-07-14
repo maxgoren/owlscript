@@ -1,8 +1,11 @@
 #ifndef token_hpp
 #define token_hpp
 #include <iostream>
+#include "re2dfa/ex/lex.h"
 using namespace std;
 
+using Symbol = TKSymbol;
+/*
 enum Symbol {
     TK_ID, TK_NUM, TK_STR, TK_TRUE, TK_FALSE, TK_NIL, TK_LP, TK_RP, TK_LC, TK_RC, TK_LB, TK_RB,
     TK_ADD, TK_MUL, TK_SUB, TK_DIV, TK_MOD, TK_POW, TK_SQRT, TK_POST_INC, TK_POST_DEC, TK_PRE_INC, TK_PRE_DEC,
@@ -16,9 +19,9 @@ enum Symbol {
     TK_ERR, TK_EOI
 
 };
-
+*/
 inline string symbolStr[] = {
-    "TK_ID", "TK_NUM", "TK_STR", "TK_TRUE", "TK_FALSE", "TK_NIL", "TK_LP", "TK_RP", "TK_LC", "TK_RC", "TK_LB", "TK_RB",
+    "TK_ID", "TK_NUM", "TK_REALNUM", "TK_STR", "TK_TRUE", "TK_FALSE", "TK_NIL", "TK_LP", "TK_RP", "TK_LC", "TK_RC", "TK_LB", "TK_RB",
     "TK_ADD", "TK_MUL", "TK_SUB", "TK_DIV", "TK_MOD", "TK_POW", "TK_SQRT", "TK_POST_INC", "TK_POST_DEC", "TK_PRE_INC", "TK_PRE_DEC",
     "TK_LT", "TK_GT", "TK_LTE", "TK_GTE", "TK_EQU", "TK_NEQ", "TK_NOT", "TK_AND", "TK_OR", 
     "TK_BIT_AND", "TK_BIT_OR", "TK_BIT_XOR", "TK_BLESS", "TK_BREAK", "TK_CONTINUE",

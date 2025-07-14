@@ -28,7 +28,7 @@ void repl(bool debug) {
             if (input == "quit") {
                 running = false;
             } else {
-                astnode* ast = astbuilder.build(input);
+                astnode* ast = astbuilder.build(input.data());
                 vm.exec(ast);
                 cleanUpTree(ast); 
             }

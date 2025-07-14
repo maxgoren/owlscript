@@ -19,6 +19,33 @@ owlscript:
 	g++ --std=c++17 -c src/main.cpp 
 	g++ --std=c++17 *.o -o owlscript
 
+with_c_lexer:
+	gcc -c src/re2dfa/re2ast/src/ast.c -o re_ast.o
+	gcc -c src/re2dfa/re2ast/src/parser.c -o re_parser.o
+	gcc -c src/re2dfa/re2ast/src/tokens.c
+	gcc -c src/re2dfa/src/intset.c
+	gcc -c src/re2dfa/src/followpos.c
+	gcc -c src/re2dfa/src/dfastate.c
+	gcc -c src/re2dfa/src/dfa.c
+	gcc -c src/re2dfa/src/re_to_dfa.c
+	gcc -c src/re2dfa/ex/lex.c
+	g++ --std=c++17 -c src/allocator.cpp
+	g++ --std=c++17 -c src/ast.cpp
+	g++ --std=c++17 -c src/astbuilder.cpp
+	g++ --std=c++17 -c src/lexer.cpp
+	g++ --std=c++17 -c src/owlscript.cpp
+	g++ --std=c++17 -c src/object.cpp
+	g++ --std=c++17 -c src/parser.cpp
+	g++ --std=c++17 -c src/resolve.cpp
+	g++ --std=c++17 -c src/token.cpp
+	g++ --std=c++17 -c src/twvm/context.cpp
+	g++ --std=c++17 -c src/twvm/twvm.cpp
+	g++ --std=c++17 -c src/twvm/twvm_expr.cpp
+	g++ --std=c++17 -c src/twvm/twvm_listexpr.cpp
+	g++ --std=c++17 -c src/twvm/twvm_stmt.cpp
+	g++ --std=c++17 -c src/main.cpp 
+	g++ --std=c++17 *.o -o owlscript
+
 debug:
 	g++ --std=c++17 -c -g src/allocator.cpp
 	g++ --std=c++17 -c -g src/ast.cpp

@@ -1,0 +1,4 @@
+let add := &(i,j) -> i+j;
+let addc := &(i) { return &(x) -> i+x; };
+println add(3, 5);
+println addc(3)(5);

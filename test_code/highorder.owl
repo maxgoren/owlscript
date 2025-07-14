@@ -1,0 +1,4 @@
+let twice := &(f) { return &(i) -> f(f(i)); };
+let plus3 := &(i) -> i+3;
+let g := twice(plus3);
+println g(7);
