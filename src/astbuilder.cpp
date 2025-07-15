@@ -4,11 +4,13 @@
 
 ASTBuilder::ASTBuilder(bool debug) {
     loud = debug;
+    cre = init_lex_dfa(nr-1);
+    dfa = re2dfa(cre->pattern, cre->ast);
 }
 
 astnode* ASTBuilder::build(char* str) {
     printf("Get stream...\n");
-    TKTokenListNode* tks = lex_input(str);
+    TKTokenListNode* tks = lex_input(&dfa, str);
     printf("Ok, no re-stream\n");
     TokenStream ts;
     for (auto it = tks; it != NULL; it = it->next) {
@@ -18,6 +20,7 @@ astnode* ASTBuilder::build(char* str) {
     cout<<"Swapped token streams."<<endl;
     return resolver.resolveScope(parser.parse(ts));
 }
+
 
 astnode* ASTBuilder::build(StringBuffer& sb) {
     TokenStream ts = lexer.lex(sb);

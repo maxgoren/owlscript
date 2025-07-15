@@ -92,6 +92,15 @@ private:
             }
             return buff[spos];
         }
+        int position() {
+            return spos;
+        }
+        string substring(int start, int len) {
+            return lines[lpos].substr(start, len);
+        }
+        void makeCurrentStart() {
+            lines[lpos] = lines[lpos].substr(spos);
+        }
         vector<string> getLines() {
             return lines;
         }

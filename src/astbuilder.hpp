@@ -10,6 +10,8 @@ class ASTBuilder {
     private:
         bool loud;
         StringBuffer sb;
+        CombinedRE* cre;
+        DFA dfa;
         Lexer lexer;
         Parser parser;
         ScopeLevelResolver resolver;
