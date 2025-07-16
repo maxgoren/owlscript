@@ -1,6 +1,6 @@
 #include "astbuilder.hpp"
 #include "re2dfa/ex/lex.h"
-
+#include "re2dfa/ex/util.h"
 
 ASTBuilder::ASTBuilder(bool debug) {
     loud = debug;
@@ -9,26 +9,11 @@ ASTBuilder::ASTBuilder(bool debug) {
 }
 
 astnode* ASTBuilder::build(char* str) {
-    printf("Get stream...\n");
+    printf("Lex input\n");
     TKTokenListNode* tks = lex_input(&dfa, str);
-    printf("Ok, no re-stream\n");
-    TokenStream ts;
-    for (auto it = tks; it != NULL; it = it->next) {
-        cout<<"Append: "<<symbolStr[rules[it->token->rule_id].token]<<" as: "<<it->token->text<<endl;
-        ts.append(Token(rules[it->token->rule_id].token, it->token->text));
-    }
+    TokenStream ts(tks);
     cout<<"Swapped token streams."<<endl;
     return resolver.resolveScope(parser.parse(ts));
-}
-
-
-astnode* ASTBuilder::build(StringBuffer& sb) {
-    TokenStream ts = lexer.lex(sb);
-    astnode* ast = parser.parse(ts);
-    if (loud) {
-        preorder(ast, 0);
-    }
-    return resolver.resolveScope(ast);
 }
 
 astnode* ASTBuilder::build(string str) {
@@ -37,6 +22,7 @@ astnode* ASTBuilder::build(string str) {
 }
 
 astnode* ASTBuilder::buildFromFile(string filename) {
-    sb.readFromFile(filename);
-    return build(sb);
+    char* buff = slurp_file(filename.data());
+    printf("Try this: %s\n", buff);
+    return build(buff);
 }

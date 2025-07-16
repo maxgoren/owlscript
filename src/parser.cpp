@@ -9,17 +9,19 @@ Parser::Parser() {
 astnode* Parser::parse(TokenStream& tokens) {
     ts = tokens;
     ts.start();
+    _currTok = ts.get();
     astnode* ast = program();
     match(TK_EOI);
     return ast;
 }
 
 Token& Parser::current() {
-    return ts.get();
+    return _currTok;
 }
 Token& Parser::advance() {
     ts.advance();
-    return ts.get();
+    _currTok = ts.get();
+    return _currTok;
 }
 Symbol Parser::lookahead() {
     return ts.get().symbol;
@@ -30,6 +32,7 @@ bool Parser::expect(Symbol sym) {
 bool Parser::match(Symbol sym) {
     if (sym == ts.get().symbol) {
         ts.advance();
+        _currTok = ts.get();
         return true;
     }
     cout<<"Error: unexpected token "<<ts.get().strval<<endl;

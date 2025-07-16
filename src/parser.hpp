@@ -14,6 +14,7 @@ class Parser {
         TokenStream ts;
         Token& current();
         Token& advance();
+        Token _currTok;
         Symbol lookahead();
         bool expect(Symbol sym);
         bool match(Symbol sym);

@@ -92,6 +92,9 @@ private:
             }
             return buff[spos];
         }
+        const char* currentLine() const {
+            return lines[lpos].data();
+        }
         int position() {
             return spos;
         }

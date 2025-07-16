@@ -7,41 +7,38 @@ using namespace std;
 
 class TokenStream {
     private:
-        vector<Token> tokens;
-        int tpos;
+        TKTokenListNode* head;
+        TKTokenListNode* tail;
+        TKTokenListNode* it;    
     public:
-        TokenStream(vector<Token> tkns) {
+        TokenStream(TKTokenListNode* tkns) {
             init(tkns);
         }
         TokenStream() {
-
+            head = tail = it = NULL;
         }
-        void init(vector<Token> tkns) {
-            tokens = tkns;
-            tpos = 0;
+        void init(TKTokenListNode* tkns) {
+            head = tkns;
+            it = head;
         }
         void append(Token token) {
-            tokens.push_back(token);
+            
         }
         void start() {
-            tpos = 0;
+            it = head;
         }
         bool done() {
-            return tpos == tokens.size();
+            return it == NULL;
         }
-        Token& get() {
-            return tokens[tpos];
+        Token get() {
+            return it == NULL ? Token(TK_EOI, "<fin.>"):Token(rules[it->token->rule_id].token, it->token->text);
         }
         void advance() {
-            tpos++;
-        }
-        void rewind() {
-            if (tpos-1 >= 0)
-                tpos--;
+            if (it != NULL)
+                it = it->next;
         }
         void clear() {
-            tokens.clear();
-            tpos = 0;
+            head = tail = it = NULL;
         }
 };
 
