@@ -58,27 +58,21 @@ TKToken* nextToken(DFA* dfa, const char* input) {
 #ifdef DEBUG
         printf("Current State: %d, Input Symbol: %c\n", dfa->states[curr]->label, input[i]);
 #endif
-        Transition* it = dfa->dtrans[curr];
-        Transition* st[255];
-        int stsp = 0;
-        st[++stsp] = it; 
-        while (stsp > 0) {
-            it = st[stsp--];
-            if (it != NULL) {
-                if (input[i] == it->ch || ast_node_table[curr]->token.symbol == RE_PERIOD) {
-                    next = it->to;
-                    if (it->ch == '"') {
+        Transition* it = findTransition(dfa->dtrans[curr], input[i]);
+        if (it != NULL) {
+            if (input[i] == it->ch || ast_node_table[curr]->token.symbol == RE_PERIOD) {
+                if (it->ch == '"') {
+                    i++;
+                    while (input[i] != '\0' && input[i] != '"')
                         i++;
-                        while (input[i] != '\0' && input[i] != '"')
-                            i++;
-                        return makeTKToken(36,i+1);
-                    }
-                    break;
+                    return makeTKToken(36,i+1);
+                } else {
+                    next = it->to;
                 }
-                st[++stsp] = it->right;
-                st[++stsp] = it->left;
-            } 
-        }        
+            }
+        } else if (ast_node_table[curr]->token.symbol == RE_PERIOD) {
+            next = it->to;
+        }    
         if (next == -1) {
             break;
         }

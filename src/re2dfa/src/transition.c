@@ -56,7 +56,6 @@ Transition* findTransition(Transition* node, char ch) {
     if (node == NULL)
         return NULL;
     if (node->ch == ch) {
-        printf("Ok we have that.\n");
         return node;
     }
     if (ch < node->ch) return findTransition(node->left, ch);
