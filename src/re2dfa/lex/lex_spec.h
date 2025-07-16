@@ -5,6 +5,13 @@ extern "C" {
 #endif
 #include "lex.h"
 
+//This file is used for specifying TokenRules
+//TokenRules are a regex pattern, and an associated TKSymbol
+//when DFA recognizes pattern, the TKSymbol is assigned 
+//to the recognized string.
+
+
+//For outputting symbol names as string
 char* symbolStr[] = {
     "TK_ID", "TK_NUM", "TK_REALNUM", "TK_STR", "TK_TRUE", "TK_FALSE", "TK_NIL", "TK_LP", "TK_RP", "TK_LC", "TK_RC", "TK_LB", "TK_RB",
     "TK_ADD", "TK_MUL", "TK_SUB", "TK_DIV", "TK_MOD", "TK_POW", "TK_SQRT", "TK_POST_INC", "TK_POST_DEC", "TK_PRE_INC", "TK_PRE_DEC",

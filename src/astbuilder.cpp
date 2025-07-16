@@ -6,6 +6,8 @@ ASTBuilder::ASTBuilder(bool debug) {
     loud = debug;
     cre = init_lex_dfa(nr-1);
     dfa = re2dfa(cre->pattern, cre->ast);
+    if (debug)
+        printDFA(dfa);
 }
 
 astnode* ASTBuilder::build(char* str) {

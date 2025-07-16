@@ -9,12 +9,21 @@ bool simulateDFA(DFA dfa, char* text) {
         printf("Current State: %d, Input Symbol: %c\n", state->label, *sp);
 #endif
         DFAState* next = NULL;
-        for (Transition* it = dfa.dtrans[state->label]; it != NULL; it = it->next) {
-            if (*sp == it->ch || ast_node_table[state->label]->token.symbol == RE_PERIOD) {
-                next = dfa.states[it->to];
-                break;
-            }
-        }
+        Transition* it = dfa.dtrans[state->label];
+        Transition* st[255];
+        int stsp = 0;
+        st[++stsp] = it; 
+        while (stsp > 0) {
+            it = st[stsp--];
+            if (it != NULL) {
+                if (*sp == it->ch || ast_node_table[state->label]->token.symbol == RE_PERIOD) {
+                    next = dfa.states[it->to];
+                    break;
+                }
+                st[++stsp] = it->right;
+                st[++stsp] = it->left;
+            } 
+        }        
         if (!next) {
 #ifdef DEBUG
             printf("Out of transitions, No match.\n");

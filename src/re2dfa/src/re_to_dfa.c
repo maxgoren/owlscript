@@ -6,12 +6,7 @@ void cleanup(DFA* dfa, re_ast* ast) {
     for (int i = 1; i <= dfa->numstates; i++) {
         freeSet(dfa->states[i]->positions);
         free(dfa->states[i]);
-        Transition* head = dfa->dtrans[i];
-        while (head != NULL) {
-            Transition* x = head;
-            head = head->next;
-            free(x);
-        }
+        cleanTransTree(dfa->dtrans[i]);
     }
     free(dfa->states);
     free(dfa->dtrans);

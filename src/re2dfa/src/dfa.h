@@ -5,18 +5,13 @@
 #include "intset.h"
 #include "dfastate.h"
 #include "followpos.h"
+#include "transition.h"
 #include "../re2ast/src/tokens.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct Transition_ {
-    int from;
-    char ch;
-    int to;
-    struct Transition_* next;
-} Transition;
 
 typedef struct {
     DFAState** states;
@@ -25,16 +20,15 @@ typedef struct {
 } DFA;
 
 
-Transition* makeTransition(int from, int to, char ch, Transition* set);
 void initDFA(DFA* dfa, int numstates);
+void initAlphabet(re_ast* ast, char* alphabet, char* re);
 void addState(DFA* dfa, DFAState* state);
-Transition* addTransition(Transition* trans, int from, int to, char ch);
+int nextStateNum(DFA* dfa);
 Set* calculateNextStatesPositions(DFAState* curr_state, char input_symbol);
 int findStateByPositions(DFA* dfa, Set* next_states);
-void initAlphabet(re_ast* ast, char* alphabet, char* re);
 int symbolIsInAlphabet(char* str, int n, char c);
-int nextStateNum(DFA* dfa);
 DFA buildDFA(re_ast* ast, char* re);
+DFAState* markAcceptState(DFAState* state);
 void printDFA(DFA dfa);
 
 #ifdef __cplusplus
