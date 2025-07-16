@@ -52,10 +52,8 @@ char* augmentRE(char* orig) {
 
 DFA re2dfa(char* re, re_ast* ast) {
     computeFollowPos(ast);
-    printf("Re: %s\n", re);
-    char* yeet = toString(in2post(tokenize(re)));
-    printf("Redidered: %s\n", yeet);
-    DFA dfa = buildDFA(ast, yeet);
+    char* no_concat = toString(in2post(tokenize(re)));
+    DFA dfa = buildDFA(ast, no_concat);
     return dfa;
 }
 

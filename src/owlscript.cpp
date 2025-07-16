@@ -9,7 +9,7 @@ void runScript(string filename, bool trace) {
     TWVM vm(trace);
     vm.exec(astbuilder.buildFromFile(filename));
     if (vm.context().existsInScope("main")) {
-        vm.exec(astbuilder.build("main();"));
+        vm.exec(astbuilder.build(string("main();").data()));
     }
 }
 

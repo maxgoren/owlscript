@@ -4,27 +4,19 @@
 
 
 int appendCurrent(char* ns, char* str, int pos, int sp, char ch, bool prev_escaped, bool curr_escaped) {
-    //printf("Position: %d, Char: %c\n", pos, ch);
     if (!curr_escaped && !prev_escaped) {
-      //  printf("1\n");
         ns[pos] = ch;
-        //for (int k = 0; k <= pos; k++) putchar(ns[k]);
-       // printf("\n");
         return 1;
     } else if (prev_escaped && !curr_escaped) {
-       // printf("2\n");
         if (str[sp-1] == '\\') {
             ns[pos] = '\\';
         }
         ns[pos+1] = ch;
         return 2;
     } else if (prev_escaped && curr_escaped) {
-      //  printf("3\n");
         ns[pos] = ch;
         return 1;
     } else {
-      //  printf("Not prev escaped, but curr escaped\n");
-      //  printf("4\n");
         return 0;
     }
     return 0;

@@ -18,8 +18,9 @@ typedef enum TKSymbol {
     TK_PUSH, TK_APPEND, TK_EMPTY, TK_SIZE, TK_FIRST, TK_REST, TK_MAP, TK_FILTER, TK_REDUCE,
     TK_REVERSE, TK_SORT, TK_PIPE, TK_MATCHRE, TK_REMATCH, TK_TYPEOF, TK_FOPEN,
     TK_ERR, TK_EOI
-
 } Symbol;
+
+extern char* symbolStr[];
 
 typedef struct {
     char* pattern;

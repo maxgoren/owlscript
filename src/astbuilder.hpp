@@ -2,13 +2,11 @@
 #define astbuilder_hpp
 #include "ast.hpp"
 #include "parser.hpp"
-#include "stringbuffer.hpp"
 #include "resolve.hpp"
 
 class ASTBuilder {
     private:
         bool loud;
-        StringBuffer sb;
         CombinedRE* cre;
         DFA dfa;
         Parser parser;

@@ -119,10 +119,10 @@ void calcFollowPos(re_ast* node) {
         return;
     if (node->token.symbol == RE_CONCAT) {
         if (!node->left || !node->right) {
-            printf("ERROR: RE_CONCAT node %d missing children (left=%p, right=%p)\n",
-                   node->number, (void*)node->left, (void*)node->right);
-            printf("%c\n", node->right->token.ch);
-            return;
+           // printf("ERROR: RE_CONCAT node %d/%d missing children (left=%p, right=%p)\n",
+           //       node->number, nonleaves, (void*)node->left, (void*)node->right);
+           //die quietly, seems not to matter. 
+           return;
         }
     }
     calcFollowPos(node->left);

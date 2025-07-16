@@ -1,4 +1,3 @@
-{* 2-3-4 Red/Black Tree. *}
 struct node { 
     var key; 
     var color; 

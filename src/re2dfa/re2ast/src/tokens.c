@@ -44,7 +44,6 @@ REToken* tokenize(char* str) {
     for (int i = 0; str[i] != '\0'; i++) { 
         if (str[i] == '\\') {
             char c = str[++i];
-            printf("Handling escaped: %c\n", c);
             if (c == 'd') {
                 t->next = makeToken(RE_CCL, '[');
                 t = t->next;
@@ -78,7 +77,6 @@ REToken* tokenize(char* str) {
                         t->next = makeToken(RE_STAR, str[i]);
                         t = t->next;
                     } else {
-                        printf("Oh snap howd we get here?\n");
                         t->next = makeToken(RE_CHAR, '*');
                         t = t->next;
                     }
