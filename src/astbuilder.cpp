@@ -1,6 +1,6 @@
 #include "astbuilder.hpp"
-#include "re2dfa/ex/lex.h"
-#include "re2dfa/ex/util.h"
+#include "re2dfa/lex/lex.h"
+#include "re2dfa/lex/util.h"
 
 ASTBuilder::ASTBuilder(bool debug) {
     loud = debug;

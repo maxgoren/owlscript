@@ -68,9 +68,9 @@ def preorder(var tree) {
 }
 let root := nil;
 foreach (var i in "asearchingexample") {
+    println "insert " + i; 
     root := put(root, i);
     root.color := false;
-    println "foreach on " + i;
 }
 preorder(root);
 println " ";

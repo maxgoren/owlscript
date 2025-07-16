@@ -1,7 +1,7 @@
 #ifndef token_hpp
 #define token_hpp
 #include <iostream>
-#include "re2dfa/ex/lex.h"
+#include "re2dfa/lex/lex.h"
 using namespace std;
 
 using Symbol = TKSymbol;
