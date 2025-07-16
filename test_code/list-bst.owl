@@ -1,5 +1,3 @@
-{* BST using lists for nodes, a la lisp *}
-
 func makeTree(let x) {
     return [x, nil, nil];
 }

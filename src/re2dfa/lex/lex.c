@@ -71,7 +71,9 @@ TKToken* nextToken(DFA* dfa, const char* input) {
                 }
             }
         } else if (ast_node_table[curr]->token.symbol == RE_PERIOD) {
-            next = it->to;
+            it = findTransition(dfa->dtrans[curr], '.');
+            if (it != NULL)
+                next = it->to;
         }    
         if (next == -1) {
             break;
