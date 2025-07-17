@@ -4,6 +4,7 @@ Transition* makeTransition(int to, char ch) {
     Transition* nt = malloc(sizeof(Transition));
     nt->to = to;
     nt->ch = ch;
+    nt->height = -1;
     nt->left = NULL;
     nt->right = NULL;
     return nt;
@@ -72,10 +73,9 @@ DFA buildDFA(re_ast* ast, char* re) {
     }
     DFA dfa;
     StateQueue fq;
-    initAlphabet(ast, alphabet, re);
+    initAlphabet(alphabet, re);
     initDFA(&dfa,numleaves+1);
     addState(&dfa, createState(nextStateNum(&dfa), copySet(ast->firstpos)));
-
     initQueue(&fq);
     enQueue(&fq,  dfa.states[1]);
     while (!emptyQueue(&fq)) {
@@ -157,7 +157,7 @@ int symbolIsInAlphabet(char* str, int n, char c) {
 }
 
 
-void initAlphabet(re_ast* ast, char* alphabet,  char* re) {
+void initAlphabet(char* alphabet,  char* re) {
     int k = 0, p = 0;
 #ifdef DEBUG
     printf("Getting alphabet from %s\n", re);

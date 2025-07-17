@@ -15,7 +15,9 @@ bool simulateDFA(DFA dfa, char* text) {
                 next = dfa.states[it->to];
             }
         } else if (ast_node_table[state->label]->token.symbol == RE_PERIOD) {
-            next = dfa.states[it->to];
+            it = findTransition(dfa.dtrans[state->label], '.');
+            if (it != NULL)
+                next = dfa.states[it->to];
         }    
         if (!next) {
 #ifdef DEBUG

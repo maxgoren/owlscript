@@ -21,7 +21,7 @@ typedef struct {
 
 
 void initDFA(DFA* dfa, int numstates);
-void initAlphabet(re_ast* ast, char* alphabet, char* re);
+void initAlphabet(char* alphabet, char* re);
 void addState(DFA* dfa, DFAState* state);
 int nextStateNum(DFA* dfa);
 Set* calculateNextStatesPositions(DFAState* curr_state, char input_symbol);
