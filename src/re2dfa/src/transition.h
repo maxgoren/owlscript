@@ -19,6 +19,7 @@ Transition* makeTransition(int from, int to, char ch);
 Transition* addTransition(Transition* trans, int from, int to, char ch);
 Transition* findTransition(Transition* head, char ch);
 void cleanTransTree(Transition* node);
+int printTransitions(Transition* node);
 #ifdef __cplusplus
 }
 #endif

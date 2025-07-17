@@ -135,20 +135,7 @@ void printDFA(DFA dfa) {
     int mintc = 0, maxtc = 0, ttc = 0;
     for (int i = 1; i <= dfa.numstates; i++) {
         printf("%d: \n", i);
-        int tc = 0;
-        Transition* it = dfa.dtrans[i];
-        Transition* st[255];
-        int stsp = 0;
-        st[++stsp] = it; 
-        while (stsp > 0) {
-            it = st[stsp--];
-            if (it != NULL) {
-                printf("{%d ->(%c)-> %d}", it->from, it->ch, it->to);
-                tc++;
-                st[++stsp] = it->right;
-                st[++stsp] = it->left; 
-            }
-        }
+        int tc = printTransitions(dfa.dtrans[i]);
         printf("\n");
         if (mintc == 0 || tc < mintc) mintc = tc;
         if (maxtc == 0 || tc > maxtc) maxtc = tc;

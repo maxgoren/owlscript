@@ -63,6 +63,31 @@ Transition* findTransition(Transition* node, char ch) {
     return node;
 }
 
+int printTransitions(Transition* root) {
+    Transition* st[255];
+    int stsp = 0;
+    int tc = 0;
+    Transition* it = root;
+    while (it != NULL) {
+        st[++stsp] = it;
+        it = it->left;
+    } 
+    while (stsp > 0) {
+        it = st[stsp--];
+        if (it != NULL) {
+            printf("{%d ->(%c)-> %d}", it->from, it->ch, it->to);
+            tc++;
+            it = it->right;
+            while (it != NULL) {
+                st[++stsp] = it;
+                it = it->left;
+            }
+        }
+    }
+    printf("\n");
+    return tc;
+}
+
 void cleanTransTree(Transition* node) {
     if (node != NULL) {
         cleanTransTree(node->left);
