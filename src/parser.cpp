@@ -35,7 +35,7 @@ bool Parser::match(Symbol sym) {
         _currTok = ts.get();
         return true;
     }
-    cout<<"Error: unexpected token "<<ts.get().strval<<endl;
+    cout<<"Error on line "<<ts.get().lineno <<": unexpected token "<<ts.get().strval<<endl;
     return false;
 }
 
@@ -436,13 +436,13 @@ astnode* Parser::range() {
         t->child[1] = val();
         node = t;
     }
-    if (expect(TK_PIPE)) {
+    if (expect(TK_BIT_OR)) {
         astnode* t = makeExprNode(ZF_EXPR, current());
-        match(TK_PIPE);
+        match(TK_BIT_OR);
         t->child[0] = node;
         t->child[1] = val();
-        if (expect(TK_PIPE)) {
-            match(TK_PIPE);
+        if (expect(TK_BIT_OR)) {
+            match(TK_BIT_OR);
             t->child[2] = val();
         }
         node = t;

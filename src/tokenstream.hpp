@@ -31,7 +31,7 @@ class TokenStream {
             return it == NULL;
         }
         Token get() {
-            return it == NULL ? Token(TK_EOI, "<fin.>"):Token(rules[it->token->rule_id].token, it->token->text);
+            return it == NULL ? Token(TK_EOI, "<fin.>"):Token(rules[it->token->rule_id].token, it->token->text, -1, it->token->lineno);
         }
         void advance() {
             if (it != NULL)

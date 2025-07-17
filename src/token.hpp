@@ -10,7 +10,8 @@ struct Token {
     Symbol symbol;
     string strval;
     int depth;
-    Token(Symbol s = TK_EOI, string st = " ", int d = -1) : symbol(s), strval(st), depth(d) { }
+    int lineno;
+    Token(Symbol s = TK_EOI, string st = " ", int d = -1, int ln = 0) : symbol(s), strval(st), depth(d), lineno(ln) { }
 };
 
 void printToken(Token tk);

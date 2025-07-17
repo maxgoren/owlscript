@@ -106,16 +106,21 @@ TKTokenListNode* lex_input(DFA* dfa, char* input) {
     TKTokenListNode dummy;
     TKTokenListNode* thead = &dummy; 
     in_string = false;
+    int line_number = 0;
     while (*p != '\0') {
         // skip whitespace
         if (!in_string)
-            while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') p++;
+            while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') {
+                if (*p == '\n') line_number++;
+                p++;
+            } 
 
         TKToken* t = nextToken(dfa, p);
         if (t->rule_id == -1) {
             printf("Lex error near: %s\n", p);
             break;
         }
+        t->lineno = line_number;
         thead->next = makeTokenListNode(t);
         thead = thead->next;
         int i, j;
@@ -146,6 +151,7 @@ TKToken* makeTKToken(int rid, int len) {
     TKToken* tkt = malloc(sizeof(TKToken));
     tkt->rule_id = rid;
     tkt->length = len;
+    tkt->lineno = 0;
     if (rid != -1 && len > 0) {
         tkt->text = malloc(sizeof(char)*(len+1));
     }

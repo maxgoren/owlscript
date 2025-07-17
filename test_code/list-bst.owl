@@ -1,20 +1,20 @@
-func makeTree(let x) {
+def makeTree(let x) {
     return [x, nil, nil];
 }
 
-func key(let x) {
+def key(let x) {
     return x[0];
 }
 
-func left(let x) {
+def left(let x) {
     return x[1];
 }
 
-func right(let x) {
+def right(let x) {
     return x[2];
 }
 
-func preorder(let tree) {
+def preorder(let tree) {
     if (tree != nil) {
         preorder(left(tree));
         print key(tree);
@@ -23,7 +23,7 @@ func preorder(let tree) {
     }
 }
 
-func insert(let tree, x) {
+def insert(let tree, x) {
     if (tree == nil) {
         return makeTree(x);
     }

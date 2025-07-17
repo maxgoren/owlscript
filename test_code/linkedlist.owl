@@ -2,6 +2,7 @@ struct node {
     var info;
     var next;
 };
+
 def addSorted(var list, var x) {
     if (list == nil) {
         return bless node(x, list);

@@ -34,10 +34,12 @@ debug:
 	gcc -g -c -DDEBUG src/re2dfa/src/intset.c 			-o build/re_intset.o
 	gcc -g -c -DDEBUG src/re2dfa/src/followpos.c  		-o build/re_followpos.o
 	gcc -g -c -DDEBUG src/re2dfa/src/dfastate.c  		-o build/re_dfastate.o
+	gcc -g -c -DDEBUG src/re2dfa/src/transition.c  	-o build/re_trans.o
 	gcc -g -c -DDEBUG src/re2dfa/src/dfa.c  			-o build/re_dfa.o
 	gcc -g -c -DDEBUG src/re2dfa/src/re_to_dfa.c  		-o build/re_to_dfa.o
 	gcc -g -c -DDEBUG src/re2dfa/lex/lex.c  			-o build/re_lex.o
 	gcc -g -c -DDEBUG src/re2dfa/lex/util.c				-o build/re_util.o
+	gcc -g -c -DDEBUG src/re2dfa/lex/match.c           -o build/re_match.o
 	g++ --std=c++17 -g -c src/allocator.cpp  	-o build/allocator.o
 	g++ --std=c++17 -g -c src/ast.cpp  		-o build/ast.o
 	g++ --std=c++17 -g -c src/astbuilder.cpp   -o build/astbuilder.o
