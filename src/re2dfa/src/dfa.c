@@ -1,8 +1,7 @@
 #include "dfa.h"
 
-Transition* makeTransition(int from, int to, char ch) {
+Transition* makeTransition(int to, char ch) {
     Transition* nt = malloc(sizeof(Transition));
-    nt->from = from;
     nt->to = to;
     nt->ch = ch;
     nt->left = NULL;
@@ -88,7 +87,7 @@ DFA buildDFA(re_ast* ast, char* re) {
             Set* next_states = calculateNextStatesPositions(curr_state, *input_symbol);
             if (!isSetEmpty(next_states)) {
                 if ((found = findStateByPositions(&dfa, next_states)) > -1) {
-                    dfa.dtrans[curr_state->label] = addTransition(dfa.dtrans[curr_state->label], curr_state->label, dfa.states[found]->label, *input_symbol);
+                    dfa.dtrans[curr_state->label] = addTransition(dfa.dtrans[curr_state->label], dfa.states[found]->label, *input_symbol);
                     freeSet(next_states);
 #ifdef DEBUG                    
                     printf("State Already Exists, Adding Transition:  %d - (%c) - %d\n", curr_state->label, *input_symbol, dfa.states[found]->label);
@@ -96,7 +95,7 @@ DFA buildDFA(re_ast* ast, char* re) {
                 } else {
                     DFAState* new_state = createState(nextStateNum(&dfa), copySet(next_states)); 
                     addState(&dfa, new_state);
-                    dfa.dtrans[curr_state->label] = addTransition(dfa.dtrans[curr_state->label], curr_state->label, new_state->label, *input_symbol);
+                    dfa.dtrans[curr_state->label] = addTransition(dfa.dtrans[curr_state->label], new_state->label, *input_symbol);
                     enQueue(&fq, new_state);
 #ifdef DEBUG
                     printf("Adding new state: %d, Transition: %d - (%c) - %d\n", new_state->label, curr_state->label, *input_symbol, new_state->label);
@@ -135,7 +134,7 @@ void printDFA(DFA dfa) {
     int mintc = 0, maxtc = 0, ttc = 0;
     for (int i = 1; i <= dfa.numstates; i++) {
         printf("%d: \n", i);
-        int tc = printTransitions(dfa.dtrans[i]);
+        int tc = printTransitions(dfa.dtrans[i], i);
         printf("\n");
         if (mintc == 0 || tc < mintc) mintc = tc;
         if (maxtc == 0 || tc > maxtc) maxtc = tc;

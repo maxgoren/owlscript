@@ -7,7 +7,6 @@ extern "C" {
 #include <stdlib.h>
 
 typedef struct Transition_ {
-    int from;
     char ch;
     int to;
     int height;
@@ -15,11 +14,11 @@ typedef struct Transition_ {
     struct Transition_* right;
 } Transition;
 
-Transition* makeTransition(int from, int to, char ch);
-Transition* addTransition(Transition* trans, int from, int to, char ch);
+Transition* makeTransition(int to, char ch);
+Transition* addTransition(Transition* trans, int to, char ch);
 Transition* findTransition(Transition* head, char ch);
 void cleanTransTree(Transition* node);
-int printTransitions(Transition* node);
+int printTransitions(Transition* node, int src);
 #ifdef __cplusplus
 }
 #endif
