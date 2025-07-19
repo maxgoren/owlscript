@@ -24,6 +24,10 @@ bool simulateDFA(DFA dfa, char* text) {
             printf("Out of transitions, No match.\n");
 #endif
             return false;
+        } else {
+            if (next->is_accepting) {
+                printf("Ayo, Match found gang.\n");
+            }
         }
         state = next;
     }
