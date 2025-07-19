@@ -53,9 +53,9 @@ void tag_final_pos_with_token_id(re_ast* ast, int rulenum);
 CombinedRE* combine(int numrules);
 CombinedRE* init_lex_dfa(int numrules);
 TKToken* makeTKToken(int rid, int len);
-TKToken* nextToken(DFA* dfa, const char* input);
+TKToken* nextToken(DFA* dfa, const char* input, re_ast** ast_node_table);
 TKTokenListNode* makeTokenListNode(TKToken* token);
-TKTokenListNode* lex_input(DFA* dfa, char* input);
+TKTokenListNode* lex_input(DFA* dfa, char* input, re_ast** ast_node_table);
 
 #ifdef __cplusplus
 }

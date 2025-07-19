@@ -48,7 +48,7 @@ CombinedRE* init_lex_dfa(int num_rules) {
 
 //Classic Maximal-much: Prefer longest match, and equal length matches are chosen by priority
 //with priority being order in the rule list.
-TKToken* nextToken(DFA* dfa, const char* input) {
+TKToken* nextToken(DFA* dfa, const char* input, re_ast** ast_node_table) {
     int curr = 1;
     int last_accept = -1;
     int last_token_id = -1;
@@ -65,7 +65,12 @@ TKToken* nextToken(DFA* dfa, const char* input) {
                     i++;
                     while (input[i] != '\0' && input[i] != '"')
                         i++;
-                    return makeTKToken(36,i+1);
+                    if (input[i] != '"') {
+                        printf("Unterminated string!\n");
+                    } else {
+                        i++;
+                    }
+                    return makeTKToken(36,i);
                 } else {
                     next = it->to;
                 }
@@ -101,7 +106,7 @@ TKToken* nextToken(DFA* dfa, const char* input) {
 }
 
 bool in_string;
-TKTokenListNode* lex_input(DFA* dfa, char* input) {
+TKTokenListNode* lex_input(DFA* dfa, char* input, re_ast** ast_node_table) {
     char* p = input;
     TKTokenListNode dummy;
     TKTokenListNode* thead = &dummy; 
@@ -115,7 +120,7 @@ TKTokenListNode* lex_input(DFA* dfa, char* input) {
                 p++;
             } 
 
-        TKToken* t = nextToken(dfa, p);
+        TKToken* t = nextToken(dfa, p, ast_node_table);
         if (t->rule_id == -1) {
             printf("Lex error near: %s\n", p);
             break;

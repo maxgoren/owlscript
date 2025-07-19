@@ -24,11 +24,11 @@ void initDFA(DFA* dfa, int numstates);
 void initAlphabet(char* alphabet, char* re);
 void addState(DFA* dfa, DFAState* state);
 int nextStateNum(DFA* dfa);
-Set* calculateNextStatesPositions(DFAState* curr_state, char input_symbol);
+Set* calculateNextStatesPositions(DFAState* curr_state, char input_symbol, re_ast** ast_node_table);
 int findStateByPositions(DFA* dfa, Set* next_states);
 int symbolIsInAlphabet(char* str, int n, char c);
-DFA buildDFA(re_ast* ast, char* re);
-DFAState* markAcceptState(DFAState* state);
+DFA buildDFA(re_ast* ast, char* re, re_ast** ast_node_table);
+DFAState* markAcceptState(DFAState* state, re_ast** ast_node_table);
 void printDFA(DFA dfa);
 
 #ifdef __cplusplus

@@ -8,6 +8,7 @@ class ASTBuilder {
     private:
         bool loud;
         CombinedRE* cre;
+        re_ast** ast_node_table;
         DFA dfa;
         Parser parser;
         ScopeLevelResolver resolver;

@@ -1,15 +1,13 @@
 #include "followpos.h"
 
-re_ast** ast_node_table;
-
 int isLeaf(re_ast* node) {
     return (node->left == NULL && node->right == NULL);
 }
 
-void number_nodes(re_ast* node, int pass) {
+void number_nodes(re_ast* node, int pass, re_ast** ast_node_table) {
     if (node != NULL) {
-        number_nodes(node->left, pass);
-        number_nodes(node->right, pass);
+        number_nodes(node->left, pass, ast_node_table);
+        number_nodes(node->right, pass, ast_node_table);
         if (isLeaf(node)) {
             if (pass == 1) {
                 node->number = ++numleaves;
@@ -44,7 +42,7 @@ int numleaves;
 int nonleaves;
 
 
-void initAttributeSets(int size) {
+void initAttributeSets(int size, re_ast** ast_node_table) {
     for (int i = 0; i < size+1; i++) {
         if (ast_node_table[i] != NULL) {
             ast_node_table[i]->firstpos = createSet(size+1);
@@ -81,10 +79,10 @@ Identifies the set of positions that can be the last symbol in a string derived 
 
 */
 
-void calcFirstandLastPos(re_ast* node) {
+void calcFirstandLastPos(re_ast* node, re_ast** ast_node_table) {
     if (node != NULL) {
-        calcFirstandLastPos(node->left);
-        calcFirstandLastPos(node->right);
+        calcFirstandLastPos(node->left, ast_node_table);
+        calcFirstandLastPos(node->right, ast_node_table);
         if (isLeaf(node)) {
             setAdd(node->firstpos, node->number);
             setAdd(node->lastpos, node->number);
@@ -114,7 +112,7 @@ Followpos:
 Defines how positions relate to each other during DFA state transitions. It determines which positions can follow a given position in a string. 
 */
 
-void calcFollowPos(re_ast* node) {
+void calcFollowPos(re_ast* node, re_ast** ast_node_table) {
     if (node == NULL)
         return;
     if (node->token.symbol == RE_CONCAT) {
@@ -125,8 +123,8 @@ void calcFollowPos(re_ast* node) {
            return;
         }
     }
-    calcFollowPos(node->left);
-    calcFollowPos(node->right);
+    calcFollowPos(node->left, ast_node_table);
+    calcFollowPos(node->right, ast_node_table);
     if (node->token.symbol == RE_CONCAT) {
         if (node->left == NULL || node->right == NULL)
             return;
@@ -143,13 +141,13 @@ void calcFollowPos(re_ast* node) {
     }
 }
 
-void computeFollowPos(re_ast* node) {
-    ast_node_table = malloc(sizeof(re_ast*)*(748));
+void computeFollowPos(re_ast* node, re_ast*** ast_node_table) {
+    *ast_node_table = malloc(sizeof(re_ast*)*(748));
     numleaves = 0;
-    number_nodes(node, 1);
+    number_nodes(node, 1, *ast_node_table);
     nonleaves = numleaves;
-    number_nodes(node, 2);
-    initAttributeSets(nonleaves+1);
-    calcFirstandLastPos(node);
-    calcFollowPos(node);
+    number_nodes(node, 2, *ast_node_table);
+    initAttributeSets(nonleaves+1, *ast_node_table);
+    calcFirstandLastPos(node, *ast_node_table);
+    calcFollowPos(node, *ast_node_table);
 }

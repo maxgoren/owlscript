@@ -38,27 +38,26 @@ From the Followpos table, we can build a DFA to recognize the provided regular e
 
 extern int numleaves;
 extern int nonleaves;
-extern re_ast** ast_node_table;
 
 int isLeaf(re_ast* node);
 
-void number_nodes(re_ast* node, int pass);
+void number_nodes(re_ast* node, int pass, re_ast** node_table);
 
 bool nullable(re_ast* node);
 
-void initAttributeSets();
+void initAttributeSets(int size, re_ast** node_table);
 
 void mergeFirstPos(re_ast* node);
 
 void mergeLastPos(re_ast* node);
 
 
-void calcFirstandLastPos(re_ast* node);
+void calcFirstandLastPos(re_ast* node, re_ast** node_table);
 
 
-void calcFollowPos(re_ast* node);
+void calcFollowPos(re_ast* node, re_ast** node_table);
 
-void computeFollowPos(re_ast* node);
+void computeFollowPos(re_ast* node, re_ast*** node_table);
 #ifdef __cplusplus
 }
 #endif

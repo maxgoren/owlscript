@@ -31,7 +31,7 @@ bool findInCharClass(char* ccl, char input_symbol) {
     return false;
 }
 
-Set* calculateNextStatesPositions(DFAState* curr_state, char input_symbol) {
+Set* calculateNextStatesPositions(DFAState* curr_state, char input_symbol, re_ast** ast_node_table) {
     Set* next_states = createSet(nonleaves+1);
     for (int i = 0; i < curr_state->positions->n; i++) {
         int t = curr_state->positions->members[i];
@@ -63,7 +63,7 @@ int nextStateNum(DFA* dfa) {
     return ++dfa->numstates;
 }
 
-DFA buildDFA(re_ast* ast, char* re) {
+DFA buildDFA(re_ast* ast, char* re, re_ast** ast_node_table) {
     int found;
     int max_table_size = (strlen(re)+5);
     char* alphabet = malloc(sizeof(char)*max_table_size); 
@@ -84,7 +84,7 @@ DFA buildDFA(re_ast* ast, char* re) {
 #ifdef DEBUG
             printf("Input Symbol: %c\n", *input_symbol);
 #endif
-            Set* next_states = calculateNextStatesPositions(curr_state, *input_symbol);
+            Set* next_states = calculateNextStatesPositions(curr_state, *input_symbol, ast_node_table);
             if (!isSetEmpty(next_states)) {
                 if ((found = findStateByPositions(&dfa, next_states)) > -1) {
                     dfa.dtrans[curr_state->label] = addTransition(dfa.dtrans[curr_state->label], dfa.states[found]->label, *input_symbol);
@@ -107,12 +107,12 @@ DFA buildDFA(re_ast* ast, char* re) {
         }
     }
     for (int i = 1; i <= dfa.numstates; i++) {
-        dfa.states[i] = markAcceptState(dfa.states[i]);
+        dfa.states[i] = markAcceptState(dfa.states[i], ast_node_table);
     }
     return dfa;
 }
 
-DFAState* markAcceptState(DFAState* next_state) {
+DFAState* markAcceptState(DFAState* next_state, re_ast** ast_node_table) {
     for (int j = 0; j < next_state->positions->n; j++) {
         int pos = next_state->positions->members[j];
         if (ast_node_table[pos]->token.ch == '#')  {      

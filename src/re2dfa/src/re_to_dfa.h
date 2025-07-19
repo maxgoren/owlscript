@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 char* augmentRE(char* orig);
-DFA re2dfa(char* re, re_ast* ast);
+DFA re2dfa(char* re, re_ast* ast, re_ast*** ast_node_table);
 void cleanup(DFA* dfa, re_ast* ast);
 
 #ifdef __cplusplus
