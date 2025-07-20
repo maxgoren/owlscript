@@ -35,6 +35,9 @@ bool simulateDFA(DFA dfa, char* text, re_ast** ast_node_table) {
 
 
 bool matchDFA(char* re, char *text) {
+    if (all_literals(re)) {
+        return kmpSearch(re, text);
+    }
     re = augmentRE(re);
     re_ast** ast_node_table;
     re_ast* ast = re2ast(re);
@@ -54,4 +57,34 @@ bool matchDFA(char* re, char *text) {
     cleanup(&dfa, ast);
     free(ast_node_table);
     return ans;
+}
+
+bool all_literals(char* text) {
+    for (char *sp = text; *sp; sp++) {
+        if (*sp == '(' || *sp == '[' || *sp == '|' || *sp == '*' || *sp == '+' || *sp == '?' || *sp == ']' || *sp == ')')
+            if (*(sp-1) != '\\')
+                return false;
+    }
+    return true;
+}
+
+char* buildSkip(char* pattern, int len) {
+    char* skip = (char*)malloc(sizeof(char)*len);
+    skip[0] = -1;
+    for (int i = 0, j = -1; i < len; i++, j++, skip[i] = j)
+        while ((j >= 0) && (pattern[i] != pattern[j]))
+            j = skip[j];
+    return skip;
+}
+
+bool kmpSearch(char* pattern, char* text) {
+    int text_len = strlen(text);
+    int pattern_len = strlen(pattern);
+    char* skip = buildSkip(pattern, pattern_len);
+    int i, j;
+    for (i = 0, j = 0; i < text_len && j < pattern_len; i++, j++) {
+        while ((j >= 0) && (text[i] != pattern[j]))
+            j = skip[j];
+    }
+    return j == pattern_len;
 }

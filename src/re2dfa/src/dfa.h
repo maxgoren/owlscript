@@ -6,7 +6,7 @@
 #include "dfastate.h"
 #include "followpos.h"
 #include "transition.h"
-#include "../re2ast/src/tokens.h"
+#include "re2ast/src/tokens.h"
 
 #ifdef __cplusplus
 extern "C" {

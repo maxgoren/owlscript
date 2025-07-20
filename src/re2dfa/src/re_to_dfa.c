@@ -1,5 +1,5 @@
 #include "re_to_dfa.h"
-#include "../re2ast/src/ast.h"
+#include "re2ast/src/ast.h"
 
 void cleanup(DFA* dfa, re_ast* ast) {
     freeTree(ast);

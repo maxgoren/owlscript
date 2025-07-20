@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "tokens.h"
-#include "../../src/intset.h"
+#include "../../intset.h"
 
 #ifdef __cplusplus
 extern "C" {

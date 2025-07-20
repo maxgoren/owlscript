@@ -40,6 +40,8 @@
         "typeinfo": "cpp",
         "re_to_dfa.h": "c",
         "parser.h": "c",
-        "token.hpp": "c"
+        "token.hpp": "c",
+        "dfa.h": "c",
+        "followpos.h": "c"
     }
 }

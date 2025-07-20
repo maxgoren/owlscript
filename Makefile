@@ -1,7 +1,7 @@
 owlscript:
-	gcc -c src/re2dfa/re2ast/src/ast.c 		-o build/re_ast.o
-	gcc -c src/re2dfa/re2ast/src/parser.c 	-o build/re_parser.o
-	gcc -c src/re2dfa/re2ast/src/tokens.c  	-o build/re_tokens.o
+	gcc -c src/re2dfa/src/re2ast/src/ast.c 		-o build/re_ast.o
+	gcc -c src/re2dfa/src/re2ast/src/parser.c 	-o build/re_parser.o
+	gcc -c src/re2dfa/src/re2ast/src/tokens.c  	-o build/re_tokens.o
 	gcc -c src/re2dfa/src/intset.c 			-o build/re_intset.o
 	gcc -c src/re2dfa/src/followpos.c  		-o build/re_followpos.o
 	gcc -c src/re2dfa/src/dfastate.c  		-o build/re_dfastate.o
@@ -28,9 +28,9 @@ owlscript:
 	g++ --std=c++17 build/*.o -o owlscript
 
 debug:
-	gcc -g -c -DDEBUG src/re2dfa/re2ast/src/ast.c 		-o build/re_ast.o
-	gcc -g -c -DDEBUG src/re2dfa/re2ast/src/parser.c 	-o build/re_parser.o
-	gcc -g -c -DDEBUG src/re2dfa/re2ast/src/tokens.c  	-o build/re_tokens.o
+	gcc -g -c -DDEBUG src/re2dfa/src/re2ast/src/ast.c 		-o build/re_ast.o
+	gcc -g -c -DDEBUG src/re2dfa/src/re2ast/src/parser.c 	-o build/re_parser.o
+	gcc -g -c -DDEBUG src/re2dfa/src/re2ast/src/tokens.c  	-o build/re_tokens.o
 	gcc -g -c -DDEBUG src/re2dfa/src/intset.c 			-o build/re_intset.o
 	gcc -g -c -DDEBUG src/re2dfa/src/followpos.c  		-o build/re_followpos.o
 	gcc -g -c -DDEBUG src/re2dfa/src/dfastate.c  		-o build/re_dfastate.o

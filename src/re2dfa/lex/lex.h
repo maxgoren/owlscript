@@ -3,8 +3,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "../re2ast/src/ast.h"
-#include "../re2ast/src/parser.h"
+#include "../src/re2ast/src/ast.h"
+#include "../src/re2ast/src/parser.h"
 #include "../src/re_to_dfa.h"
 
 typedef enum TKSymbol {

@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "../re2ast/src/ast.h"
+#include "re2ast/src/ast.h"
 #include "intset.h"
 
 /*

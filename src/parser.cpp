@@ -126,7 +126,9 @@ astnode* Parser::ifStatement() {
     }
     if (expect(TK_ELSE)) {
         match(TK_ELSE);
-        if (expect(TK_LC)) {
+        if (expect(TK_IF)) {
+            node->child[2] = ifStatement();
+        } else if (expect(TK_LC)) {
             node->child[2] = makeBlockStatement();
         } else {
             node->child[2] = statement();

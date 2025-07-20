@@ -1,6 +1,6 @@
 #ifndef re_to_dfa_h
 #define re_to_dfa_h
-#include "../re2ast/src/parser.h"
+#include "re2ast/src/parser.h"
 #include "followpos.h"
 #include "dfa.h"
 #ifdef __cplusplus
