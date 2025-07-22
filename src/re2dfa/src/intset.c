@@ -42,11 +42,22 @@ bool isSetEmpty(Set* s) {
     return s->n == 0;
 }
 
+
 Set* setUnion(Set* a, Set* b) {
-    for (int i = 0; i < b->n; i++) {
-        setAdd(a, b->members[i]);
+    Set* c = createSet(a->n + b->n + 1);
+    int i = 0, j = 0; 
+    while (i < a->n && j < b->n) {
+        if (a->members[i] < b->members[j]) {
+            setAdd(c, a->members[i++]);
+        } else if (a->members[i] > b->members[j]) {
+            setAdd(c, b->members[j++]);
+        } else {
+            setAdd(c, a->members[i++]);
+        }
     }
-    return a;
+    while (i < a->n) setAdd(c, a->members[i++]);
+    while (j < b->n) setAdd(c, b->members[j++]);
+    return c;
 }
 
 int setContains(Set* set, int value) {
