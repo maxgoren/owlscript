@@ -5,7 +5,7 @@ extern "C" {
 #endif
 #include "../src/re_to_dfa.h"
 
-bool simulateDFA(DFA dfa, char* text, re_ast** ast_node_table);
+bool simulateDFA(DFA* dfa, char* text, re_ast** ast_node_table);
 bool matchDFA(char* re, char *text);
 bool all_literals(char* text);
 char* buildSkip(char* text, int len);

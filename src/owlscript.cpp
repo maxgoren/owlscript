@@ -15,7 +15,7 @@ void runScript(string filename, bool trace) {
 
 
 void repl(bool debug) {
-    cout<<"[OwlScript "<<MAJOR_VERSION<<"."<<MINOR_VERSION<<"]"<<endl;
+    cout<<"[OwlScript "<<MAJOR_VERSION<<"."<<MINOR_VERSION<<RELEASE_STAT<<"]"<<endl;
     bool running = true;
     string input;
     ASTBuilder astbuilder(debug);

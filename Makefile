@@ -16,6 +16,7 @@ owlscript:
 	g++ --std=c++17 -c src/astbuilder.cpp   -o build/astbuilder.o
 	g++ --std=c++17 -c src/owlscript.cpp  	-o build/owl_script.o
 	g++ --std=c++17 -c src/object.cpp  		-o build/object.o
+	g++ --std=c++17 -c src/lexer.cpp  		-o build/cpplex.o
 	g++ --std=c++17 -c src/parser.cpp  		-o build/parser.o
 	g++ --std=c++17 -c src/resolve.cpp 		-o build/resolve.o
 	g++ --std=c++17 -c src/token.cpp  		-o build/token.o
@@ -45,6 +46,7 @@ debug:
 	g++ --std=c++17 -g -c src/astbuilder.cpp   -o build/astbuilder.o
 	g++ --std=c++17 -g -c src/owlscript.cpp  	-o build/owl_script.o
 	g++ --std=c++17 -g -c src/object.cpp  		-o build/object.o
+	g++ --std=c++17 -g -c src/lexer.cpp  		-o build/cpplex.o
 	g++ --std=c++17 -g -c src/parser.cpp  		-o build/parser.o
 	g++ --std=c++17 -g -c src/resolve.cpp 		-o build/resolve.o
 	g++ --std=c++17 -g -c src/token.cpp  		-o build/token.o

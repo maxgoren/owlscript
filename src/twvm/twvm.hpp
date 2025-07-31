@@ -12,7 +12,8 @@
 using namespace std;
 
 const int MAJOR_VERSION = 0;
-const int MINOR_VERSION = 66;
+const int MINOR_VERSION = 73;
+const char RELEASE_STAT = 'b';
 
 class TWVM {
     private:

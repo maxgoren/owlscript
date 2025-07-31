@@ -3,13 +3,12 @@
 #include "ast.hpp"
 #include "parser.hpp"
 #include "resolve.hpp"
+#include "lexer.hpp"
 
 class ASTBuilder {
     private:
         bool loud;
-        CombinedRE* cre;
-        re_ast** ast_node_table;
-        DFA dfa;
+        Lexer lexer;
         Parser parser;
         ScopeLevelResolver resolver;
     public:

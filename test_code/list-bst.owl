@@ -23,7 +23,7 @@ def preorder(let tree) {
     }
 }
 
-def insert(let tree, x) {
+def insert(let tree, let x) {
     if (tree == nil) {
         return makeTree(x);
     }

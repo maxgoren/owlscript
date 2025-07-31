@@ -1,15 +1,5 @@
 #include "dfa.h"
 
-Transition* makeTransition(int to, char ch) {
-    Transition* nt = malloc(sizeof(Transition));
-    nt->to = to;
-    nt->ch = ch;
-    nt->height = -1;
-    nt->left = NULL;
-    nt->right = NULL;
-    return nt;
-}
-
 void initDFA(DFA* dfa, int numstates) {
     dfa->numstates = 0;
     dfa->states = malloc(sizeof(DFAState*)*numstates+1);
@@ -170,3 +160,4 @@ void initAlphabet(char* alphabet,  char* re) {
     printf("Alphabet: %s \n", alphabet);
 #endif
 }
+

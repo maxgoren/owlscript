@@ -20,6 +20,7 @@ class Allocator {
         void sweep();
         void destroyList(List* list);
         void destroyStruct(Struct* obj);
+        void destroyFunc(Function* obj);
         void destroyObject(GCObject* obj);
         void registerObject(GCObject* obj);
     public:

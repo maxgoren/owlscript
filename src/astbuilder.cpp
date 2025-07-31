@@ -4,14 +4,12 @@
 
 ASTBuilder::ASTBuilder(bool debug) {
     loud = debug;
-    cre = init_lex_dfa(nr-1);
-    dfa = re2dfa(cre->pattern, cre->ast, &ast_node_table);
     if (debug)
-        printDFA(dfa);
+        printDFA(lexer.dfa);
 }
 
 astnode* ASTBuilder::build(char* str) {
-    TKTokenListNode* tks = lex_input(&dfa, str, ast_node_table);
+    TKTokenListNode* tks = lexer.lex(str);
     TokenStream ts(tks);
     return resolver.resolveScope(parser.parse(ts));
 }

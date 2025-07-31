@@ -1,33 +1,5 @@
 #include "transition.h"
 
-int height(Transition* node) {
-    return node == NULL ? -1:node->height;
-}
-
-int max(int a, int b) {
-    return (a > b) ? a:b;
-}
-
-Transition* rotL(Transition* node) {
-    Transition* x = node->right; node->right = x->left; x->left = node;
-    node->height = 1 + max(height(node->left), height(node->right));
-    x->height = 1 + max(height(x->left), height(x->right));
-    return x;
-}
-
-Transition* rotR(Transition* node) {
-    Transition* x = node->left; node->left = x->right; x->right = node;
-    node->height = 1 + max(height(node->left), height(node->right));
-    x->height = 1 + max(height(x->left), height(x->right));
-    return x;
-}
-
-int balanceFactor(Transition* node) {
-    if (node == NULL)
-        return 0;
-    return height(node->left) - height(node->right);
-}
-
 
 Transition* addTransition(Transition* trans, int to, char ch) {
     if (trans == NULL)
@@ -94,4 +66,42 @@ void cleanTransTree(Transition* node) {
         cleanTransTree(node->right);
         free(node);
     }
+}
+
+int height(Transition* node) {
+    return node == NULL ? -1:node->height;
+}
+
+int max(int a, int b) {
+    return (a > b) ? a:b;
+}
+
+Transition* makeTransition(int to, char ch) {
+    Transition* nt = malloc(sizeof(Transition));
+    nt->to = to;
+    nt->ch = ch;
+    nt->height = -1;
+    nt->left = NULL;
+    nt->right = NULL;
+    return nt;
+}
+
+Transition* rotL(Transition* node) {
+    Transition* x = node->right; node->right = x->left; x->left = node;
+    node->height = 1 + max(height(node->left), height(node->right));
+    x->height = 1 + max(height(x->left), height(x->right));
+    return x;
+}
+
+Transition* rotR(Transition* node) {
+    Transition* x = node->left; node->left = x->right; x->right = node;
+    node->height = 1 + max(height(node->left), height(node->right));
+    x->height = 1 + max(height(x->left), height(x->right));
+    return x;
+}
+
+int balanceFactor(Transition* node) {
+    if (node == NULL)
+        return 0;
+    return height(node->left) - height(node->right);
 }

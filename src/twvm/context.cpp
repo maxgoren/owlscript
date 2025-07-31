@@ -67,7 +67,7 @@ void Context::put(string name, int depth, Object info) {
     } else {
         enclosingAt(depth)->bindings[name] = info;
     }
-    if (alloc.liveCount() > alloc.nextGC()) {
+    if (alloc.liveCount() >= alloc.nextGC()) {
         alloc.rungc(current, operands);
     }
 }

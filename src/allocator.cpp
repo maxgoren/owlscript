@@ -109,11 +109,17 @@ void Allocator::destroyStruct(Struct* sobj) {
     delete sobj;
 }
 
+void Allocator::destroyFunc(Function* func) {
+    if (func == nullptr) return;
+    delete func;
+}
+
 void Allocator::destroyObject(GCObject* x) {
     switch (x->type) {
         case GC_STRING: { delete x->strval;  delete x; } break;
         case GC_LIST:   { destroyList(x->listval); delete x; } break;
         case GC_STRUCT: { destroyStruct(x->structval); delete x; } break;
+        //case GC_FUNC:   { destroyFunc(x->funcval); delete x; } break;
     }
 }
 
@@ -141,7 +147,6 @@ void Allocator::mark(ActivationRecord* callStack, IndexedStack<Object>& rtStack)
 
 void Allocator::sweep() {
     int collected = 0;
-    //cout<<collected<<" items collected, "<<liveObjects.size()<<" objects survive."<<endl;
     unordered_set<GCObject*> kill;
     unordered_set<GCObject*> next;
     for (auto & m : liveObjects) {
@@ -158,4 +163,5 @@ void Allocator::sweep() {
         collected++;
     }
     liveObjects = next;
+    //cout<<collected<<" items collected, "<<liveObjects.size()<<" objects survive."<<endl;
 }

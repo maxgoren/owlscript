@@ -17,6 +17,6 @@ def main() {
         print i;
         print ": ";
         println A(i, delay(1), delay(-1), delay(-1), delay(1), delay(0));
-        i := i + 1;
+        i++;
     }
 }

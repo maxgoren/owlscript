@@ -2,30 +2,34 @@
 #include <stdlib.h>
 #include "match.h"
 
-bool simulateDFA(DFA dfa, char* text, re_ast** ast_node_table) {
-    DFAState* state = dfa.states[1];
+DFAState* move(DFA* dfa, DFAState* state, re_ast** ast_node_table, char ch) {
+    DFAState* next = NULL;
+    Transition* it = findTransition(dfa->dtrans[state->label], ch);
+    if (it != NULL) {
+        if (ch == it->ch || ast_node_table[state->label]->token.symbol == RE_PERIOD) {
+            next = dfa->states[it->to];
+        }
+    } else if (ast_node_table[state->label]->token.symbol == RE_PERIOD) {
+        it = findTransition(dfa->dtrans[state->label], '.');
+        if (it != NULL)
+            next = dfa->states[it->to];
+    }
+    return next;    
+}
+
+bool simulateDFA(DFA* dfa, char* text, re_ast** ast_node_table) {
+    DFAState* state = dfa->states[1];
     for (char *sp = text; *sp != '\0'; sp++) {
 #ifdef DEBUG
         printf("Current State: %d, Input Symbol: %c\n", state->label, *sp);
 #endif
-        DFAState* next = NULL;
-        Transition* it = findTransition(dfa.dtrans[state->label], *sp);
-        if (it != NULL) {
-            if (*sp == it->ch || ast_node_table[state->label]->token.symbol == RE_PERIOD) {
-                next = dfa.states[it->to];
-            }
-        } else if (ast_node_table[state->label]->token.symbol == RE_PERIOD) {
-            it = findTransition(dfa.dtrans[state->label], '.');
-            if (it != NULL)
-                next = dfa.states[it->to];
-        }    
-        if (!next) {
+        state = move(dfa, state, ast_node_table, *sp);
+        if (!state) {
 #ifdef DEBUG
-            printf("Out of transitions, No match.\n");
+            printf("Out of transitions, No match.\n"); 
 #endif
             return false;
         }
-        state = next;
     }
 #ifdef DEBUG
     printf("Final State: %d\n", state->label);
@@ -53,7 +57,7 @@ bool matchDFA(char* re, char *text) {
     printf("DFA: \n");
     printDFA(dfa);
 #endif
-    bool ans = simulateDFA(dfa, text, ast_node_table);
+    bool ans = simulateDFA(&dfa, text, ast_node_table);
     cleanup(&dfa, ast);
     free(ast_node_table);
     return ans;
