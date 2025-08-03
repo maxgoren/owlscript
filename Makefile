@@ -8,6 +8,7 @@ owlscript:
 	gcc -c src/re2dfa/src/dfa.c  			-o build/re_dfa.o
 	gcc -c src/re2dfa/src/transition.c  	-o build/re_trans.o
 	gcc -c src/re2dfa/src/re_to_dfa.c  		-o build/re_to_dfa.o
+	gcc -c src/re2dfa/lex/lex_token_def.c  	-o build/re_lex_token_def.o
 	gcc -c src/re2dfa/lex/lex.c  			-o build/re_lex.o
 	gcc -c src/re2dfa/lex/util.c			-o build/re_util.o
 	gcc -c src/re2dfa/lex/match.c           -o build/re_match.o

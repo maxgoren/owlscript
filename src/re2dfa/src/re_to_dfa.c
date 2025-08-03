@@ -6,10 +6,9 @@ void cleanup(DFA* dfa, re_ast* ast) {
     for (int i = 1; i <= dfa->numstates; i++) {
         freeSet(dfa->states[i]->positions);
         free(dfa->states[i]);
-        cleanTransTree(dfa->dtrans[i]);
+        cleanTransTree(dfa->states[i]->transitions);
     }
     free(dfa->states);
-    free(dfa->dtrans);
 }
 
 char* augmentRE(char* orig) {
@@ -19,7 +18,7 @@ char* augmentRE(char* orig) {
     return fixed;
 }
 
-DFA re2dfa(char* re, re_ast* ast, re_ast*** ast_node_table) {
+DFA ast2dfa(char* re, re_ast* ast, re_ast*** ast_node_table) {
     computeFollowPos(ast, ast_node_table);
     char* no_concat = toString(in2post(tokenize(re)));
     DFA dfa = buildDFA(ast, no_concat, *ast_node_table);

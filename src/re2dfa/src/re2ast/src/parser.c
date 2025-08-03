@@ -1,8 +1,5 @@
 #include "parser.h"
 
-
-
-
 int appendCurrent(char* ns, char* str, int pos, int sp, char ch, bool prev_escaped, bool curr_escaped) {
     if (!curr_escaped && !prev_escaped) {
         ns[pos] = ch;
@@ -80,8 +77,6 @@ char* addConCat(char* str) {
     return ns;
 }
 
-
-
 bool leftAssoc(char c) {
     return c == '*' || c == '+' || c == '?' || c == '@' || c == '|';
 }
@@ -118,18 +113,20 @@ REToken* in2post(REToken* input) {
     REToken dummy;
     REToken* opstack[2048];
     int sp = 0;
+#define PUSH(x) opstack[sp++] = x;
+#define POP()   opstack[--sp]
     REToken* fixed = &dummy;
     int j = 0;
     for (REToken* it = input; it != NULL; it = it->next) {
-        if (it->symbol == RE_LPAREN)
-            opstack[sp++] = it;
-        else if (isOp(*it)) {
+        if (it->symbol == RE_LPAREN) {
+            PUSH(it);
+        } else if (isOp(*it)) {
             if (sp > 0 && (precedence(it->ch) < precedence(opstack[sp-1]->ch) || (precedence(it->ch) == precedence(opstack[sp-1]->ch) && leftAssoc(it->ch)))) {
-                fixed->next = opstack[--sp];
+                fixed->next = POP(); 
                 fixed = fixed->next;
-                opstack[sp++] = it;
+                PUSH(it);
             } else {
-                opstack[sp++] = it;
+                PUSH(it);
             }
         } else if (it->symbol == RE_RPAREN) {
             while (sp > 0) {
@@ -137,9 +134,8 @@ REToken* in2post(REToken* input) {
                     sp--;
                     break;
                 } else {
-                    fixed->next = opstack[sp-1];
+                    fixed->next = POP();
                     fixed = fixed->next;
-                    sp--;
                 }
             }
         } else {
@@ -151,19 +147,23 @@ REToken* in2post(REToken* input) {
         if (opstack[sp-1]->symbol == RE_LPAREN) {
             sp--;
         } else {
-            fixed->next = opstack[sp-1];
+            fixed->next = POP();
             fixed = fixed->next;
-            sp--;
         }
     }
+#undef PUSH
+#undef POP
     fixed->next = NULL;
     return dummy.next;;
 }
 
 re_ast* makeTree(REToken* tokens) {
     int len = tokensLength(tokens);
+//Node Stack                                                                                               
     re_ast* st[len];
     int sp = 0;
+#define PUSH(x) st[sp++] = x
+#define POP()   (sp > 0) ? st[--sp]:NULL
     for (REToken* it = tokens; it != NULL; it = it->next) {
             if (isOp(*it)) {
                 re_ast* n = makeNode(1, *it);
@@ -174,16 +174,16 @@ re_ast* makeTree(REToken* tokens) {
                             fprintf(stderr, "ERROR: stack underflow for binary operator %c\n", it->symbol);
                             exit(EXIT_FAILURE);
                         }
-                        n->right = (sp > 0) ? st[--sp]:NULL;
-                        n->left = (sp > 0) ? st[--sp]:NULL;
+                        n->right = POP();
+                        n->left = POP();
                         break;
                     case RE_STAR: 
-                        n->left = (sp > 0) ? st[--sp]:NULL;
+                        n->left = POP();
                         break;
                     case RE_QUESTION: {
                         free(n);
                         n = makeNode(1, *makeToken(RE_OR, '|'));
-                        n->left = (sp > 0) ? st[--sp]:NULL;
+                        n->left = POP();
                         n->right = makeNode(2, *makeToken(RE_EPSILON, '&'));
                     } break;
                     case RE_PLUS: {
@@ -196,12 +196,14 @@ re_ast* makeTree(REToken* tokens) {
                     } break;
                     default: break;
                 }
-                st[sp++] = n;
+                PUSH(n);
             } else {
                 re_ast* t = makeNode(2, *it);
-                st[sp++] = t;
+                PUSH(t);
             }
     }
+#undef PUSH
+#undef POP
     return st[--sp];
 }
 

@@ -5,6 +5,8 @@ void initDState(DFAState* state, int statenum) {
     state->positions = NULL;
     state->is_accepting = false;
     state->token_id = -1;
+    state->transition_count = 0;
+    state->transitions = NULL;
 }
 
 DFAState* createState(int statenum, Set* positions) {

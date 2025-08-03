@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lex.h"
-#include "lex_spec.h"
+#include "lex_rules.h"
 
 void tag_final_pos_with_token_id(re_ast* ast, int rulenum) {
     if (ast != NULL) {
@@ -42,7 +42,7 @@ CombinedRE* combine(int numrules) {
     return cre;
 }
 
-CombinedRE* init_lex_dfa(int num_rules) {
+CombinedRE* init_lexer_patterns(int num_rules) {
     return combine(num_rules);
 }
 
@@ -58,7 +58,7 @@ TKToken* nextToken(DFA* dfa, const char* input, re_ast** ast_node_table) {
 #ifdef DEBUG
         printf("Current State: %d, Input Symbol: %c\n", dfa->states[curr]->label, input[i]);
 #endif
-        Transition* it = findTransition(dfa->dtrans[curr], input[i]);
+        Transition* it = findTransition(dfa->states[curr]->transitions, input[i]);
         if (it != NULL) {
             if (input[i] == it->ch || ast_node_table[curr]->token.symbol == RE_PERIOD) {
                 if (it->ch == '"') {
@@ -76,7 +76,7 @@ TKToken* nextToken(DFA* dfa, const char* input, re_ast** ast_node_table) {
                 }
             }
         } else if (ast_node_table[curr]->token.symbol == RE_PERIOD) {
-            it = findTransition(dfa->dtrans[curr], '.');
+            it = findTransition(dfa->states[curr]->transitions, '.');
             if (it != NULL)
                 next = it->to;
         }    
@@ -130,16 +130,13 @@ TKTokenListNode* lex_input(DFA* dfa, char* input, re_ast** ast_node_table) {
         thead = thead->next;
         int i, j;
         if (rules[t->rule_id].token == TK_STR) {
-            for (i = 0, j = 1; j < t->length-1;) {
-                    t->text[i++] = p[j++];
-            }
-            t->text[i++] = '\0';
+            for (i = 0, j = 1; j < t->length-1;)
+                t->text[i++] = p[j++];
         } else {
-            for (i = 0, j = 0; i < t->length;) {
-                    t->text[i++] = p[j++];
-            }
-            t->text[i++] = '\0';
+            for (i = 0, j = 0; i < t->length;)
+                t->text[i++] = p[j++];
         }
+        t->text[i++] = '\0';
         p += t->length;
     }
     thead->next = makeTokenListNode(makeTKToken(nr-1, 5));

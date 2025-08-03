@@ -142,7 +142,7 @@ void calcFollowPos(re_ast* node, re_ast** ast_node_table) {
 }
 
 void computeFollowPos(re_ast* node, re_ast*** ast_node_table) {
-    *ast_node_table = malloc(sizeof(re_ast*)*(748));
+    *ast_node_table = malloc(sizeof(re_ast*)*(MAX_NODE_COUNT));
     numleaves = 0;
     number_nodes(node, 1, *ast_node_table);
     nonleaves = numleaves;

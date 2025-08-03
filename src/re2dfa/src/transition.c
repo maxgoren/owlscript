@@ -1,6 +1,5 @@
 #include "transition.h"
 
-
 Transition* addTransition(Transition* trans, int to, char ch) {
     if (trans == NULL)
         return makeTransition(to, ch);
@@ -12,16 +11,7 @@ Transition* addTransition(Transition* trans, int to, char ch) {
         trans->right = addTransition(trans->right,  to, ch);
     }
     trans->height = 1 + max(height(trans->left), height(trans->right));
-    if (balanceFactor(trans) < -1) {
-        if (balanceFactor(trans->right) > 0)
-            trans->right = rotR(trans->right);
-        trans = rotL(trans);
-    } else if (balanceFactor(trans) > 1) {
-        if (balanceFactor(trans->left) < 0)
-            trans->left = rotL(trans->left);
-        trans = rotR(trans);
-    }
-    return trans;
+    return balanceAVL(trans);
 }
 
 Transition* findTransition(Transition* node, char ch) {
@@ -35,6 +25,8 @@ Transition* findTransition(Transition* node, char ch) {
     return node;
 }
 
+// performs an iterative in-order traversal over the
+// tree storing the transitions for a given state.
 int printTransitions(Transition* root, int src) {
     Transition* st[255];
     int stsp = 0;
@@ -80,6 +72,7 @@ Transition* makeTransition(int to, char ch) {
     Transition* nt = malloc(sizeof(Transition));
     nt->to = to;
     nt->ch = ch;
+    nt->wc_period = false;
     nt->height = -1;
     nt->left = NULL;
     nt->right = NULL;
@@ -104,4 +97,20 @@ int balanceFactor(Transition* node) {
     if (node == NULL)
         return 0;
     return height(node->left) - height(node->right);
+}
+
+// Uses rotations to ensure that the tree 
+// rooted at 'trans' has children whos height 
+// differs by at most one (AVL Tree)
+Transition* balanceAVL(Transition* trans) {
+    if (balanceFactor(trans) < -1) {
+        if (balanceFactor(trans->right) > 0)
+            trans->right = rotR(trans->right);
+        trans = rotL(trans);
+    } else if (balanceFactor(trans) > 1) {
+        if (balanceFactor(trans->left) < 0)
+            trans->left = rotL(trans->left);
+        trans = rotR(trans);
+    }
+    return trans;
 }

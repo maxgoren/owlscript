@@ -4,13 +4,13 @@
 
 DFAState* move(DFA* dfa, DFAState* state, re_ast** ast_node_table, char ch) {
     DFAState* next = NULL;
-    Transition* it = findTransition(dfa->dtrans[state->label], ch);
+    Transition* it = findTransition(state->transitions, ch);
     if (it != NULL) {
         if (ch == it->ch || ast_node_table[state->label]->token.symbol == RE_PERIOD) {
             next = dfa->states[it->to];
         }
     } else if (ast_node_table[state->label]->token.symbol == RE_PERIOD) {
-        it = findTransition(dfa->dtrans[state->label], '.');
+        it = findTransition(dfa->states[state->label]->transitions, '.');
         if (it != NULL)
             next = dfa->states[it->to];
     }
@@ -45,7 +45,7 @@ bool matchDFA(char* re, char *text) {
     re = augmentRE(re);
     re_ast** ast_node_table;
     re_ast* ast = re2ast(re);
-    DFA dfa = re2dfa(re, ast, &ast_node_table);
+    DFA dfa = ast2dfa(re, ast, &ast_node_table);
 #ifdef DEBUG
     printf("AST: \n");
     printAST(ast, 1); 

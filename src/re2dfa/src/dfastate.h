@@ -9,11 +9,14 @@ extern "C" {
 #include <stdio.h>
 #include <stdbool.h>
 #include "intset.h"
+#include "transition.h"
 
 typedef struct {
     int label;
     int token_id;
     bool is_accepting;
+    int transition_count;
+    Transition* transitions;
     Set* positions;
 } DFAState;
 

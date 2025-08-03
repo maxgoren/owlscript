@@ -15,7 +15,6 @@ extern "C" {
 
 typedef struct {
     DFAState** states;
-    Transition** dtrans;
     int numstates;
 } DFA;
 
