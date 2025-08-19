@@ -42,9 +42,17 @@ void Context::remove(string name) {
 
 Object& Context::get(string name, int depth) {
     if (depth == GLOBAL_SCOPE_DEPTH) {
-        return globals->bindings[name];
+        if (globals->bindings.find(name) != globals->bindings.end()) {
+            return globals->bindings[name];
+        }
+    } else {
+        auto scope = enclosingAt(depth);
+        if (scope->bindings.find(name) != scope->bindings.end()) {
+            return enclosingAt(depth)->bindings[name];
+        }
     }
-    return enclosingAt(depth)->bindings[name];
+    cout<<"Unknown Identifier: "<<name<<endl;
+    return nilObject;
 }
 
 bool Context::exists(string name, int depth) {
