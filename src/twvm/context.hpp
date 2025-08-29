@@ -17,7 +17,6 @@ class Context {
         Allocator alloc;
         IndexedStack<Object> operands;
         ActivationRecord* enclosingAt(int distance);
-        ActivationRecord* staticAt(int distance);
     public:
         Context();
         ActivationRecord*& getCallStack();

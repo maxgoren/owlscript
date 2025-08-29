@@ -347,12 +347,53 @@ void TWVM::constExpr(astnode* node) {
         case TK_TRUE: push(makeBool(true)); break;
         case TK_FALSE: push(makeBool(false)); break;
         case TK_NUM: push(makeNumber(stoi(node->token.strval))); break;
-        case TK_STR: push(cxt.getAlloc().makeString(node->token.strval)); break;
+        case TK_STR: push(expandInterpolation(node->token.strval, node->token.depth)); break;
         case TK_NIL: push(cxt.nil()); break;
         case TK_TYPEOF: getType(node->child[0]); break;
         default: 
             break;
     }
+}
+
+bool checkInterpolation(Object m) {
+    if (typeOf(m) != AS_STRING)
+        return false;
+    string raw = *getString(m);
+    for (int i = 0; i < raw.length(); i++) {
+        if (raw[i] == '$' && raw[i+1] == '{') {
+            int j = i+2;
+            while (j < raw.length()) {
+                if (raw[j] == '}')
+                    return true;
+                j++;
+            }
+        }
+    }
+    return false;
+}
+
+Object TWVM::expandInterpolation(string raw, int scope) {
+    string outstring;
+    for (int i = 0; i < raw.length(); i++) {
+        if (raw[i] == '$' && raw[i+1] == '{') {
+            int j = i+2;
+            string varname;
+            while (j < raw.length()) {
+                if (raw[j] != '}') {
+                    varname.push_back(raw[j]);
+                    j++;
+                } else {
+                    break;
+                }
+            }
+            Object t = cxt.get(varname, scope);
+            outstring += toString(t);
+            i = j;
+        } else {
+            outstring.push_back(raw[i]);
+        }
+    }
+    return cxt.getAlloc().makeString(outstring);
 }
 
 void TWVM::rangeExpression(astnode* node) {

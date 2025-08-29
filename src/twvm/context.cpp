@@ -18,18 +18,6 @@ ActivationRecord* Context::enclosingAt(int distance) {
     return curr;
 }
 
-ActivationRecord* Context::staticAt(int distance) {
-    ActivationRecord* curr = current;
-    while (distance > 0 && curr != nullptr) {
-        curr = curr->controlLink;
-        distance--;
-    }
-    if (distance > 0 || curr == nullptr) {
-        cout<<"Hmm... Something wrong with scope distance."<<endl;
-    }
-    return curr;
-}
-
 void Context::insert(string name, Object info) {
     current->bindings[name] = info;
 }

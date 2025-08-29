@@ -12,8 +12,8 @@
 using namespace std;
 
 const int MAJOR_VERSION = 0;
-const int MINOR_VERSION = 73;
-const char RELEASE_STAT = 'b';
+const int MINOR_VERSION = 74;
+const char RELEASE_STAT = 'a';
 
 class TWVM {
     private:
@@ -78,6 +78,7 @@ class TWVM {
         void booleanOperation(astnode* node);
         void ternaryConditional(astnode* node);
         void referenceExpression(astnode* node);
+        Object expandInterpolation(string raw, int scope);
         void fileExpression(astnode* node);
         void listExpression(astnode* node);
         void evalExpr(astnode* node);
