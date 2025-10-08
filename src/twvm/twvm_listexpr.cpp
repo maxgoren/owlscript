@@ -298,6 +298,7 @@ void TWVM::doFilter(astnode* node) {
     List* result = new List();
     for (ListNode* it = list->head; it != nullptr; it = it->next) {
         astnode* t = makeExprNode(CONST_EXPR, Token(getSymbol(it->info), toString(it->info)));
+        preorder(t, 1);
         funcExpression(func, t);
         if (pop().data.boolval)
             result = appendList(result, it->info);
@@ -351,6 +352,7 @@ void TWVM::constExpr(astnode* node) {
         case TK_NIL: push(cxt.nil()); break;
         case TK_TYPEOF: getType(node->child[0]); break;
         default: 
+            push(cxt.getAlloc().makeString(node->token.strval)); break;
             break;
     }
 }

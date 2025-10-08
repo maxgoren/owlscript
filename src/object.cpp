@@ -16,18 +16,19 @@ char getChar(Object m) {
     return m.data.charval;
 }
 
-List dummylist;
 List* getList(const Object& m) {
-    return m.data.gcobj->listval == nullptr ? &dummylist:m.data.gcobj->listval;
+    return m.data.gcobj->listval == nullptr ? new List():m.data.gcobj->listval;
 }
 
 Function* getFunction(const Object& m) {
     return m.data.gcobj ? m.data.gcobj->funcval:nullptr;
 }
 
-string dummystring;
 string* getString(const Object& m) {
-    return m.data.gcobj->strval == nullptr ? &dummystring:m.data.gcobj->strval;
+    if (m.type != AS_STRING) {
+        cout<<"Uh oh, expect string: got a "<<m.type<<" instead"<<endl;
+    }
+    return m.data.gcobj->strval == nullptr ? new string(""):m.data.gcobj->strval;
 }
 
 Struct dummystruct;

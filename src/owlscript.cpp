@@ -7,7 +7,8 @@ using namespace std;
 void runScript(string filename, bool trace) {
     ASTBuilder astbuilder(trace);
     TWVM vm(trace);
-    vm.exec(astbuilder.buildFromFile(filename));
+    astnode* ast = astbuilder.buildFromFile(filename);
+    vm.exec(ast);
     if (vm.context().existsInScope("main")) {
         vm.exec(astbuilder.build(string("main();").data()));
     }

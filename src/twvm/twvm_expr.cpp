@@ -52,7 +52,6 @@ bool TWVM::evalFunctionArguments(astnode* args, astnode* params, ActivationRecor
     }
     while (params != nullptr && args != nullptr) {
         if (isExprType(params, REF_EXPR)) {
-            cout<<"Bound arg '"<<params->child[0]->token.strval<<"' as Reference to "<<args->token.strval<<" at scope depth "<<args->token.depth<<endl;
             env->bindings.insert(make_pair(params->child[0]->token.strval, makeReference(args->token.strval, args->token.depth)));
         } else {
             evalExpr(args);
@@ -63,7 +62,7 @@ bool TWVM::evalFunctionArguments(astnode* args, astnode* params, ActivationRecor
     }
     return true;
 }
-
+//println map(["A1","B2","A3"], &(x) -> x =~ "A.*");
 void TWVM::funcExpression(Function* func, astnode* params) {
     ActivationRecord* env = new ActivationRecord(func->closure, cxt.getCallStack());
     if (evalFunctionArguments(params, func->params, env)) {
@@ -79,9 +78,11 @@ void TWVM::funcExpression(Function* func, astnode* params) {
 
 void TWVM::regularExpression(astnode* node) {
     evalExpr(node->child[0]);
-    string text = *getString(pop());
+    string text = *getString(peek(0));
     evalExpr(node->child[1]);
-    string pattern = *getString(pop());
+    string pattern = *getString(peek(0));
+    pop();
+    pop();
     push(makeBool(matchDFA(const_cast<char*>(pattern.data()), const_cast<char*>(text.data()))));
 }
 
