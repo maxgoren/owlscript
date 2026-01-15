@@ -1,3 +1,3 @@
-# Glaux Byte code Virtual Machine
+Owlscript
 
-Stack based VM with some extra goodies to make lexical closures easier
+
