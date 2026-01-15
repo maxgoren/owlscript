@@ -1,7 +1,0 @@
-def change(var ref m) {
-    m := 33;
-}
-let t := 19;
-println t;
-change(t);
-println t;

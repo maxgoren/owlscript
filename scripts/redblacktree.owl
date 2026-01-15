@@ -1,0 +1,160 @@
+let red := true;
+let black := false;
+
+class TreeNode {
+    let info;
+    let color;
+    let left;
+    let right;
+}
+
+fn isRed(let tree) {
+    if (tree == nil) {
+        return false;
+    }
+    return (tree.color == red);
+}
+
+fn rotL(let h) {
+    let x := h.right; 
+    h.right := x.left; 
+    x.left := h;
+    x.color := h.color;
+    h.color := red;
+    return x;
+}
+
+fn rotR(let h) {
+    let x := h.left;
+    h.left := x.right;
+    x.right := h;
+    x.color := h.color;
+    h.color := red;
+    return x;
+}
+
+fn colorFlip(let tree) {
+    println "CF";
+    tree.color := true;
+    tree.left.color := false;
+    tree.right.color := false;
+    return tree;
+}
+
+fn leftCase(let tree) {
+    if (isRed(tree.left.right)) {
+        println "LLR";
+        tree.left := rotL(tree.left);
+    }
+    if (isRed(tree.left.left)) {
+        println "RR"
+        tree := rotR(tree);
+    }
+    return tree;
+}
+
+fn rightCase(let tree) {
+    if (isRed(tree.right.left)) {
+        println "RRR";
+        tree.right := rotR(tree.right);
+    }
+    if (isRed(tree.right.right)) {
+        println "LR";
+        tree := rotL(tree); 
+    }
+    return tree;
+}
+
+fn bal234(let tree) {
+    if (isRed(tree.left) && isRed(tree.right)) {
+        tree := colorFlip(tree);
+    }
+    if (isRed(tree.left)) {
+        tree := leftCase(tree);
+    }
+    if (isRed(tree.right)) {
+        tree := rightCase(tree);
+    }
+    return tree;
+}
+
+fn putR(let tree, let key) {
+    if (tree == nil) {
+        tree := new TreeNode();
+        tree.info := key;
+        tree.color := true;
+        return tree;
+    }
+    if (key < tree.info) {
+        tree.left := putR(tree.left, key);
+    } else {
+        tree.right := putR(tree.right, key);
+    }
+    return bal234(tree);
+} 
+
+fn put(let tree, let key) {
+    println "insert: " + key;
+    tree := putR(tree, key);
+    tree.color := black;
+    return tree;
+}
+
+fn preorder(let xs) {
+    if (xs != nil) {
+        print xs.info + " ";
+        preorder(xs.left);
+        preorder(xs.right);
+    }
+}
+
+fn inorder(let xs) {
+    if (xs != nil) {
+        inorder(xs.left);
+        print xs.info + " ";
+        inorder(xs.right);
+    }
+}
+
+fn validate(let xs, let bb) {
+    if (xs == nil) {
+        return bb == 0;
+    }
+    if (!isRed(xs)) {
+        bb--;
+    }
+    if (isRed(xs) && isRed(xs.left)) {
+        println "LDR";
+        return false;
+    }
+    if (isRed(xs) && isRed(xs.right)) {
+        println "RDR";
+        return false;
+    }
+    return validate(xs.left, bb) && validate(xs.right, bb);
+}
+
+fn isRedBlack(let xs) {
+    let x := xs;
+    let bb := 0;
+    while (x != nil) {
+        if (!isRed(x)) {
+            bb++;
+        }
+        x := x.left;
+    }
+    return validate(xs, bb);
+}
+
+let root := nil;
+let sed := "asearchingexample";
+let i := 0;
+while (i < 17) {
+    root := put(root, sed[i]);
+    i++;
+}
+preorder(root);
+println " ";
+inorder(root);
+println " "
+println isRedBlack(root);

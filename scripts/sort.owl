@@ -1,0 +1,26 @@
+fn sorting(let xs) {
+    def swap(let xs, let l, let r) {
+        let tmp := xs[l]; 
+        xs[l] := xs[r];
+        xs[r] := tmp;
+    }
+    fn sort(let xs) {
+        let i := 0;
+        while (i < xs.size()) {
+            let j := (xs.size()) - 1;
+            while (j > i) { 
+                if (xs[i] > xs[j]) {
+                    swap(xs, i, j);
+                } 
+                j := j - 1;
+            }
+            i := i + 1;
+        }
+    }
+    sort(xs);
+}
+
+let tmz := [86, 13, 19, 24, 11, 42, 8];
+println tmz;
+sorting(tmz);
+println tmz;

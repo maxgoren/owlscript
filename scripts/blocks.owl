@@ -1,0 +1,15 @@
+{
+    let i := 13;
+    println i; 
+    {
+        println i;
+        let i := 24;
+        {
+            println i;
+            let i := 56;
+            println i;
+        }
+        println i;
+    }
+    println i;
+}

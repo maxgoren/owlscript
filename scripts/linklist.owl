@@ -1,0 +1,39 @@
+class Link {
+    let info;
+    let next;
+};
+
+fn printList(let xs) {
+    if (xs != nil) {
+        println xs.info;
+        printList(xs.next);
+    } else {
+        println "dine";
+    }
+}
+
+fn insert(let xs, let k) {
+    if (xs == nil) {
+        xs := new Link();
+        xs.info := k;
+        return xs;
+    }
+    if (k < xs.info) {
+        let t := new Link();
+        t.info := k;
+        t.next := xs;
+        xs := t;
+    } else {
+        xs.next := insert(xs.next, k);
+    }
+    return xs;
+}
+
+let head := nil;
+let i := 1;
+while (i <= 10) {
+    head := insert(head, random(100));
+    i++;
+}
+printList(head);
+println head;

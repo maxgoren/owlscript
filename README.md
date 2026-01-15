@@ -1,7 +1,3 @@
-# Owlscript
+# Glaux Byte code Virtual Machine
 
-Multi-paradigm scripting language written in C++
-        First class functions, with support for anonymous functions (lambdas), anonymous recursion, and closures.
-        Native lists with a rich compliment of built-in operations and support for list comprehensions
-        User defined structs
-        Automatic Memory Management with Garbage Collection
+Stack based VM with some extra goodies to make lexical closures easier
