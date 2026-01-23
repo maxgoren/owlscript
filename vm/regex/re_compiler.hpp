@@ -359,7 +359,6 @@ class RECompiler {
 NFA compile(string pattern) {
     REParser parser;
     re_ast* ast = parser.parse(pattern);
-    preorder(ast, 1);
     RECompiler compiler;
     return compiler.compile(ast);
 }
