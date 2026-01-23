@@ -1,22 +1,23 @@
-#ifndef compiler_hpp
-#define compiler_hpp
+#ifndef re_compiler_hpp
+#define re_compiler_hpp
 #include <iostream>
 #include <vector>
 #include <stack>
 using namespace std;
 
-const int LITERAL = 1;
-const int OPERATOR = 2;
-const int CHCLASS = 3;
+
+enum REType {
+    LITERAL=1, OPERATOR=2, CHCLASS=3
+};
 
 struct re_ast {
-    int type;
+    REType type;
     char c;
     string ccl;
     re_ast* left;
     re_ast* right;
-    re_ast(string cl, int t) : type(t), c('['), ccl(cl), left(nullptr), right(nullptr) { }
-    re_ast(char ch, int t) : type(t), c(ch), ccl(""), left(nullptr), right(nullptr) { }
+    re_ast(string cl, REType t) : type(t), c('['), ccl(cl), left(nullptr), right(nullptr) { }
+    re_ast(char ch, REType t) : type(t), c(ch), ccl(""), left(nullptr), right(nullptr) { }
 };
 
 void preorder(re_ast* t, int d) {
@@ -58,7 +59,7 @@ class REParser {
                 t = anchordexprs();
                 match(')');
             } else if (isdigit(lookahead()) || isalpha(lookahead()) || lookahead() == '.') {
-                t = new re_ast(lookahead(), 1);
+                t = new re_ast(lookahead(), LITERAL);
                 advance();
             } else if (lookahead() == '[') {
                 advance();
@@ -73,11 +74,11 @@ class REParser {
                 } else {
                     advance();
                 }
-                t = new re_ast(ccl, 3);
+                t = new re_ast(ccl, CHCLASS);
             }
 
             if (lookahead() == '*' || lookahead() == '+' || lookahead() == '?') {
-                re_ast* n = new re_ast(lookahead(), 2);
+                re_ast* n = new re_ast(lookahead(), OPERATOR);
                 match(lookahead());
                 n->left = t;
                 t = n;
@@ -87,7 +88,7 @@ class REParser {
         re_ast* term() {
             re_ast* t = factor();
             if (lookahead() == '(' || (lookahead() == '.' || isdigit(lookahead()) || isalpha(lookahead()) || lookahead() == '[')) {
-                re_ast* n = new re_ast('@', 2);
+                re_ast* n = new re_ast('@', OPERATOR);
                 n->left = t;
                 n->right = term();
                 t = n;
@@ -97,7 +98,7 @@ class REParser {
         re_ast* expr() {
             re_ast* t = term();
             if (lookahead() == '|') {
-                re_ast* n = new re_ast('|', 2);
+                re_ast* n = new re_ast('|', OPERATOR);
                 match('|');
                 n->left = t;
                 n->right = expr();
@@ -108,7 +109,7 @@ class REParser {
         re_ast* anchordexprs() {
             re_ast* t = nullptr;
             if (lookahead() == '^') {
-                t = new re_ast('^', 2);
+                t = new re_ast('^', OPERATOR);
                 advance();
                 t->left = expr();
             } else {
@@ -117,9 +118,9 @@ class REParser {
             if (t != nullptr && lookahead() == '$') {
                 advance();
                 if (t->c == '^')
-                    t->right = new re_ast('$', 2);
+                    t->right = new re_ast('$', OPERATOR);
                 else {
-                    re_ast* n = new re_ast('$', 2);
+                    re_ast* n = new re_ast('$', OPERATOR);
                     n->left = t;
                     t = n;
                 }

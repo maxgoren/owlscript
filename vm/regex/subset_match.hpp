@@ -44,9 +44,10 @@ bool recognizeString(NFA& nfa, string text) {
     int matchFrom = 0;
     int matchLen = 0;
     char c;
+    bool didFind = false;
     for (int i = 0; (c = text[i]) != '\0'; i++) {
         if (states.empty() || c == '\n')
-            return matchLen > 0;
+            return didFind;
         states = e_closure(move(c, states));
         if (states.find(nfa.accept) != states.end()) {
             cout<<"Match Found: ";
@@ -54,10 +55,13 @@ bool recognizeString(NFA& nfa, string text) {
                 cout<<text[t];
             }
             cout<<endl;
+            didFind = true;
             matchLen = i - matchFrom;
         }
     }
-    return states.find(nfa.accept) != states.end();
+    if (states.find(nfa.accept) != states.end())
+        didFind = true;
+    return didFind;
 }
 
 bool matchRegex(string pattern, string text) {

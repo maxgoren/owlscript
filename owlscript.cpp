@@ -2,36 +2,11 @@
 #include <cstring>
 #include <vector>
 #include <map>
-#include "parse/lexer.hpp"
-#include "parse/parser.hpp"
-#include "vm/stackitem.hpp"
-#include "compile/bcgen.hpp"
+#include "compile/compiler.hpp"
 #include "vm/vm.hpp"
 using namespace std;
 
-class Compiler {
-    private:
-        Lexer lexer;
-        Parser parser;
-        ByteCodeGenerator codeGen;
-    public:
-        Compiler(int verbosity = 0) {
-            if (verbosity > 0) {
-                lexer = Lexer(true);
-                parser = Parser(true);
-                codeGen = ByteCodeGenerator(true);
-            }
-        }
-        ConstPool& getConstPool() {
-            return codeGen.getConstPool();
-        }
-        vector<Instruction> compile(CharBuffer* buff) {
-            return codeGen.compile(parser.parse(lexer.lex(buff)));
-        }
-        vector<Instruction> operator()(CharBuffer* buff) {
-            return compile(buff);
-        }
-};
+
 
 void initStdLib(Compiler& compiler, VM& vm) {
     FileStringBuffer* fb = new FileStringBuffer();
@@ -72,7 +47,7 @@ void repl(int vb) {
     unsigned int lno = 0;
     while (looping) {
         string input;
-        cout<<"Glaux("<<lno++<<")> ";
+        cout<<"Owlscript("<<lno++<<")> ";
         getline(cin, input);
         sb->init(input);
         vector<Instruction> code = compiler.compile(sb);
