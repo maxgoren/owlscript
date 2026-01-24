@@ -122,7 +122,7 @@ struct StackItem {
         return false;
     }
     StackItem& add(StackItem& rhs) {
-        if (type == OBJECT || rhs.type == OBJECT) {
+        if ((type == OBJECT && objval->type == STRING) || (rhs.type == OBJECT && rhs.objval->type == STRING)) {
             string str;
             for (char c : toString()) {
                 str.push_back(c);
