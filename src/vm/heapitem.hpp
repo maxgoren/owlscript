@@ -7,15 +7,14 @@
 #include "gcobject.hpp"
 using namespace std;
 
-enum GCType {
+enum HeapItemType {
     STRING, FUNCTION, CLOSURE, LIST, CLASS, REF, NILPTR
 };
 
-struct Scope;
-struct Function;
 struct StackItem;
 struct ClassObject;
 struct Closure;
+struct Function;
 
 string closureToString(Closure* cl);
 string listToString(deque<StackItem>* list);
@@ -26,7 +25,7 @@ void freeClass(ClassObject* obj);
 void freeFunction(Function* f);
 
 struct GCItem : GCObject {
-    GCType type;
+    HeapItemType type;
     union {
         string* strval;
         Function* func;

@@ -46,7 +46,7 @@ fn quicksort(let a, let l, let r) {
 let xs := [];
 let i := 12;
 while (i > 0) {
-    xs.append(i);  {*random(256));*}
+    xs.append(random(256));
     i--;
 }
 println xs;
