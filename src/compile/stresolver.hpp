@@ -113,11 +113,15 @@ class STBuilder {
                 } break;
                 case FIELD_EXPR: {
                     buildSymbolTable(t->left);
-                    buildSymbolTable(t->next);
+                    buildSymbolTable(t->right);
                 } break;
                 case RANGE_EXPR: {
                     buildSymbolTable(t->left);
-                    buildSymbolTable(t->next);
+                    buildSymbolTable(t->right);
+                } break;
+                case SETCOMP_EXPR: {
+                    buildSymbolTable(t->left);
+                    buildSymbolTable(t->right);
                 } break;
                 default: 
                     buildExpressionST(t->left, fromLet);
@@ -265,7 +269,11 @@ class ResolveLocals {
                 case RANGE_EXPR: {
                     resolve(node->left);
                     resolve(node->right);
-                }
+                } break;
+                case SETCOMP_EXPR: {
+                    resolve(node->left);
+                    resolve(node->right);
+                } break;
                 default: {
                     resolve(node->left);
                     resolve(node->right);

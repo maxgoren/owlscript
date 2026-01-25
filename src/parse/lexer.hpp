@@ -4,7 +4,7 @@
 #include <vector>
 #include "token.hpp"
 #include "lexer_matrix.h"
-#include "../buffer.hpp"
+#include "../util/buffer.hpp"
 using namespace std;
 
 class Lexer {
@@ -88,4 +88,5 @@ vector<Token> Lexer::lex(CharBuffer* buff) {
     tokens.push_back(Token(TK_EOI, "<fin>"));
     return tokens;
 }
+
 #endif

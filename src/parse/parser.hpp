@@ -16,7 +16,7 @@ using namespace std;
             
                 fn dub(let x) { return x+x; } 
             
-            will generate the same instruction sequence as 
+            will generate the _same_ instruction sequence as 
             
                 let dub := &(let x) -> x+x;
             
@@ -39,6 +39,7 @@ class Parser {
         astnode* parseFunctionCallAndSubscripts(astnode* n);
         astnode* primary();
         astnode* unary();
+        astnode* listOp();
         astnode* factor();
         astnode* term();
         astnode* relopExpr() ;
@@ -59,6 +60,7 @@ class Parser {
         astnode* statement();
         astnode* stmt_list();
         bool noisey;
+        bool in_list_consxr;
     public:
         Parser(bool debug);
         astnode* parse(vector<Token> tokens) ;
@@ -66,6 +68,7 @@ class Parser {
 
 Parser::Parser(bool debug = false) {
     noisey = debug;
+    in_list_consxr = false;
 }
 astnode* Parser::parse(vector<Token> tokens) {
     init(tokens);
@@ -180,7 +183,9 @@ astnode* Parser::primary() {
     } else if (expect(TK_LB)) {
         n = new astnode(LISTCON_EXPR, current());
         match(TK_LB);
+        in_list_consxr = true;
         n->left = argsList();
+        in_list_consxr = false;
         match(TK_RB);
     } else if (expect(TK_APPEND)) {
         n = new astnode(LIST_EXPR, current());
@@ -227,7 +232,7 @@ astnode* Parser::primary() {
         n->left = expression();
         match(TK_RPAREN);
     }
-    if (n != nullptr && (n->expr == ID_EXPR || n->expr == LIST_EXPR)) {
+    if (n != nullptr && (n->expr == ID_EXPR || n->expr == LIST_EXPR || n->expr == LAMBDA_EXPR)) {
         n = parseFunctionCallAndSubscripts(n);
     }
     return n;
@@ -247,11 +252,21 @@ astnode* Parser::unary() {
         t->left = n;
         n = t;
     }
+    return n;
+}
+astnode* Parser::listOp() {
+    astnode* n = unary();
     if (expect(TK_RANGE)) {
         astnode* t = new astnode(RANGE_EXPR, current());
         match(TK_RANGE);
         t->left = n;
-        t->right = primary();
+        t->right = unary();
+        n = t;
+    }
+    if (expect(TK_LOGIC_OR) && in_list_consxr) {
+        astnode* t = new astnode(SETCOMP_EXPR, current());
+        t->left = n;
+        t->right = unary();
         n = t;
     }
     return n;
