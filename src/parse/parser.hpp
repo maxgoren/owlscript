@@ -272,12 +272,12 @@ astnode* Parser::listOp() {
     return n;
 }
 astnode* Parser::factor() {
-    astnode* n = unary();
+    astnode* n = listOp();
     while (expect(TK_MUL) || expect(TK_DIV) || expect(TK_MOD)) {
         astnode* q = new astnode(BIN_EXPR, current());
         match(lookahead());
         q->left = n;
-        q->right = unary();
+        q->right = listOp();
         n = q;
     }
     return n;
