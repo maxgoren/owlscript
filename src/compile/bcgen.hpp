@@ -7,6 +7,7 @@
 #include "../vm/constpool.hpp"
 #include "scopingst.hpp"
 #include "stresolver.hpp"
+#include "compiler_state.hpp"
 using namespace std;
 
 
@@ -58,7 +59,7 @@ class  ByteCodeGenerator {
     public:
         ByteCodeGenerator(bool debug);
         ConstPool& getConstPool() ;
-        vector<Instruction> compile(astnode* n);
+        vector<Instruction> compile(astnode* n, CompilerState& cs);
 };
 
 ByteCodeGenerator::ByteCodeGenerator(bool debug = false) {
@@ -71,9 +72,12 @@ ByteCodeGenerator::ByteCodeGenerator(bool debug = false) {
 ConstPool& ByteCodeGenerator::getConstPool() {
     return symTable.getConstPool();
 }
-vector<Instruction> ByteCodeGenerator::compile(astnode* n) {
+vector<Instruction> ByteCodeGenerator::compile(astnode* n, CompilerState& cs) {
+    cs = BUILD_ST;
     sr.buildSymbolTable(n, &symTable);
+    cs = RESOLVE_NAMES;
     rl.resolveLocals(n, &symTable);
+    cs = CODE_GEN;
     genCode(n, false);
     if (noisey) {
         printByteCode();

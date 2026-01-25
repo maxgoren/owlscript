@@ -6,7 +6,13 @@
 #include "vm/vm.hpp"
 using namespace std;
 
+#define MAJOR_VER     0
+#define MINOR_VER    88
+#define RELEASE_VER  'a'
 
+void printVersion() {
+    printf("Owlscript v%d.%d%c, (c) 2026 MaxGCoding.com\n", MAJOR_VER, MINOR_VER, RELEASE_VER);
+}
 
 void initStdLib(Compiler& compiler, VM& vm) {
     FileStringBuffer* fb = new FileStringBuffer();
@@ -45,6 +51,7 @@ void repl(int vb) {
     VM vm;
     initStdLib(compiler, vm);
     unsigned int lno = 0;
+    printVersion();
     while (looping) {
         string input;
         cout<<"Owlscript("<<lno++<<")> ";

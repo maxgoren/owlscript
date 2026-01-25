@@ -1,0 +1,23 @@
+fn isOdd(let x) {
+    if (x-2 == 0) {
+        return false;
+    }
+    if (x-2 < 0) {
+        return true;
+    }
+    return isOdd(x-2);
+}
+
+fn isEven(let x) {
+    return !isOdd(x);
+}
+
+let i := 1;
+while (i < 11) {
+    if (isOdd(i)) {
+        println i + " is odd.";
+    } else {
+        println i + " is even.";
+    }
+    i := i + 1;
+}

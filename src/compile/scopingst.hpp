@@ -189,7 +189,11 @@ void ScopingST::openObjectScope(string name) {
     }
 }
 void ScopingST::copyObjectScope(string instanceName, string objName) {
-    currentScope->insert(instanceName, SymbolTableEntry(instanceName, nextAddr(), objectDefs[objName]->cpIdx, CLASSVAR, depth(currentScope)+1));
+    if (objectDefs.find(objName) == objectDefs.end()) {
+        cout<<"Attempted to instantiate Unknown class '"<<objName<<"'"<<endl;
+    } else {
+        currentScope->insert(instanceName, SymbolTableEntry(instanceName, nextAddr(), objectDefs[objName]->cpIdx, CLASSVAR, depth(currentScope)+1));
+    }
 }
 void ScopingST::openFunctionScope(string name, int L1) {
     if (currentScope->find(name) != currentScope->end()) {

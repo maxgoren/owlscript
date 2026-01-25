@@ -1,0 +1,8 @@
+class Samp {
+    let bell;
+    let bang;
+};
+
+let xs := new Samp(13, "hey");
+
+println xs;
