@@ -73,6 +73,13 @@ class STBuilder {
                 case STMT_LIST: {
                     buildStatementST(t->left);
                 } break;
+                case FOREACH_STMT: {
+                    t->token.setString(nameBlock());
+                    symTable->openFunctionScope(t->token.getString(), -1);
+                    buildSymbolTable(t->left);
+                    buildSymbolTable(t->right);
+                    symTable->closeScope();
+                } break;
                 default: 
                 break;
             }
@@ -122,6 +129,12 @@ class STBuilder {
                 case SETCOMP_EXPR: {
                     buildSymbolTable(t->left);
                     buildSymbolTable(t->right);
+                } break;
+                case ITERATOR_EXPR: {
+                    symTable->insert("itr");
+                    symTable->insert("clti");
+                    buildExpressionST(t->left, true);
+                    buildExpressionST(t->right, false);
                 } break;
                 default: 
                     buildExpressionST(t->left, fromLet);
@@ -236,6 +249,12 @@ class ResolveLocals {
                 case EXPR_STMT: {
                     resolve(node->left);
                 } break;
+                case FOREACH_STMT: {
+                    openScope(node->token.getString());
+                    resolve(node->left);
+                    resolve(node->right);
+                    closeScope();
+                } break;
             }
         }
         void resolveExpression(astnode* node) {
@@ -271,6 +290,14 @@ class ResolveLocals {
                     resolve(node->right);
                 } break;
                 case SETCOMP_EXPR: {
+                    resolve(node->left);
+                    resolve(node->right);
+                } break;
+                case ITERATOR_EXPR: {
+                    declareName(node->left->token.getString());
+                    defineName(node->left->token.getString());
+                    declareName("itr");
+                    defineName("itr");
                     resolve(node->left);
                     resolve(node->right);
                 } break;

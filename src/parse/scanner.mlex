@@ -1,5 +1,6 @@
 {"if",TK_IF}
 {"or", TK_OR}
+{"of", TK_OF}
 {"and", TK_AND}
 {"fn", TK_FN}
 {"def", TK_FN}
@@ -9,6 +10,7 @@
 {"new", TK_NEW}
 {"pop", TK_POP}
 {"var", TK_LET}
+{"for", TK_FOR}
 {"nil", TK_NIL}
 {"else", TK_ELSE}
 {"push", TK_PUSH}
@@ -17,6 +19,7 @@
 {"first", TK_FIRST}
 {"rest", TK_REST}
 {"empty", TK_EMPTY}
+{"from", TK_FROM}
 {"floor", TK_FLOOR}
 {"while", TK_WHILE}
 {"false", TK_FALSE}
@@ -26,6 +29,7 @@
 {"random", TK_RANDOM}
 {"append", TK_APPEND}
 {"return", TK_RETURN}
+{"import", TK_IMPORT}
 {"println", TK_PRINTLN}
 {"private", TK_PRIVATE}
 {"\(", TK_LPAREN}

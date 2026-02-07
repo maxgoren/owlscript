@@ -209,13 +209,18 @@ class VM {
         void makeRange() {
             double hi = opstk[sp--].numval;
             double lo = opstk[sp--].numval;
-            if (hi < lo) swap(hi, lo);
             if (top(0).type != OBJECT && (top(0).objval->type != LIST)) {
                 cout<<"Error: ranges require a list context."<<endl;
                 return;
             }
-            for (int i = lo; i <= hi; i++) {
-                top(0).objval->list->push_back((double)i);
+            if (lo < hi) {
+                for (int i = lo; i <= hi; i++) {
+                    top(0).objval->list->push_back((double)i);
+                }
+            } else {
+                for (int i = lo; i >= hi; i--) {
+                    top(0).objval->list->push_back((double)i);
+                }
             }
         }
         void duplicateTop() {
@@ -255,7 +260,7 @@ class VM {
                     top(1).boolval = top(0).lessThan(top(1));
                 } break;
                 case VM_LTE: {
-                top(1).boolval = (top(1).lessThan(top(0)) || (top(0).equals(top(1))));
+                    top(1).boolval = (top(1).lessThan(top(0)) || (top(0).equals(top(1))));
                 } break;
                 case VM_GTE: {
                     top(1).boolval = (top(0).lessThan(top(1)) || (top(0).equals(top(1))));

@@ -42,21 +42,23 @@ class Parser {
         astnode* listOp();
         astnode* factor();
         astnode* term();
-        astnode* relopExpr() ;
-        astnode* compExpr() ;
-        astnode* logicalExpr() ;
+        astnode* relopExpr();
+        astnode* compExpr();
+        astnode* logicalExpr();
         astnode* assignExpr();
         astnode* expression();
-        astnode* functionBody(astnode* n) ;
-        astnode* parseIfStmt() ;
-        astnode* parseWhileStmt() ;
+        astnode* functionBody(astnode* n);
+        astnode* parseIfStmt();
+        astnode* parseWhileStmt();
+        astnode* parseForeach();
         astnode* parseVarDec();
         astnode* parseSequence();
-        astnode* parseBlock() ;
+        astnode* parseBlock();
         astnode* parseFuncDef();
-        astnode* parseClassDef() ;
-        astnode* parsePrintStmt() ;
-        astnode* parseReturn() ;
+        astnode* parseClassDef();
+        astnode* parsePrintStmt();
+        astnode* parseImportStmt();
+        astnode* parseReturn();
         astnode* statement();
         astnode* stmt_list();
         bool noisey;
@@ -269,6 +271,13 @@ astnode* Parser::listOp() {
         t->right = unary();
         n = t;
     }
+    if (expect(TK_OF)) {
+        astnode* t = new astnode(ITERATOR_EXPR, current());
+        match(TK_OF);
+        t->left = n;
+        t->right = unary();
+        n = t;
+    }
     return n;
 }
 astnode* Parser::factor() {
@@ -464,6 +473,26 @@ astnode* Parser::parseReturn() {
     n->left = expression();
     return n;
 }
+
+astnode* Parser::parseImportStmt() {
+    astnode* n = new astnode(IMPORT_STMT, current());
+    match(TK_IMPORT);
+    n->left = expression();
+    match(TK_FROM);
+    n->right = expression();
+    return n;
+}
+
+astnode* Parser::parseForeach() {
+    astnode* n = new astnode(FOREACH_STMT, current());
+    match(TK_FOR);
+    match(TK_LPAREN);
+    n->left = expression();
+    match(TK_RPAREN);    
+    n->right = stmt_list();
+    return n;
+}
+
 astnode* Parser::statement() {
     astnode* n = nullptr;
     switch (lookahead()) {
@@ -471,11 +500,13 @@ astnode* Parser::statement() {
         case TK_PRINTLN:  n = parsePrintStmt(); break;
         case TK_CLASS:    n = parseClassDef();break;
         case TK_IF:       n = parseIfStmt(); break;
+        case TK_FOR:      n = parseForeach(); break;
         case TK_WHILE:    n = parseWhileStmt();break;
         case TK_FN:       n = parseFuncDef(); break;
         case TK_LET:      n = parseVarDec(); break;
         case TK_LCURLY:   n = parseBlock(); break;
         case TK_RETURN:   n = parseReturn(); break;
+        case TK_IMPORT:   n = parseImportStmt(); break;
         default:
             n = new astnode(EXPR_STMT, current());
             n->left = expression();

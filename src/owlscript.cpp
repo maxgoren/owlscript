@@ -25,7 +25,7 @@ void initStdLib(Compiler& compiler, VM& vm) {
 void compileAndRun(CharBuffer* buff, int verbosity) {
     VM vm;
     Compiler compiler(verbosity);
-    initStdLib(compiler, vm);
+    //initStdLib(compiler, vm);
     vector<Instruction> code = compiler.compile(buff);
     vm.setConstPool(compiler.getConstPool());
     vm.run(code, verbosity);
@@ -49,7 +49,7 @@ void repl(int vb) {
     StringBuffer* sb = new StringBuffer();
     Compiler compiler(vb);
     VM vm;
-    initStdLib(compiler, vm);
+    //initStdLib(compiler, vm);
     unsigned int lno = 0;
     printVersion();
     while (looping) {
