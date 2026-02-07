@@ -205,6 +205,8 @@ class VM {
         void listLength() {
             if (top().type == OBJECT && top().objval->type == LIST)
                 top() = ((double)top().objval->list->size());
+            if (top().type == OBJECT && top().objval->type == STRING)
+                top() = ((double)top().objval->strval->size());
         }
         void makeRange() {
             double hi = opstk[sp--].numval;
