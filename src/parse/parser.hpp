@@ -478,8 +478,8 @@ astnode* Parser::parseImportStmt() {
     astnode* n = new astnode(IMPORT_STMT, current());
     match(TK_IMPORT);
     n->left = expression();
-    match(TK_FROM);
-    n->right = expression();
+    //match(TK_FROM);
+    //n->right = expression();
     return n;
 }
 

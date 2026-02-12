@@ -36,10 +36,25 @@ class Compiler {
                 state = PARSE;
                 astnode* ast = parser.parse(tokens);
                 if (ast) {
-                    state = CODE_GEN;
-                    vector<Instruction> pg = codeGen.compile(ast, state);
-                    state = DONE;
-                    return pg;
+                    while (ast != nullptr && ast->kind == STMTNODE && ast->stmt == IMPORT_STMT) {
+                        if (ast->left && ast->left->kind == EXPRNODE && ast->left->expr == ID_EXPR) {
+                            string name = ast->left->token.getString();
+                            name += ".owl";
+                            FileStringBuffer* fsb = new FileStringBuffer();
+                            fsb->readFile(name);
+                            compile(fsb);
+                        }
+                        ast = ast->next;
+                    }
+                    if (ast != nullptr) {
+                        state = CODE_GEN;
+                        vector<Instruction> pg = codeGen.compile(ast, state);
+                        state = DONE;
+                        return pg;
+                    } else {
+                        state = DONE;
+                        return {halt};
+                    }
                 }
             }
             state = ERROR;

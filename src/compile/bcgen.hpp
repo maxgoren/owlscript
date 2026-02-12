@@ -54,7 +54,6 @@ class  ByteCodeGenerator {
         void genExpression(astnode* n, bool needLvalue) ;
         void genCode(astnode* n, bool needLvalue) ;
         void printOperand(StackItem& operand) ;
-        
         void printByteCode() ;
         
         void printConstPool() ;
@@ -483,6 +482,7 @@ void ByteCodeGenerator::emitWhile(astnode* n) {
     emit(Instruction(brf, L2));
     restore();
 }
+
 void ByteCodeGenerator::emitIfStmt(astnode* n) {
     if (n->right->token.getSymbol() == TK_ELSE) {
         astnode* lrc = n->right;
@@ -526,23 +526,24 @@ void ByteCodeGenerator::emitTernaryExpr(astnode* n) {
     emit(Instruction(jump, L3));
     restore();
 }
+
 void ByteCodeGenerator::genStatement(astnode* n, bool needLvalue) {
     switch (n->stmt) {
-        case DEF_CLASS_STMT: { emitClassDef(n); } break;
-        case BLOCK_STMT:  { emitBlock(n);   } break;
-        case IF_STMT:     { emitIfStmt(n);   } break;
-        case LET_STMT:    { emitLet(n);      } break;
-        case PRINT_STMT:  { emitPrint(n);      } break;
-        case RETURN_STMT: { emitReturn(n);     } break;
-        case FOREACH_STMT: { emitForeach(n); } break;
-        case WHILE_STMT:  { emitWhile(n);      } break;
-        case EXPR_STMT:   { genCode(n->left, false); } break;
+        case DEF_CLASS_STMT: { emitClassDef(n);} break;
+        case BLOCK_STMT:     { emitBlock(n);   } break;
+        case IF_STMT:        { emitIfStmt(n);  } break;
+        case LET_STMT:       { emitLet(n);     } break;
+        case PRINT_STMT:     { emitPrint(n);   } break;
+        case RETURN_STMT:    { emitReturn(n);  } break;
+        case FOREACH_STMT:   { emitForeach(n); } break;
+        case WHILE_STMT:     { emitWhile(n);   } break;
+        case EXPR_STMT:      { genCode(n->left, false); } break;
         default: break;
     };
 }
 void ByteCodeGenerator::genExpression(astnode* n, bool needLvalue) {
     switch (n->expr) {
-        case CONST_EXPR:     { emitConstant(n);  } break;
+        case CONST_EXPR:     { emitConstant(n);         } break;
         case ID_EXPR:        { emitLoad(n, needLvalue); } break;
         case BIN_EXPR:       { emitBinaryOperator(n); } break;
         case UOP_EXPR:       { emitUnaryOperator(n);  } break; 
