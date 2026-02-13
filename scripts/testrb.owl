@@ -1,14 +1,14 @@
-import redblacktree
+import redblacktree;
 
 let root := nil;
 let sed := "asearchingexample";
 let i := 0;
 while (i < 17) {
-    root := put(root, sed[i]);
+    root := rbput(root, sed[i]);
     i++;
 }
-preorder(root);
+rbpreorder(root);
 println " ";
-inorder(root);
+rbinorder(root);
 println " "
 println isRedBlack(root);

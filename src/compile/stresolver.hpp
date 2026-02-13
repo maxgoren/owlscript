@@ -119,8 +119,8 @@ class STBuilder {
                     buildSymbolTable(t->right);
                 } break;
                 case FIELD_EXPR: {
+                    //rright hand side resolved dynamically at run time.
                     buildSymbolTable(t->left);
-                    buildSymbolTable(t->right);
                 } break;
                 case RANGE_EXPR: {
                     buildSymbolTable(t->left);
@@ -279,6 +279,7 @@ class ResolveLocals {
                     resolve(node->right);
                 } break;
                 case FIELD_EXPR: {
+                    //rright hand side resolved dynamically at run time.
                     resolve(node->left);
                 } break;
                 case BLESS_EXPR: {

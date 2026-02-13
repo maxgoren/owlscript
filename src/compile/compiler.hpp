@@ -41,7 +41,10 @@ class Compiler {
                             string name = ast->left->token.getString();
                             name += ".owl";
                             FileStringBuffer* fsb = new FileStringBuffer();
-                            fsb->readFile(name);
+                            if (!fsb->readFile(name)) {
+                                state = DONE;
+                                return {halt};
+                            }
                             compile(fsb);
                         }
                         ast = ast->next;

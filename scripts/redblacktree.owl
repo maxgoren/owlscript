@@ -8,14 +8,14 @@ class TreeNode {
     let right;
 }
 
-fn isRed(let tree) {
+fn _isRed(let tree) {
     if (tree == nil) {
         return false;
     }
     return (tree.color == red);
 }
 
-fn rotL(let h) {
+fn _rotateLeft(let h) {
     let x := h.right; 
     h.right := x.left; 
     x.left := h;
@@ -24,7 +24,7 @@ fn rotL(let h) {
     return x;
 }
 
-fn rotR(let h) {
+fn _rotateRight(let h) {
     let x := h.left;
     h.left := x.right;
     x.right := h;
@@ -33,7 +33,7 @@ fn rotR(let h) {
     return x;
 }
 
-fn colorFlip(let tree) {
+fn _colorFlip(let tree) {
     println "CF";
     tree.color := true;
     tree.left.color := false;
@@ -41,44 +41,44 @@ fn colorFlip(let tree) {
     return tree;
 }
 
-fn leftCase(let tree) {
-    if (isRed(tree.left.right)) {
+fn _leftCase(let tree) {
+    if (_isRed(tree.left.right)) {
         println "LLR";
-        tree.left := rotL(tree.left);
+        tree.left := _rotateLeft(tree.left);
     }
-    if (isRed(tree.left.left)) {
+    if (_isRed(tree.left.left)) {
         println "RR"
-        tree := rotR(tree);
+        tree := _rotateRight(tree);
     }
     return tree;
 }
 
-fn rightCase(let tree) {
-    if (isRed(tree.right.left)) {
+fn _rightCase(let tree) {
+    if (_isRed(tree.right.left)) {
         println "RRR";
-        tree.right := rotR(tree.right);
+        tree.right := _rotateRight(tree.right);
     }
-    if (isRed(tree.right.right)) {
+    if (_isRed(tree.right.right)) {
         println "LR";
-        tree := rotL(tree); 
+        tree := _rotateLeft(tree); 
     }
     return tree;
 }
 
-fn bal234(let tree) {
-    if (isRed(tree.left) && isRed(tree.right)) {
-        tree := colorFlip(tree);
+fn _bal234(let tree) {
+    if (_isRed(tree.left) && _isRed(tree.right)) {
+        tree := _colorFlip(tree);
     }
-    if (isRed(tree.left)) {
-        tree := leftCase(tree);
+    if (_isRed(tree.left)) {
+        tree := _leftCase(tree);
     }
-    if (isRed(tree.right)) {
-        tree := rightCase(tree);
+    if (_isRed(tree.right)) {
+        tree := _rightCase(tree);
     }
     return tree;
 }
 
-fn putR(let tree, let key) {
+fn _putRB(let tree, let key) {
     if (tree == nil) {
         tree := new TreeNode();
         tree.info := key;
@@ -86,62 +86,62 @@ fn putR(let tree, let key) {
         return tree;
     }
     if (key < tree.info) {
-        tree.left := putR(tree.left, key);
+        tree.left := _putRB(tree.left, key);
     } else {
-        tree.right := putR(tree.right, key);
+        tree.right := _putRB(tree.right, key);
     }
-    return bal234(tree);
+    return _bal234(tree);
 } 
 
-fn put(let tree, let key) {
+fn rbput(let tree, let key) {
     println "insert: " + key;
-    tree := putR(tree, key);
+    tree := _putRB(tree, key);
     tree.color := black;
     return tree;
 }
 
-fn preorder(let xs) {
+fn rbpreorder(let xs) {
     if (xs != nil) {
         print xs.info + " ";
-        preorder(xs.left);
-        preorder(xs.right);
+        rbpreorder(xs.left);
+        rbpreorder(xs.right);
     }
 }
 
-fn inorder(let xs) {
+fn rbinorder(let xs) {
     if (xs != nil) {
-        inorder(xs.left);
+        rbinorder(xs.left);
         print xs.info + " ";
-        inorder(xs.right);
+        rbinorder(xs.right);
     }
 }
 
-fn validate(let xs, let bb) {
+fn _validate(let xs, let bb) {
     if (xs == nil) {
         return bb == 0;
     }
-    if (!isRed(xs)) {
+    if (!_isRed(xs)) {
         bb--;
     }
-    if (isRed(xs) && isRed(xs.left)) {
+    if (_isRed(xs) && _isRed(xs.left)) {
         println "LDR";
         return false;
     }
-    if (isRed(xs) && isRed(xs.right)) {
+    if (_isRed(xs) && _isRed(xs.right)) {
         println "RDR";
         return false;
     }
-    return validate(xs.left, bb) && validate(xs.right, bb);
+    return _validate(xs.left, bb) && _validate(xs.right, bb);
 }
 
 fn isRedBlack(let xs) {
     let x := xs;
     let bb := 0;
     while (x != nil) {
-        if (!isRed(x)) {
+        if (!_isRed(x)) {
             bb++;
         }
         x := x.left;
     }
-    return validate(xs, bb);
+    return _validate(xs, bb);
 }

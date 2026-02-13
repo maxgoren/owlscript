@@ -71,11 +71,11 @@ class FileStringBuffer : public CharBuffer {
         int str_pos;
         int start;
         int line_start;
-        void read(std::string fname) {
+        bool read(std::string fname) {
             ifstream gfile(fname, ios::in);
             if (!gfile.is_open()) {
                 cout<<"Couldnt open "<<fname<<endl;
-                return;
+                return false;
             }
             string buff;
             while (gfile.good()) {
@@ -84,6 +84,7 @@ class FileStringBuffer : public CharBuffer {
             }
             line_pos = 0;
             str_pos = 0;
+            return true;
         }
     public:
         FileStringBuffer() {
@@ -146,8 +147,8 @@ class FileStringBuffer : public CharBuffer {
                 return true;
             return line_pos == lines.size()-1 && str_pos == lines[line_pos].size();
         }
-        void readFile(string fname) {
-            read(fname);
+        bool readFile(string fname) {
+            return read(fname);
         }
         int lineNo() {
             return line_pos;
