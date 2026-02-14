@@ -64,4 +64,20 @@ void preorder(astnode* node, int d) {
     }
 }
 
+bool isStmtNode(astnode* ast) {
+    return ast != nullptr && ast->kind == STMTNODE;
+}
+
+bool isExprNode(astnode* ast) {
+    return ast != nullptr && ast->kind == EXPRNODE;
+}
+
+bool isExprType(astnode* ast, ExprType type) {
+    return isExprNode(ast) && ast->expr == type;
+}
+
+bool isStmtType(astnode* ast, StmtType type) {
+    return isStmtNode(ast) && ast->stmt == type;
+}
+
 #endif

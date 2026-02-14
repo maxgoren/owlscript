@@ -17,6 +17,12 @@ class Compiler {
         Parser parser;
         ByteCodeGenerator codeGen;
         CompilerState state;
+        bool isImportStatement(astnode* ast) {
+            return isStmtType(ast, IMPORT_STMT);
+        }
+        bool isIDExpr(astnode* ast) {
+            return isExprType(ast, ID_EXPR);
+        }
     public:
         Compiler(int verbosity = 0) {
             if (verbosity > 0) {
@@ -36,8 +42,8 @@ class Compiler {
                 state = PARSE;
                 astnode* ast = parser.parse(tokens);
                 if (ast) {
-                    while (ast != nullptr && ast->kind == STMTNODE && ast->stmt == IMPORT_STMT) {
-                        if (ast->left && ast->left->kind == EXPRNODE && ast->left->expr == ID_EXPR) {
+                    while (isImportStatement(ast)) {
+                        if (isIDExpr(ast->left)) {
                             string name = ast->left->token.getString();
                             name += ".owl";
                             FileStringBuffer* fsb = new FileStringBuffer();

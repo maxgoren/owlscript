@@ -14,7 +14,7 @@ struct CompilerState {
     COMPILER_STATE previous;
     CompilerState() {
         current = READY;
-        previous = DONE;
+        previous = READY;
     }
     void setState(COMPILER_STATE state) {
         previous = current;

@@ -111,7 +111,7 @@ TKSymbol Parser::lookahead() {
 }
 astnode* Parser::argsList() {
     astnode d, *t = &d;
-    while (t != nullptr && !expect(TK_RPAREN) && !expect(TK_RB)) {
+    while (!expect(TK_RPAREN) && !expect(TK_RB)) {
         if (expect(TK_COMMA))
             match(TK_COMMA);
         t->next = expression();
@@ -121,7 +121,7 @@ astnode* Parser::argsList() {
 }
 astnode* Parser::paramList() {
     astnode d, *t = &d;
-    while (t != nullptr && !expect(TK_RPAREN)) {
+    while (!expect(TK_RPAREN)) {
         if (expect(TK_COMMA))
             match(TK_COMMA);
         t->next = statement();

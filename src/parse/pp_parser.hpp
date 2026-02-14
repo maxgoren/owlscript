@@ -61,9 +61,15 @@ class Parser {
         astnode* parseReturn();
         astnode* statement();
         astnode* stmt_list();
+
+        astnode* parseUnaryPrefix(int prec);
+        astnode* parseListConstructor(int prec);
+        astnode* parseConstExpr(int prec);
         astnode* parseExpr(int prec);
         astnode* parseFirst(int prec);
-        astnode* parseRest(astnode* lhs, int prec);
+        astnode* parseRest(astnode* lhs);
+        int precedence(TKSymbol sym);
+        int associates(TKSymbol sym);
         bool noisey;
         bool in_list_consxr;
     public:
@@ -111,7 +117,7 @@ TKSymbol Parser::lookahead() {
 }
 astnode* Parser::argsList() {
     astnode d, *t = &d;
-    while (t != nullptr && !expect(TK_RPAREN) && !expect(TK_RB)) {
+    while (!expect(TK_RPAREN) && !expect(TK_RB)) {
         if (expect(TK_COMMA))
             match(TK_COMMA);
         t->next = expression();
@@ -121,7 +127,7 @@ astnode* Parser::argsList() {
 }
 astnode* Parser::paramList() {
     astnode d, *t = &d;
-    while (t != nullptr && !expect(TK_RPAREN)) {
+    while (!expect(TK_RPAREN)) {
         if (expect(TK_COMMA))
             match(TK_COMMA);
         t->next = statement();
@@ -159,39 +165,10 @@ astnode* Parser::parseFunctionCallAndSubscripts(astnode* n) {
 }
 astnode* Parser::primary() {
     astnode* n = nullptr;
-    if (expect(TK_NUM)) {
-        n = new astnode(CONST_EXPR, current());
-        match(TK_NUM);
-    } else if (expect(TK_STRING)) {
-        n = new astnode(CONST_EXPR, current());
-        match(TK_STRING);
-    } else if (expect(TK_ID)) {
-        n = new astnode(ID_EXPR, current());
-        match(TK_ID);
-    } else if (expect(TK_TRUE)) {
-        n = new astnode(CONST_EXPR, current());
-        match(TK_TRUE);
-    } else if (expect(TK_FALSE)) {
-        n = new astnode(CONST_EXPR, current());
-        match(TK_FALSE);
-    } else if (expect(TK_NIL)) {
-        n = new astnode(CONST_EXPR, current());
-        match(TK_NIL);
-    } else if (expect(TK_LPAREN)) {
+    if (expect(TK_LPAREN)) {
         match(TK_LPAREN);
         n = expression();
         match(TK_RPAREN);
-    } else if (expect(TK_LAMBDA)) {
-        n = new astnode(LAMBDA_EXPR, current());
-        match(TK_LAMBDA);
-        n = functionBody(n);
-    } else if (expect(TK_LB)) {
-        n = new astnode(LISTCON_EXPR, current());
-        match(TK_LB);
-        in_list_consxr = true;
-        n->left = argsList();
-        in_list_consxr = false;
-        match(TK_RB);
     } else if (expect(TK_APPEND)) {
         n = new astnode(LIST_EXPR, current());
         match(TK_APPEND);
@@ -213,22 +190,6 @@ astnode* Parser::primary() {
         n = new astnode(LIST_EXPR, current());
         match(TK_EMPTY);
         match(TK_LPAREN);
-        match(TK_RPAREN);
-    } else if (expect(TK_NEW)) {
-        n = new astnode(BLESS_EXPR, current());
-        match(TK_NEW);
-        n->left = new astnode(ID_EXPR, current());
-        match(TK_ID);
-        match(TK_LPAREN);
-        n->right = argsList();
-        match(TK_RPAREN);
-    } else if (expect(TK_RANDOM)) {
-        n = new astnode(CONST_EXPR, current());
-        match(TK_RANDOM);
-        match(TK_LPAREN);
-        if (!expect(TK_RPAREN)) {
-            n->left = primary();
-        }
         match(TK_RPAREN);
     } else if (expect(TK_FLOOR)) {
         n = new astnode(UOP_EXPR, current());
@@ -363,6 +324,169 @@ astnode* Parser::expression() {
     }
     return n;
 }
+
+bool isBinOp(TKSymbol symbol) {
+    switch (symbol) {
+        case TK_EQU:  case TK_LT:  case TK_GT:
+        case TK_NEQ: case TK_LTE: case TK_GTE:
+        case TK_MATCHRE: case TK_AND: case TK_OR:
+        case TK_ASSIGN: case TK_ASSIGN_SUM:
+        case TK_ASSIGN_DIFF:  case TK_MOD:
+        case TK_ADD: case TK_SUB: case TK_MUL:
+        case TK_DIV:
+            return true;
+        default:
+            break;
+    }
+    return false;
+}
+
+int Parser::precedence(TKSymbol sym) {
+    switch (sym) {
+        case TK_LAMBDA: return 10;
+        case TK_ASSIGN: return 20;
+        case TK_ASSIGN_SUM: return 21;
+        case TK_ASSIGN_DIFF: return 21;
+        case TK_AND: return 24;
+        case TK_OR: return 24;
+        case TK_LT: return 25;
+        case TK_GT: return 25;
+        case TK_EQU: return 25;
+        case TK_NEQ: return 25;
+        case TK_LTE: return 25;
+        case TK_GTE: return 25;
+        case TK_MATCHRE: return 25;
+        case TK_SUB: return 50;
+        case TK_ADD: return 50;
+        case TK_MUL: return 60;
+        case TK_DIV: return 60;
+        case TK_MOD: return 60;
+        case TK_RANDOM:
+        case TK_NEW:
+        case TK_INCREMENT:
+        case TK_DECREMENT:
+        case TK_PERIOD:
+        case TK_LB:
+        case TK_TRUE:
+        case TK_FALSE:
+        case TK_PUSH:
+        case TK_APPEND:
+        case TK_FIRST:
+        case TK_REST:
+        case TK_GET:
+        case TK_POP:
+        case TK_EMPTY:
+        case TK_SIZE:
+        case TK_LPAREN: return 100;
+        default:
+            break;
+    }
+    return 10;
+}
+
+astnode* Parser::parseConstExpr(int prec) {
+    astnode* n = nullptr;
+    if (expect(TK_NUM)) {
+        n = new astnode(CONST_EXPR, current());
+        match(TK_NUM);
+    } else if (expect(TK_STRING)) {
+        n = new astnode(CONST_EXPR, current());
+        match(TK_STRING);
+    } else if (expect(TK_TRUE)) {
+        n = new astnode(CONST_EXPR, current());
+        match(TK_TRUE);
+    } else if (expect(TK_FALSE)) {
+        n = new astnode(CONST_EXPR, current());
+        match(TK_FALSE);
+    } else if (expect(TK_NIL)) {
+        n = new astnode(CONST_EXPR, current());
+        match(TK_NIL);
+    }
+    return n;
+}
+
+astnode* Parser::parseUnaryPrefix(int prec) {
+    astnode* n = nullptr;
+    if (expect(TK_SUB) || expect(TK_NOT)) {
+        n = new astnode(UOP_EXPR, current());
+        match(lookahead());
+        n->left = parseExpr(prec);
+    }
+    return n;
+}
+
+astnode* Parser::parseListConstructor(int prec) {
+    astnode* n = nullptr;        
+    if (expect(TK_LB)) {
+        n = new astnode(LISTCON_EXPR, current());
+        match(TK_LB);
+        in_list_consxr = true;
+        n->left = argsList();
+        in_list_consxr = false;
+        match(TK_RB);
+    }
+    return n;
+}
+
+astnode* Parser::parseFirst(int prec) {
+    astnode* node = nullptr;
+    switch (lookahead()) {
+        case TK_NUM: 
+        case TK_STRING:
+        case TK_NIL:
+        case TK_TRUE: 
+        case TK_FALSE:  return parseConstExpr(prec);
+        case TK_SUB:    return parseUnaryPrefix(prec);
+        case TK_LB:     return parseListConstructor(prec);
+        case TK_NEW: {
+            node = new astnode(BLESS_EXPR, current());
+            match(TK_NEW);
+            node->left = new astnode(ID_EXPR, current());
+            match(TK_ID);
+            match(TK_LPAREN);
+            node->right = argsList();
+            match(TK_RPAREN);
+        } break;
+        case TK_LAMBDA: {
+            node = new astnode(LAMBDA_EXPR, current());
+            match(TK_LAMBDA);
+            node = functionBody(node);
+        } break;
+        case TK_ID:     {
+            node = new astnode(ID_EXPR, current());
+            match(TK_ID);
+        } break;
+        case TK_RANDOM: {
+            node = new astnode(CONST_EXPR, current());
+            match(TK_RANDOM);
+            match(TK_LPAREN);
+            if (!expect(TK_RPAREN)) {
+                node->left = parseExpr(prec);
+            }
+            match(TK_RPAREN);
+        } break;
+        default:
+            break;
+    }
+    return node;
+}
+
+astnode* Parser::parseRest(astnode* lhs) {
+
+}
+
+
+astnode* Parser::parseExpr(int prec) {
+    astnode* lhs = parseFirst(prec);
+    while (prec < precedence(lookahead())) {
+        lhs = parseRest(lhs);
+    }
+    return lhs;
+}
+
+
+
+
 astnode* Parser::functionBody(astnode* n) {
     n->left = paramList();
     match(TK_RPAREN);

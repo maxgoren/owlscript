@@ -1,6 +1,6 @@
-import stdlib
+import stdlib;
 
-fn fib(let k) {
+def fib(var k) {
     if (k == 0) {
         return 0;
     }
@@ -9,6 +9,5 @@ fn fib(let k) {
     }
     return fib(k-1)+fib(k-2);
 }
-
 let xs := map([1 .. 20], fib);
 println xs;
