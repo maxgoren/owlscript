@@ -93,26 +93,19 @@ fn _putRB(let tree, let key) {
     return _bal234(tree);
 } 
 
-fn rbput(let tree, let key) {
-    println "insert: " + key;
-    tree := _putRB(tree, key);
-    tree.color := black;
-    return tree;
-}
-
-fn rbpreorder(let xs) {
+fn _rbpreorder(let xs) {
     if (xs != nil) {
         print xs.info + " ";
-        rbpreorder(xs.left);
-        rbpreorder(xs.right);
+        _rbpreorder(xs.left);
+        _rbpreorder(xs.right);
     }
 }
 
-fn rbinorder(let xs) {
+fn _rbinorder(let xs) {
     if (xs != nil) {
-        rbinorder(xs.left);
+        _rbinorder(xs.left);
         print xs.info + " ";
-        rbinorder(xs.right);
+        _rbinorder(xs.right);
     }
 }
 
@@ -144,4 +137,21 @@ fn isRedBlack(let xs) {
         x := x.left;
     }
     return _validate(xs, bb);
+}
+
+fn rb_insert(let tree, let key) {
+    println "insert: " + key;
+    tree := _putRB(tree, key);
+    tree.color := black;
+    return tree;
+}
+
+fn rb_sort(let tree) {
+    _rbinorder(tree);
+    println " ";
+}
+
+fn rb_print(let tree) {
+    _rbpreorder(tree);
+    println " ";
 }

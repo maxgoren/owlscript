@@ -492,7 +492,9 @@ astnode* Parser::parseForeach() {
     match(TK_LPAREN);
     n->left = expression();
     match(TK_RPAREN);    
+    match(TK_LCURLY);
     n->right = stmt_list();
+    match(TK_RCURLY);
     return n;
 }
 
