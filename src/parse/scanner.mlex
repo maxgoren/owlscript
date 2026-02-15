@@ -1,3 +1,4 @@
+{"as", TK_AS}
 {"if",TK_IF}
 {"or", TK_OR}
 {"of", TK_OF}

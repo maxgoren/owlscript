@@ -80,9 +80,7 @@ fn _bal234(let tree) {
 
 fn _putRB(let tree, let key) {
     if (tree == nil) {
-        tree := new TreeNode();
-        tree.info := key;
-        tree.color := true;
+        tree := new TreeNode(true, key);
         return tree;
     }
     if (key < tree.info) {

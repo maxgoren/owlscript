@@ -322,14 +322,21 @@ void ByteCodeGenerator::emitBlessExpr(astnode* n) {
         return;
     }
     ClassObject* klass = symTable.lookupClass(name);
-    emit(Instruction(mkstruct, cpIdx, klass->scope->size()));
-    int i = 0;
+
     auto it = klass->scope->iter();
-    for (auto x = n->right; x != nullptr; x = x->next) {
+    for (auto x = n->right; x != nullptr && !it.done(); x = x->next) {
         genExpression(x, false);
+        cout<<"Gen for constructor"<<endl;
+        it.next();
+    }
+
+    emit(Instruction(mkstruct, cpIdx, klass->scope->size()));
+
+    it = klass->scope->iter();
+    for (auto x = n->right; x != nullptr && !it.done(); x = x->next) {
         if (it.get().constPoolIndex == -1)
             it.get().constPoolIndex = symTable.getConstPool().insert(it.get().name);
-        emit(Instruction(stfield, symTable.getConstPool().get(it.get().constPoolIndex)));
+        emit(Instruction(stfield, it.get().constPoolIndex));
         it.next();
     }
 }

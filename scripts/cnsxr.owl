@@ -3,6 +3,6 @@ class Samp {
     let bang;
 };
 
-let xs := new Samp(13, "hey");
+let xs := new Samp("hello", "world");
 
 println xs;

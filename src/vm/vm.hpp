@@ -168,6 +168,8 @@ class VM {
                 int idx = inst.operand[0].intval;    
                 string fieldName = *(constPool.get(idx).objval->strval);
                 top(0).objval->object->fields[fieldName] = top(1);
+                top(1) = top(0);
+                --sp;
             }
         }
         void loadConst(Instruction& inst) {

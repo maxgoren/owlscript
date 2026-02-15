@@ -259,6 +259,9 @@ astnode* Parser::unary() {
     }
     return n;
 }
+
+//for (i of [1 .. 3] as &(let i) -> i+i) { println i; }
+
 astnode* Parser::listOp() {
     astnode* n = unary();
     if (expect(TK_RANGE)) {
@@ -268,15 +271,16 @@ astnode* Parser::listOp() {
         t->right = unary();
         n = t;
     }
-    if (expect(TK_LOGIC_OR) && in_list_consxr) {
-        astnode* t = new astnode(SETCOMP_EXPR, current());
+    if (expect(TK_OF)) {
+        astnode* t = new astnode(ITERATOR_EXPR, current());
+        match(TK_OF);
         t->left = n;
         t->right = unary();
         n = t;
     }
-    if (expect(TK_OF)) {
-        astnode* t = new astnode(ITERATOR_EXPR, current());
-        match(TK_OF);
+    if ((expect(TK_LOGIC_OR) || expect(TK_AS)) && in_list_consxr) {
+        astnode* t = new astnode(SETCOMP_EXPR, current());
+        match(lookahead());
         t->left = n;
         t->right = unary();
         n = t;
