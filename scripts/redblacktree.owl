@@ -43,11 +43,9 @@ fn _colorFlip(let tree) {
 
 fn _leftCase(let tree) {
     if (_isRed(tree.left.right)) {
-        println "LLR";
         tree.left := _rotateLeft(tree.left);
     }
     if (_isRed(tree.left.left)) {
-        println "RR"
         tree := _rotateRight(tree);
     }
     return tree;
@@ -55,17 +53,15 @@ fn _leftCase(let tree) {
 
 fn _rightCase(let tree) {
     if (_isRed(tree.right.left)) {
-        println "RRR";
         tree.right := _rotateRight(tree.right);
     }
     if (_isRed(tree.right.right)) {
-        println "LR";
         tree := _rotateLeft(tree); 
     }
     return tree;
 }
 
-fn _bal234(let tree) {
+fn _fixIns(let tree) {
     if (_isRed(tree.left) && _isRed(tree.right)) {
         tree := _colorFlip(tree);
     }
@@ -78,17 +74,17 @@ fn _bal234(let tree) {
     return tree;
 }
 
-fn _putRB(let tree, let key) {
+fn _putRB(let tree, let key, let cmp) {
     if (tree == nil) {
         tree := new TreeNode(true, key);
         return tree;
     }
-    if (key < tree.info) {
-        tree.left := _putRB(tree.left, key);
+    if (cmp(key, tree.info)) {
+        tree.left := _putRB(tree.left, key, cmp);
     } else {
-        tree.right := _putRB(tree.right, key);
+        tree.right := _putRB(tree.right, key, cmp);
     }
-    return _bal234(tree);
+    return _fixIns(tree);
 } 
 
 fn _rbpreorder(let xs) {
@@ -137,9 +133,9 @@ fn isRedBlack(let xs) {
     return _validate(xs, bb);
 }
 
-fn rb_insert(let tree, let key) {
+fn rb_insert(let tree, let key, let cmp) {
     println "insert: " + key;
-    tree := _putRB(tree, key);
+    tree := _putRB(tree, key, cmp);
     tree.color := black;
     return tree;
 }
@@ -152,4 +148,19 @@ fn rb_sort(let tree) {
 fn rb_print(let tree) {
     _rbpreorder(tree);
     println " ";
+}
+
+fn rb_get(let tree, let key, let cmp) {
+    let x := tree;
+    while (x != nil) {
+        if (x.info == key) {
+            return x.info;
+        } 
+        if (cmp(key, x.info)) {
+            x := x.left;
+        } else {
+            x := x.right;
+        }
+    }
+    return nil;
 }

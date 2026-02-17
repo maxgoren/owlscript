@@ -2,9 +2,13 @@ import redblacktree;
 
 let tree := nil;
 let sed := "asearchingexample";
+let cmp := &(let m, let n) -> m < n;
 for (t of sed) {
-    tree := rb_insert(tree, t);
+    tree := rb_insert(tree, t, cmp);
 }
 rb_print(tree);
 rb_sort(tree);
 println "Is RB Valid? " + isRedBlack(tree);
+for (t of sed) {
+    println rb_get(tree, t,  cmp);
+}

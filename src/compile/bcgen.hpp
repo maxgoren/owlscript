@@ -326,7 +326,6 @@ void ByteCodeGenerator::emitBlessExpr(astnode* n) {
     auto it = klass->scope->iter();
     for (auto x = n->right; x != nullptr && !it.done(); x = x->next) {
         genExpression(x, false);
-        cout<<"Gen for constructor"<<endl;
         it.next();
     }
 
@@ -438,12 +437,12 @@ void ByteCodeGenerator::emitForeach(astnode* n) {
     astnode* itexpr = n->left;
     emitIterator(itexpr, IDX, SEQ);
 
-    // loop test expr
+    // loop test expr: index < list.length
     int P1 = skipEmit(0);
     emit(Instruction(ldlocal, IDX)); //current index into list
     emit(Instruction(ldlocal, SEQ)); //current list to iterate
-    emit(Instruction(list_len));                              // obtain its length
-    emit(Instruction(binop, VM_LT));                          //fmore to go?
+    emit(Instruction(list_len));      // obtain its length
+    emit(Instruction(binop, VM_LT));  //more to go?
 
     //start of loop body, at the beginning of each iteration
     //we push the value at the current index of the list being iterated on to the stack
@@ -452,9 +451,9 @@ void ByteCodeGenerator::emitForeach(astnode* n) {
     skipEmit(1);
     emit(Instruction(ldlocal, SEQ)); //current list were iterating
     emit(Instruction(ldlocal, IDX));  // index of current position
-    emit(Instruction(ldidx));                                 // get data at that index
+    emit(Instruction(ldidx));         // get data at that index
     emit(Instruction(ldaddr, symTable.lookup(itexpr->left->token.getString()).addr)); //address of runtime iterator
-    emit(Instruction(stlocal));                                                       //store data to iterator
+    emit(Instruction(stlocal));       //store data to iterator name
     
     //whatever code user wants to perform 
     genStatement(n->right, false);
