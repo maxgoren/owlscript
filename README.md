@@ -44,9 +44,18 @@ of classic algorithms such as quicksort, mergesort, and red black trees.
 ```
 
 ```
-    &(let m, let n) -> m+n;
+    let ex := &(let m, let n) -> m+n;
 
-    &(let m) { return m+n; };
+    let yx := &(let m) { return m+n; };
 
     &(let msg) { let t := "hi " + msg; println t; return t;}("world");
+```
+
+```
+    def fib(let k) {
+        if (k < 2) {
+            return 1;
+        }
+        return fib(k-1)+fib(k-2);
+    }
 ```
