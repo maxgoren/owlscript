@@ -21,7 +21,7 @@ struct CompilerState {
         current = state;
     }
     string what() {
-        return stateNames[current];
+        return (stateNames[previous] + " " + stateNames[current]);
     }
     CompilerState& operator=(COMPILER_STATE state) {
         setState(state);

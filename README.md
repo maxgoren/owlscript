@@ -11,3 +11,42 @@ garbage collection, lambda functions, dynamic lists, regular expressionsand much
 Running on the Glaux VM, programmers can write code interactively via the REPL
 or run saved programs from disk. The `scripts` folder contains implementations 
 of classic algorithms such as quicksort, mergesort, and red black trees.
+
+## A Quick Tour
+
+```
+    let x := 13;
+    let y := "hello there";
+```
+
+```
+    print x;
+    println y;
+```
+
+```
+    let xs := [1, 2, 3, 4, 5];
+    let ys := [ 1 .. 5];
+```
+
+```
+    let idx := 0;
+    while (idx < xs.size()) {
+        println xs[idx];
+        idx++;
+    }
+```
+
+```
+    for (n of xs) {
+        println t;
+    }
+```
+
+```
+    &(let m, let n) -> m+n;
+
+    &(let m) { return m+n; };
+
+    &(let msg) { let t := "hi " + msg; println t; return t;}("world");
+```
