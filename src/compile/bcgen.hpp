@@ -332,11 +332,16 @@ void ByteCodeGenerator::emitBlessExpr(astnode* n) {
     emit(Instruction(mkstruct, cpIdx, klass->scope->size()));
 
     it = klass->scope->iter();
+    vector<int> idxs;
     for (auto x = n->right; x != nullptr && !it.done(); x = x->next) {
         if (it.get().constPoolIndex == -1)
             it.get().constPoolIndex = symTable.getConstPool().insert(it.get().name);
-        emit(Instruction(stfield, it.get().constPoolIndex));
+        idxs.push_back(it.get().constPoolIndex);
         it.next();
+    }
+    while (!idxs.empty()) {
+        emit(Instruction(stfield, idxs.back()));
+        idxs.pop_back();
     }
 }
 void ByteCodeGenerator::emitFunctionCall(astnode* n) {

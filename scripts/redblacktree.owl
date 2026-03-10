@@ -34,7 +34,6 @@ fn _rotateRight(let h) {
 }
 
 fn _colorFlip(let tree) {
-    println "CF";
     tree.color := true;
     tree.left.color := false;
     tree.right.color := false;
@@ -76,7 +75,7 @@ fn _fixIns(let tree) {
 
 fn _putRB(let tree, let key, let cmp) {
     if (tree == nil) {
-        tree := new TreeNode(true, key);
+        tree := new TreeNode(key, true);
         return tree;
     }
     if (cmp(key, tree.info)) {
@@ -134,7 +133,6 @@ fn isRedBlack(let xs) {
 }
 
 fn rb_insert(let tree, let key, let cmp) {
-    println "insert: " + key;
     tree := _putRB(tree, key, cmp);
     tree.color := black;
     return tree;
