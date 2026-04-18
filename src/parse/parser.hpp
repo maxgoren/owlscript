@@ -102,6 +102,7 @@ void Parser::match(TKSymbol symbol) {
         return;
     }
     cout<<"Mismatched token: "<<current().getString()<<endl;
+    advance();
 }
 Token& Parser::current() {
     return tokens[tpos];
