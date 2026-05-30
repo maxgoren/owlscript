@@ -15,6 +15,7 @@ class Lexer {
         bool shouldSkip(char ch);
         Token makeLexToken(TKSymbol symbol, char* text, int length);
         Token nextToken();
+        int get_next(int state, char p);
     public:
         Lexer(bool debug);
         vector<Token> lex(CharBuffer* buffer);
@@ -26,6 +27,16 @@ Token Lexer::makeLexToken(TKSymbol symbol, char* text, int length) {
     return Token(symbol, string(text, length));
 }
 
+int Lexer::get_next(int state, char p) {
+    if (mgc_lexer_matrix[state]) {
+        for (int i = 1; i < 2*mgc_lexer_matrix[state][0]; i += 2) {
+            if (mgc_lexer_matrix[state][i] == p)
+                return mgc_lexer_matrix[state][i+1];
+        }
+    }
+    return 0;
+}
+
 Token Lexer::nextToken() {
     int state = 1;
     int last_match = 0;
@@ -34,8 +45,8 @@ Token Lexer::nextToken() {
     bool in_quote = false;
     int start = buffer->markStart();
     for (char p = buffer->get(); !buffer->done(); buffer->advance(), len++) {
-        state = matrix[state][buffer->get()];
-        if (state > 0 && accept[state] > -1) {
+        state = get_next(state,buffer->get());
+        if (state > 0 && mgc_lex_accept[state] > -1) {
             last_match = state;
             match_len = len;
         }
@@ -55,7 +66,7 @@ Token Lexer::nextToken() {
     if (last_match == 0) {
         return {TK_EOI, "error"};
     }
-    return Token((TKSymbol)accept[last_match], buffer->sliceFromStart(match_len), buffer->lineNo());
+    return Token((TKSymbol)mgc_lex_accept[last_match], buffer->sliceFromStart(match_len), buffer->lineNo());
 }
 
 bool Lexer::shouldSkip(char c) {

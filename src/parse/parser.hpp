@@ -61,9 +61,6 @@ class Parser {
         astnode* parseReturn();
         astnode* statement();
         astnode* stmt_list();
-        astnode* parseExpr(int prec);
-        astnode* parseFirst(int prec);
-        astnode* parseRest(astnode* lhs, int prec);
         bool noisey;
         bool in_list_consxr;
     public:
