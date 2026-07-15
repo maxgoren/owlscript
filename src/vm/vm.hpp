@@ -204,6 +204,11 @@ class VM {
                 top(1).objval->list->push_front(top(0));
             sp-=2;
         }
+        void popList() {
+            if (top().type == OBJECT && top().objval->type == LIST)
+                top().objval->list->pop_front();
+            sp--; 
+        }
         void listLength() {
             if (top().type == OBJECT && top().objval->type == LIST)
                 top() = ((double)top().objval->list->size());
@@ -314,6 +319,7 @@ class VM {
             switch (inst.op) {
                 case list_append: { appendList(); } break;
                 case list_push:   { pushList(); } break;
+                case list_pop: { popList(); } break;
                 case list_len: { listLength(); } break;
                 case call:     { callProcedure(inst); } break;
                 case retfun:   { retProcedure(); } break;

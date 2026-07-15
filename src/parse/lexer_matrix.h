@@ -336,7 +336,8 @@ mgc_lexer_matrix_row157,
 mgc_lexer_matrix_row158,
 mgc_lexer_matrix_row159,
 mgc_lexer_matrix_row160,
-mgc_lexer_matrix_row161
+mgc_lexer_matrix_row161,
+mgc_lexer_matrix_row162
 };
 
 int mgc_lex_accept[163] = {

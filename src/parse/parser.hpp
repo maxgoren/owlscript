@@ -202,6 +202,11 @@ astnode* Parser::primary() {
         match(TK_LPAREN);
         n->left = expression();
         match(TK_RPAREN);
+    } else if (expect(TK_POP)) {
+        n = new astnode(LIST_EXPR, current());
+        match(TK_POP);
+        match(TK_LPAREN);
+        match(TK_RPAREN);
     } else if (expect(TK_SIZE)) {
         n = new astnode(LIST_EXPR, current());
         match(TK_SIZE);
@@ -402,6 +407,7 @@ astnode* Parser::parseIfStmt() {
     }
     return n;
 }
+
 astnode* Parser::parseWhileStmt() {
     astnode* n = new astnode(WHILE_STMT, current());
     match(TK_WHILE);

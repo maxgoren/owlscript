@@ -253,6 +253,10 @@ void ByteCodeGenerator::emitListOperation(astnode* listExpr) {
             genExpression(operation->left, false);
             emit(Instruction(list_push));
         } break;
+        case TK_POP: {
+            genExpression(listname, false);
+            emit(Instruction(list_pop));
+        } break;
         case TK_SIZE: {
             genExpression(listname, false);
             emit(Instruction(list_len));  
