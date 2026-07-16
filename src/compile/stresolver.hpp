@@ -6,8 +6,8 @@
 #include <unordered_map>
 using namespace std;
 
-const int GLOBAL_SCOPE = -1;
-const int LOCAL_SCOPE = 0;
+static const int GLOBAL_SCOPE = -1;
+static const int LOCAL_SCOPE = 0;
 
 class STBuilder {
     private:

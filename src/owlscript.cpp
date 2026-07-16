@@ -7,7 +7,7 @@
 using namespace std;
 
 #define MAJOR_VER     0
-#define MINOR_VER    88
+#define MINOR_VER    89
 #define RELEASE_VER  'a'
 
 void printVersion() {

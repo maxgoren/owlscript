@@ -20,18 +20,7 @@ struct re_ast {
     re_ast(char ch, REType t) : type(t), c(ch), ccl(""), left(nullptr), right(nullptr) { }
 };
 
-void preorder(re_ast* t, int d) {
-    d++;
-    if (t != nullptr) {
-        for (int i = 0; i < d; i++) cout<<" ";
-        if (t->type == 1 || t->type == 2)
-            cout<<t->c<<endl;
-        else cout<<t->ccl<<endl;
-        preorder(t->left, d+1);
-        preorder(t->right, d+1);
-    }
-    d--;
-}
+void preorder(re_ast* t, int d);
 
 
 class REParser {
@@ -184,9 +173,11 @@ struct NFA {
     NFAState* accept;
     NFA(NFAState* s = nullptr, NFAState* a = nullptr) : start(s), accept(a) {  }
 };
+static const int MAX_STATE = 255;
 
+class RECompiler {
+    private:
 //about as simple of an allocator as you can get.
-const int MAX_STATE = 255;
 NFAState arena[MAX_STATE];
 int nf = 0;
 
@@ -298,8 +289,7 @@ NFA makeZeorOrOne(NFA a) {
 
 
 
-class RECompiler {
-    private:
+
         Stack<NFA> st;
         void trav(re_ast* node) {
             if (node != nullptr) {
@@ -356,11 +346,6 @@ class RECompiler {
         }
 };
 
-NFA compile(string pattern) {
-    REParser parser;
-    re_ast* ast = parser.parse(pattern);
-    RECompiler compiler;
-    return compiler.compile(ast);
-}
+NFA compile(string pattern) ;
 
 #endif

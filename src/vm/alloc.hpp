@@ -96,6 +96,6 @@ class GCAllocator {
         }
 };
 
-GCAllocator alloc;
+static GCAllocator alloc;
 
 #endif
