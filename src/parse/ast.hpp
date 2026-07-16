@@ -16,7 +16,7 @@ enum ExprType {
     RANGE_EXPR, SETCOMP_EXPR, TERNARY_EXPR, ITERATOR_EXPR
 };
 
-string exprTypeStr[] = {
+const static string exprTypeStr[] = {
     "CONST_EXPR", "ID_EXPR", "BIN_EXPR", "UOP_EXPR", "FUNC_EXPR", "LAMBDA_EXPR",
     "LISTCON_EXPR", "SUBSCRIPT_EXPR", "LIST_EXPR", "BLESS_EXPR", "FIELD_EXPR",
     "RANGE_EXPR", "SETCOMP_EXPR", "TERNARY_EXPR", "ITERATOR_EXPR"
@@ -28,7 +28,7 @@ enum StmtType {
     LET_STMT, RETURN_STMT, DEF_CLASS_STMT, BLOCK_STMT, IMPORT_STMT
 };
 
-string stmtTypeStr[] = { 
+const static string stmtTypeStr[] = { 
     "PRINT_STMT", "WHILE_STMT", "FOREACH_STMT", "IF_STMT", "ELSE_STMT", "STMT_LIST", "EXPR_STMT",
     "LET_STMT", "RETURN_STMT", "DEF_CLASS_STMT", "BLOCK_STMT", "IMPORT_STMT"
     
@@ -49,35 +49,12 @@ struct astnode {
     astnode() : token(Token(TK_EOI, "fin")), left(nullptr), right(nullptr), next(nullptr) { }
 };
 
-void preorder(astnode* node, int d) {
-    if (node != nullptr) {
-        for (int i = 0; i < d; i++) cout<<" ";
-        cout<<"[";
-        switch (node->kind) {
-            case EXPRNODE: cout<<exprTypeStr[node->expr]; break;
-            case STMTNODE: cout<<stmtTypeStr[node->stmt]; break;
-        }
-        cout<<"] "<<node->token.getString()<<endl;
-        preorder(node->left, d + 1);
-        preorder(node->right, d + 1);
-        preorder(node->next, d);
-    }
-}
+void preorder(astnode* node, int d);
 
-bool isStmtNode(astnode* ast) {
-    return ast != nullptr && ast->kind == STMTNODE;
-}
+bool isStmtNode(astnode* ast);
 
-bool isExprNode(astnode* ast) {
-    return ast != nullptr && ast->kind == EXPRNODE;
-}
+bool isExprNode(astnode* ast);
 
-bool isExprType(astnode* ast, ExprType type) {
-    return isExprNode(ast) && ast->expr == type;
-}
-
-bool isStmtType(astnode* ast, StmtType type) {
-    return isStmtNode(ast) && ast->stmt == type;
-}
-
+bool isExprType(astnode* ast, ExprType type);
+bool isStmtType(astnode* ast, StmtType type);
 #endif

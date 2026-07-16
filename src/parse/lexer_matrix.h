@@ -21,7 +21,7 @@ TK_IF, TK_OR, TK_OF, TK_AND, TK_FN,
  TK_RANGE, TK_ID, TK_STRING, TK_NUM, TK_OPEN_COMMENT,
  TK_CLOSE_COMMENT, TK_EOI
 };
-const char* tokenStr[] = {
+static const char* tokenStr[] = {
 " TK_AS",
 "TK_IF"," TK_OR"," TK_OF"," TK_AND"," TK_FN",
 " TK_GET"," TK_LET"," TK_INT"," TK_NEW"," TK_POP",
@@ -340,7 +340,7 @@ mgc_lexer_matrix_row161,
 mgc_lexer_matrix_row162
 };
 
-int mgc_lex_accept[163] = {
+static const int mgc_lex_accept[163] = {
 	-1,
 	-1,
 	67,
