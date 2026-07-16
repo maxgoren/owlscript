@@ -52,6 +52,10 @@ class STBuilder {
                         } break;          
                     }
                 } break;
+                case PRINT_STMT: {
+                    buildSymbolTable(t->left);
+                    buildSymbolTable(t->right);
+                } break;
                 case IF_STMT: {
                     buildSymbolTable(t->left);
                     buildSymbolTable(t->right);

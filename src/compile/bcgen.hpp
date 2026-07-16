@@ -186,13 +186,13 @@ void ByteCodeGenerator::emitLoad(astnode* n, bool needLvalue) {
     } else {
         if (depth == GLOBAL_SCOPE) {
             emit(Instruction(ldglobal, item.addr));
-            if (noisey) cout << "LDGLOBAL: " << n->token.getString()<<"scopelevel="<<n->token.scopeLevel() << " depth=" << item.depth<< endl;
+            if (noisey) cout << "LDGLOBAL: " << n->token.getString()<<"scopelevel="<<n->token.scopeLevel() << " depth=" << item.depth<<" addr="<<item.addr<<endl;
         } else if (depth == 0) {
             emit(Instruction(ldlocal, item.addr));
-            if (noisey) cout << "LDLOCAL: " << n->token.getString()<<", scopelevel= "<<n->token.scopeLevel() << " depth= " <<item.depth<< endl;
+            if (noisey) cout << "LDLOCAL: " << n->token.getString()<<", scopelevel= "<<n->token.scopeLevel() << " depth= " <<item.depth<<" addr="<<item.addr<< endl;
         } else {
             emit(Instruction(ldupval, item.addr, depth));
-            if (noisey) cout<< "LDUPVAL: " << n->token.getString()<<", scopelevel= "<<n->token.scopeLevel() << " depth= " <<item.depth<< endl;
+            if (noisey) cout<< "LDUPVAL: " << n->token.getString()<<", scopelevel= "<<n->token.scopeLevel() << " depth= " <<item.depth<<" addr="<<item.addr<< endl;
         }
     }
 }

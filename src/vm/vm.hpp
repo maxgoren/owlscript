@@ -205,9 +205,11 @@ class VM {
             sp-=2;
         }
         void popList() {
-            if (top().type == OBJECT && top().objval->type == LIST)
+            if (top().type == OBJECT && top().objval->type == LIST) {
+                StackItem t = top().objval->list->front();
                 top().objval->list->pop_front();
-            sp--; 
+                top() = t;
+            }
         }
         void listLength() {
             if (top().type == OBJECT && top().objval->type == LIST)
