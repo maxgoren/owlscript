@@ -131,6 +131,7 @@ class STBuilder {
                     buildSymbolTable(t->right);
                 } break;
                 case SETCOMP_EXPR: {
+                    symTable->insert("__scitr");
                     buildSymbolTable(t->left);
                     buildSymbolTable(t->right);
                 } break;
@@ -295,6 +296,8 @@ class ResolveLocals {
                     resolve(node->right);
                 } break;
                 case SETCOMP_EXPR: {
+                    declareName("__scitr");
+                    defineName("__scitr");
                     resolve(node->left);
                     resolve(node->right);
                 } break;

@@ -1,0 +1,2 @@
+let m := [ 2 .. 5 as &(let i) -> i*i ];
+print m;

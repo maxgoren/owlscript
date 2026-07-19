@@ -298,7 +298,9 @@ void ByteCodeGenerator::emitFunctionCall(astnode* n) {
 void ByteCodeGenerator::emitListConstructor(astnode* n) {
     emit(Instruction(mklist));
     if (n->left != nullptr) {
-        if (n->left->expr == RANGE_EXPR) {
+        if (n->left->expr == SETCOMP_EXPR) {
+            genExpression(n->left, false);
+        } else if (n->left->expr == RANGE_EXPR) {
             genExpression(n->left, false);
         } else {
             for (astnode* it = n->left; it != nullptr; it = it->next) {
@@ -308,6 +310,34 @@ void ByteCodeGenerator::emitListConstructor(astnode* n) {
         }
     }
 }
+
+void ByteCodeGenerator::emitComprehension(astnode* n) {
+    emit(Instruction(mklist));
+    genExpression(n->left, false);
+    //set i = 0;
+    int IDX = symTable.lookup("__scitr").addr;
+    emit(Instruction(ldconst, StackItem(0.0)));
+    emit(Instruction(ldaddr, IDX));
+    emit(Instruction(stlocal));
+    int L1 = skipEmit(0);
+    emit(Instruction(ldlocal, IDX));  // index of current position
+    emit(Instruction(ldidx));         // get data at that index
+    genExpression(n->right, false);
+    emit(Instruction(call, -1, 1));
+    emit(Instruction(ldlocal, IDX));
+    emit(Instruction(stidx));   
+    /*
+    emit(Instruction(ldlocal, IDX));
+    emit(Instruction(incr));
+    emit(Instruction(ldaddr, IDX));
+    emit(Instruction(stlocal));
+    emit(Instruction(ldlocal, IDX));
+    emit(Instruction(list_len));
+    emit(Instruction(binop, VM_LT));
+    emit(Instruction(brf, L1));
+    */
+}
+
 void ByteCodeGenerator::emitRangeExpr(astnode* n) {
     genExpression(n->left, false);
     genExpression(n->right, false);
@@ -508,6 +538,7 @@ void ByteCodeGenerator::genExpression(astnode* n, bool needLvalue) {
         case BLESS_EXPR:     { emitBlessExpr(n); } break;
         case RANGE_EXPR:     { emitRangeExpr(n); } break;
         case TERNARY_EXPR:   { emitTernaryExpr(n); } break;
+        case SETCOMP_EXPR:   { emitComprehension(n); } break;
         default:
             break;
     }

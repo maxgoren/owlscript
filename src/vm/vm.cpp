@@ -246,7 +246,7 @@ void VM::popList() {
     if (top().type == OBJECT && top().objval->type == LIST) {
         StackItem t = top().objval->list->front();
         top().objval->list->pop_front();
-        top() = t;
+        opstk[++sp] = t;
     }
 }
 void VM::listLength() {
