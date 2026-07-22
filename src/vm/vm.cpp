@@ -10,7 +10,7 @@ VM::VM() {
     ip = 0;
     sp = 0;
     haltSentinel = Instruction(halt);
-    globals =  new ActivationRecord(GLOBAL_SCOPE,0, nullptr, nullptr);
+    globals =  new ActivationRecord(255, GLOBAL_SCOPE,0, nullptr, nullptr);
     callstk = globals;
 }
 VM::~VM() {
@@ -42,7 +42,7 @@ void VM::run(vector<Instruction>& cp, int verbosity) {
             break;
         }
         Instruction inst = fetch();
-        if (verbosity > 0) {
+        if (verbosity > 1) {
             printInstruction(inst);
             cout<<"----------------"<<endl;
         }
@@ -54,7 +54,7 @@ void VM::run(vector<Instruction>& cp, int verbosity) {
         if (verbosity > 2) {
             printCallStack();
         }
-        if (verbosity > 0) cout<<"================"<<endl;
+        if (verbosity > 1) cout<<"================"<<endl;
     }
     collector.run(callstk, opstk, sp, &constPool);
 }
@@ -95,7 +95,7 @@ void VM::closeOver(Instruction& inst) {
     }
 }
 void VM::openBlock(Instruction& inst) {
-    callstk = new ActivationRecord(BLOCK_CPIDX, ip, callstk, callstk);
+    callstk = new ActivationRecord(25, BLOCK_CPIDX, ip, callstk, callstk);
 }
 void VM::closeBlock() {
     if (callstk != nullptr && callstk->control != nullptr) {
@@ -109,7 +109,7 @@ void VM::callProcedure(Instruction& inst) {
     if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
         Closure* close = opstk[sp--].objval->closure;
         if (close != nullptr) {
-            callstk = new ActivationRecord(cpIdx, ip, callstk, close->env);
+            callstk = new ActivationRecord(numArgs+15, cpIdx, ip, callstk, close->env);
             for (int i = numArgs; i > 0; i--) {
                 callstk->locals[i] = opstk[sp--];
             }
@@ -154,18 +154,18 @@ void VM::loadUpval(Instruction& inst) {
         cout<<"loaded Upval: "<<opstk[sp].toString()<<"from "<<inst.operand[0].intval<<" of scope "<<(inst.operand[1].intval)<<endl;
 } 
 void VM::storeLocal(Instruction& inst) {
-    StackItem t = opstk[sp--];
+    int addr = opstk[sp--].intval;
     StackItem val = opstk[sp--];
-    callstk->locals[t.intval] = val;
+    callstk->locals[addr] = val;
     if (verbLev > 1)
-        cout<<"Stored local at "<<t.intval<<endl;
+        cout<<"Stored local at "<<addr<<endl;
 }
 void VM::storeUpval(Instruction& inst) {
-    StackItem t = opstk[sp--];
+    int addr = opstk[sp--].intval;
     StackItem val = opstk[sp--];
-    walkChain(inst.operand[0].intval)->locals[t.intval] = val;
+    walkChain(inst.operand[0].intval)->locals[addr] = val;
     if (verbLev > 1)
-        cout<<"Stored upval at "<<t.intval<<" in scope "<<(inst.operand[0].intval)<<endl;
+        cout<<"Stored upval at "<<addr<<" in scope "<<(inst.operand[0].intval)<<endl;
 }
 void VM::makeList(Instruction& inst) {
     opstk[++sp] = StackItem(alloc.alloc(new deque<StackItem>()));

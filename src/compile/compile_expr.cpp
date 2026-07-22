@@ -143,30 +143,48 @@ void ByteCodeGenerator::emitListOperation(astnode* listExpr) {
 }
 
 void ByteCodeGenerator::emitComprehension(astnode* n) {
-    emit(Instruction(mklist));
+    //emit(Instruction(mklist));
     genExpression(n->left, false);
-    //set i = 0;
-    int IDX = symTable.lookup("__scitr").addr;
-    emit(Instruction(ldconst, StackItem(0.0)));
-    emit(Instruction(ldaddr, IDX));
-    emit(Instruction(stlocal));
-    int L1 = skipEmit(0);
+    int IDX = symTable.lookup("scitr").addr;    
+    int SEQ = symTable.lookup("scclti").addr;
+
+    // set up Iterator object
+    astnode* itexpr = n->left;
+    emitIterator(itexpr, IDX, SEQ);
+
+    // loop test expr: index < list.length
+    int P1 = skipEmit(0);
+    emit(Instruction(ldlocal, IDX)); //current index into list
+    emit(Instruction(ldlocal, SEQ)); //current list to iterate
+    emit(Instruction(list_len));      // obtain its length
+    emit(Instruction(binop, VM_LT));  //more to go?
+
+    //start of loop body, at the beginning of each iteration
+    //we push the value at the current index of the list being iterated on to the stack
+    //it's value is then stored by the name supplied by user for iterator object
+    int L1 = skipEmit(0); 
+    skipEmit(1);
+    emit(Instruction(ldlocal, SEQ)); //current list were iterating
     emit(Instruction(ldlocal, IDX));  // index of current position
     emit(Instruction(ldidx));         // get data at that index
     genExpression(n->right, false);
     emit(Instruction(call, -1, 1));
-    emit(Instruction(ldlocal, IDX));
-    emit(Instruction(stidx));   
-    /*
-    emit(Instruction(ldlocal, IDX));
-    emit(Instruction(incr));
-    emit(Instruction(ldaddr, IDX));
+    emit(Instruction(ldlocal, SEQ)); //current list were iterating
+    emit(Instruction(ldlocal, IDX));  // index of current position
+    emit(Instruction(stidx));
+    
+    //get us ready for next run through
+    emit(Instruction(ldlocal, IDX)); //get value of current index
+    emit(Instruction(incr));        //increment it by 1
+    emit(Instruction(ldaddr, IDX));  //save new index
     emit(Instruction(stlocal));
-    emit(Instruction(ldlocal, IDX));
-    emit(Instruction(list_len));
-    emit(Instruction(binop, VM_LT));
-    emit(Instruction(brf, L1));
-    */
+    emit(Instruction(jump, P1));  //jump back up to test expression
+
+    //backpatch test-expression failure branch
+    int L2 = skipEmit(0);
+    skipTo(L1);
+    emit(Instruction(brf, L2));
+    restore();
 }
 
 void ByteCodeGenerator::emitLambda(astnode* n) {

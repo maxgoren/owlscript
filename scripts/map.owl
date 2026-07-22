@@ -1,0 +1,8 @@
+
+fn map(let xs, let f) {
+   let ret := [];
+   for (x of xs) {
+	ret.append(f(x));
+   }
+   return ret;
+}

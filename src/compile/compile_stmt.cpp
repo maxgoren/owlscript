@@ -47,6 +47,8 @@ void ByteCodeGenerator::emitLet(astnode* n) {
 }
 
 void ByteCodeGenerator::emitIterator(astnode* n, int IDX, int SEQ) {
+    emit(Instruction(ldaddr, SEQ));
+    emit(Instruction(stlocal));
     //sets current index to 0
     emit(Instruction(ldconst, StackItem(0.0)));
     emit(Instruction(ldaddr, IDX));
@@ -54,9 +56,7 @@ void ByteCodeGenerator::emitIterator(astnode* n, int IDX, int SEQ) {
     //evaluate list expression and assign  the result a temp name
     //this way if passed a list constructor the list only gets built once.
     //as we use this temporary name to refer to the list moving forward.
-    genExpression(n->right, false);
-    emit(Instruction(ldaddr, SEQ));
-    emit(Instruction(stlocal));
+
 }
 
 void ByteCodeGenerator::emitForeach(astnode* n) {
