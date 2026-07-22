@@ -143,48 +143,84 @@ void ByteCodeGenerator::emitListOperation(astnode* listExpr) {
 }
 
 void ByteCodeGenerator::emitComprehension(astnode* n) {
-    //emit(Instruction(mklist));
+    bool is_filtered = n->right && n->right->next;
+    int IDX = symTable.lookup("scitr").addr; //Index into list    
+    int SEQ = symTable.lookup("scclti").addr; // list to iterate over
+    //Filtered lists need a result list instead of being mutated.
+    symTable.insert("_tr");
+    int tmpList = symTable.lookup("_tr").addr;
+    emit(Instruction(mklist));
+    emit(Instruction(ldaddr, tmpList));
+    emit(Instruction(stlocal));
+    //set up list to iterate over
     genExpression(n->left, false);
-    int IDX = symTable.lookup("scitr").addr;    
-    int SEQ = symTable.lookup("scclti").addr;
+    // set up Iterator object:
+    // store the just-created-list at SEQ
+    // then we set IDX to 0
+    emit(Instruction(ldaddr, SEQ));
+    emit(Instruction(stlocal));
+    emit(Instruction(ldconst, StackItem(0.0)));
+    emit(Instruction(ldaddr, IDX));
+    emit(Instruction(stlocal));
 
-    // set up Iterator object
-    astnode* itexpr = n->left;
-    emitIterator(itexpr, IDX, SEQ);
-
-    // loop test expr: index < list.length
+    // loop test expr: index < list.length (IDX < length(SEQ))
     int P1 = skipEmit(0);
     emit(Instruction(ldlocal, IDX)); //current index into list
     emit(Instruction(ldlocal, SEQ)); //current list to iterate
     emit(Instruction(list_len));      // obtain its length
     emit(Instruction(binop, VM_LT));  //more to go?
-
-    //start of loop body, at the beginning of each iteration
-    //we push the value at the current index of the list being iterated on to the stack
-    //it's value is then stored by the name supplied by user for iterator object
+    //Because we dont yet know the address to jump to, we reserve a space to back patch it into (L1)
     int L1 = skipEmit(0); 
     skipEmit(1);
+    //start of loop body, at the beginning of each iteration
+    //we push the value at the current index of the list being iterated on to the stack
+    //thats used as input to lambda which is called, storing the result at current idx
+    emit(Instruction(ldlocal, tmpList)); //result list
     emit(Instruction(ldlocal, SEQ)); //current list were iterating
     emit(Instruction(ldlocal, IDX));  // index of current position
     emit(Instruction(ldidx));         // get data at that index
-    genExpression(n->right, false);
-    emit(Instruction(call, -1, 1));
-    emit(Instruction(ldlocal, SEQ)); //current list were iterating
-    emit(Instruction(ldlocal, IDX));  // index of current position
-    emit(Instruction(stidx));
-    
+    //Now, we have regular application, and filtered application.
+    //regular application mutates list in place.
+    //filtered application appends result to new list _if input value matches a predicate_
+    if (is_filtered) {
+        genCode(n->right->next, false); //get predicate expression
+        emit(Instruction(call, -1, 1)); //execute it
+        int IL1 = skipEmit(0); //will backpatch branch on false once we know jump point.
+        skipEmit(1);
+        emit(Instruction(ldlocal, tmpList)); //result list
+        emit(Instruction(ldlocal, SEQ)); //current list were iterating
+        emit(Instruction(ldlocal, IDX));  // index of current position
+        emit(Instruction(ldidx));         // get data at that index
+        genExpression(n->right, false);  //get lambda
+        emit(Instruction(call, -1, 1)); // execute it
+        emit(Instruction(list_append)); // save result
+        int L2 = skipEmit(0);//jump to here if result of predicate is false.
+        skipTo(IL1);
+        emit(Instruction(brf, L2)); //baackpatch branch on false to L2.
+        restore();
+    } else {
+        genExpression(n->right, false);
+        emit(Instruction(call, -1, 1));
+        emit(Instruction(list_append)); //result list
+       // emit(Instruction(ldlocal, SEQ)); //current list were iterating
+       // emit(Instruction(ldlocal, IDX));  // index of current position
+       // emit(Instruction(stidx));
+    }
     //get us ready for next run through
     emit(Instruction(ldlocal, IDX)); //get value of current index
     emit(Instruction(incr));        //increment it by 1
     emit(Instruction(ldaddr, IDX));  //save new index
     emit(Instruction(stlocal));
     emit(Instruction(jump, P1));  //jump back up to test expression
-
-    //backpatch test-expression failure branch
-    int L2 = skipEmit(0);
-    skipTo(L1);
-    emit(Instruction(brf, L2));
+    int L2 = skipEmit(0); //target for loop escape.
+    //now that we know where the loop body ends (L2),
+    //we backpatch the test-expression failure branch
+    skipTo(L1);                 //at end of test if expression
+    emit(Instruction(brf, L2)); // if result is false, jump to L2
     restore();
+    if (n->right && n->right->next) {
+        emit(Instruction(ldlocal, symTable.lookup("_tr").addr));
+    }
 }
 
 void ByteCodeGenerator::emitLambda(astnode* n) {

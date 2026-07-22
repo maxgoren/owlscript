@@ -160,6 +160,10 @@ astnode* Parser::listOp() {
         t->left = n;
         t->right = unary();
         n = t;
+        if (expect(TK_LOGIC_OR) || expect(TK_IF)) {
+            match(TK_IF);
+            n->right->next = unary();
+        }
     }
     return n;
 }

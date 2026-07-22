@@ -1,0 +1,6 @@
+let t := [ 1 .. 10 ];
+println [ t as &(let j) -> j+j+1 ];
+println t;
+println [ t as &(let j) -> j+j+1 if &(let q) -> q % 2 != 0 ];
+println t;
+println [ 3 .. 13 | &(let j) -> j*j-1 if &(let q) -> q % 2 == 0 ];
