@@ -133,6 +133,7 @@ class STBuilder {
                 case SETCOMP_EXPR: {
                     symTable->insert("scitr");
                     symTable->insert("scclti");
+                    symTable->insert("sctrl");
                     buildExpressionST(t->left, true);
                     buildExpressionST(t->right, false);
                 } break;

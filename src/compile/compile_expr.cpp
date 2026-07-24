@@ -146,11 +146,9 @@ void ByteCodeGenerator::emitComprehension(astnode* n) {
     bool is_filtered = n->right && n->right->next;
     int IDX = symTable.lookup("scitr").addr; //Index into list    
     int SEQ = symTable.lookup("scclti").addr; // list to iterate over
-    //Filtered lists need a result list instead of being mutated.
-    symTable.insert("_tr");
-    int tmpList = symTable.lookup("_tr").addr;
+    int RET = symTable.lookup("sctrl").addr; //result list
     emit(Instruction(mklist));
-    emit(Instruction(ldaddr, tmpList));
+    emit(Instruction(ldaddr, RET));
     emit(Instruction(stlocal));
     //set up list to iterate over
     genExpression(n->left, false);
@@ -175,7 +173,7 @@ void ByteCodeGenerator::emitComprehension(astnode* n) {
     //start of loop body, at the beginning of each iteration
     //we push the value at the current index of the list being iterated on to the stack
     //thats used as input to lambda which is called, storing the result at current idx
-    emit(Instruction(ldlocal, tmpList)); //result list
+    emit(Instruction(ldlocal, RET)); //result list
     emit(Instruction(ldlocal, SEQ)); //current list were iterating
     emit(Instruction(ldlocal, IDX));  // index of current position
     emit(Instruction(ldidx));         // get data at that index
@@ -187,14 +185,16 @@ void ByteCodeGenerator::emitComprehension(astnode* n) {
         emit(Instruction(call, -1, 1)); //execute it
         int IL1 = skipEmit(0); //will backpatch branch on false once we know jump point.
         skipEmit(1);
-        emit(Instruction(ldlocal, tmpList)); //result list
+        emit(Instruction(ldlocal, RET)); //result list
         emit(Instruction(ldlocal, SEQ)); //current list were iterating
         emit(Instruction(ldlocal, IDX));  // index of current position
         emit(Instruction(ldidx));         // get data at that index
         genExpression(n->right, false);  //get lambda
         emit(Instruction(call, -1, 1)); // execute it
         emit(Instruction(list_append)); // save result
+        emit(Instruction(popstack));
         int L2 = skipEmit(0);//jump to here if result of predicate is false.
+        emit(Instruction(popstack));
         skipTo(IL1);
         emit(Instruction(brf, L2)); //baackpatch branch on false to L2.
         restore();
@@ -202,9 +202,7 @@ void ByteCodeGenerator::emitComprehension(astnode* n) {
         genExpression(n->right, false);
         emit(Instruction(call, -1, 1));
         emit(Instruction(list_append)); //result list
-       // emit(Instruction(ldlocal, SEQ)); //current list were iterating
-       // emit(Instruction(ldlocal, IDX));  // index of current position
-       // emit(Instruction(stidx));
+        emit(Instruction(popstack));
     }
     //get us ready for next run through
     emit(Instruction(ldlocal, IDX)); //get value of current index
@@ -218,9 +216,7 @@ void ByteCodeGenerator::emitComprehension(astnode* n) {
     skipTo(L1);                 //at end of test if expression
     emit(Instruction(brf, L2)); // if result is false, jump to L2
     restore();
-    if (n->right && n->right->next) {
-        emit(Instruction(ldlocal, symTable.lookup("_tr").addr));
-    }
+    emit(Instruction(ldlocal, RET));
 }
 
 void ByteCodeGenerator::emitLambda(astnode* n) {
@@ -285,12 +281,11 @@ void ByteCodeGenerator::emitListConstructor(astnode* n) {
     if (n->left != nullptr) {
         if (n->left->expr == SETCOMP_EXPR) {
             genExpression(n->left, false);
-        } else if (n->left->expr == RANGE_EXPR) {
-            genExpression(n->left, false);
         } else {
             for (astnode* it = n->left; it != nullptr; it = it->next) {
                 genExpression(it, false);
-                emit(Instruction(list_append));
+                if (it->expr != RANGE_EXPR)
+                    emit(Instruction(list_append));
             }
         }
     }
