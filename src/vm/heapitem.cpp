@@ -24,6 +24,17 @@ string classToString(ClassObject* obj) {
     return obj->name;
 }
 
+
+string dictToString(unordered_map<string,StackItem>* dict) {
+    string ret = "{\n";
+    for (auto m : *dict) {
+        ret += "\t\"" + m.first + "\": " + m.second.toString() + "\n";
+    }
+    ret += "}\n";
+    return ret;
+}
+
+
 void freeClass(ClassObject* obj) {
     if (obj != nullptr) {
         for (auto & m : obj->fields) {

@@ -167,9 +167,22 @@ void VM::storeUpval(Instruction& inst) {
     if (verbLev > 1)
         cout<<"Stored upval at "<<addr<<" in scope "<<(inst.operand[0].intval)<<endl;
 }
+
 void VM::makeList(Instruction& inst) {
     opstk[++sp] = StackItem(alloc.alloc(new deque<StackItem>()));
 }
+
+void VM::makeSet(Instruction& inst) {
+    if (top().type == LIST) {
+        StackItem si(new unordered_map<string,StackItem>());
+        for (auto t : *top().objval->list) {
+            
+        }
+    } else {
+        makeList(inst);
+    }
+}
+
 void VM::loadIndexed(Instruction& inst) {
     if (top(1).type == OBJECT && top(0).type == NUMBER) {
         switch (top(1).objval->type) {
@@ -387,6 +400,7 @@ void VM::execute(Instruction& inst) {
         case mkclosure: { closeOver(inst); } break;
         case mkstruct:  { instantiate(inst); } break;
         case mklist:    { makeList(inst); } break;
+        case mkset:     { makeSet(inst); } break;
         case mkrange:   { makeRange(); } break;
         case ldrand:    { randNumber(inst); } break;
         case popstack:  { sp--; } break; 

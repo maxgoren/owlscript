@@ -89,7 +89,7 @@ void ByteCodeGenerator::emitForeach(astnode* n) {
     emit(Instruction(stlocal));       //store data to iterator name
     
     //whatever code user wants to perform 
-    genStatement(n->right, false);
+    genCode(n->right, false);
 
     //get us ready for next run through
     emit(Instruction(ldlocal, IDX)); //get value of current index

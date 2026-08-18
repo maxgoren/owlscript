@@ -53,6 +53,7 @@ class VM {
         void popList();
         void listLength();
         void makeRange();
+        void makeSet(Instruction& inst); 
         void duplicateTop();
         void haltvm();
         void printTopOfStack();
@@ -60,7 +61,6 @@ class VM {
         void binaryOperation(Instruction& inst);
         void relationOperation(Instruction& inst);
         void arithmeticOperation(Instruction& inst);
-         
         void execute(Instruction& inst);
         Instruction& fetch();
         void printInstruction(Instruction& inst);

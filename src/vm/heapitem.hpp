@@ -2,13 +2,14 @@
 #define heapitem_hpp
 #include <iostream>
 #include <unordered_set>
+#include <unordered_map>
 #include <list>
 #include <deque>
 #include "gcobject.hpp"
 using namespace std;
 
 enum HeapItemType {
-    STRING, FUNCTION, CLOSURE, LIST, CLASS, REF, NILPTR
+    STRING, FUNCTION, CLOSURE, LIST, DICT, CLASS, REF, NILPTR
 };
 
 struct StackItem;
@@ -19,6 +20,7 @@ struct Function;
 string closureToString(Closure* cl);
 string listToString(deque<StackItem>* list);
 string classToString(ClassObject* obj);
+string dictToString(unordered_map<string,StackItem>* dict);
 
 void freeClosure(Closure* cl);
 void freeClass(ClassObject* obj);
@@ -33,7 +35,9 @@ struct GCItem : GCObject {
         deque<StackItem>* list;
         ClassObject* object;
         StackItem* reference;
+        unordered_map<string,StackItem>* dict;
     };
+    GCItem(unordered_map<string,StackItem>* d) : type(DICT), dict(d) { }
     GCItem(string* s) : type(STRING), strval(s) { }
     GCItem(Function* f) : type(FUNCTION), func(f) { }
     GCItem(Closure* c) : type(CLOSURE), closure(c) { }
@@ -49,6 +53,7 @@ struct GCItem : GCObject {
             case LIST: list = si.list; break;
             case CLASS: object = si.object; break;
             case REF: reference = si.reference; break;
+            case DICT: dict = si.dict; break;
         }
         type = si.type;
         isAR = si.isAR;
@@ -63,6 +68,7 @@ struct GCItem : GCObject {
                 case LIST: list = si.list; break;
                 case CLASS: object = si.object; break;
                 case REF: reference = si.reference; break;
+                case DICT: dict = si.dict; break;
             }
             type = si.type;
             isAR = si.isAR;
@@ -76,6 +82,7 @@ struct GCItem : GCObject {
             case FUNCTION: return "(func)";
             case CLOSURE: return closureToString(closure);
             case LIST: return listToString(list);
+   //         case DICT: return dictToString(dict);
             case CLASS: return "(class)" + classToString(object);
             case REF: return "(reference)";
         }

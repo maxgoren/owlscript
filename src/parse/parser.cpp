@@ -3,7 +3,7 @@
 
 Parser::Parser(bool debug) {
     noisey = debug;
-    in_list_consxr = false;
+    in_list_consxr = 0;
 }
 
 astnode* Parser::parse(vector<Token> tokens) {
@@ -17,6 +17,7 @@ astnode* Parser::parse(vector<Token> tokens) {
 void Parser::init(vector<Token>& tk) {
     tokens = tk;
     tpos = 0;
+    in_list_consxr = 0;
 }
 void Parser::advance() {
     tpos++;

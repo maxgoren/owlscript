@@ -62,7 +62,7 @@ class Parser {
         astnode* statement();
         astnode* stmt_list();
         bool noisey;
-        bool in_list_consxr;
+        int in_list_consxr;
     public:
         Parser(bool debug = false);
         astnode* parse(vector<Token> tokens) ;

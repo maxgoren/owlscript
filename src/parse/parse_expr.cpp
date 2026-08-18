@@ -59,9 +59,9 @@ astnode* Parser::primary() {
     } else if (expect(TK_LB)) {
         n = new astnode(LISTCON_EXPR, current());
         match(TK_LB);
-        in_list_consxr = true;
+        in_list_consxr++;
         n->left = argsList();
-        in_list_consxr = false;
+        in_list_consxr--;
         match(TK_RB);
     } else if (expect(TK_APPEND)) {
         n = new astnode(LIST_EXPR, current());
@@ -135,8 +135,6 @@ astnode* Parser::unary() {
     }
     return n;
 }
-
-//for (i of [1 .. 3] as &(let i) -> i+i) { println i; }
 
 astnode* Parser::listOp() {
     astnode* n = unary();

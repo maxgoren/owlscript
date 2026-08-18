@@ -147,14 +147,15 @@ void ByteCodeGenerator::emitComprehension(astnode* n) {
     int IDX = symTable.lookup("scitr").addr; //Index into list    
     int SEQ = symTable.lookup("scclti").addr; // list to iterate over
     int RET = symTable.lookup("sctrl").addr; //result list
+    //Create & store result list
     emit(Instruction(mklist));
     emit(Instruction(ldaddr, RET));
     emit(Instruction(stlocal));
-    //set up list to iterate over
+    //generate code for the input list expression
     genExpression(n->left, false);
     // set up Iterator object:
-    // store the just-created-list at SEQ
-    // then we set IDX to 0
+    // -store the list-to-iterate at SEQ
+    // -set IDX to 0
     emit(Instruction(ldaddr, SEQ));
     emit(Instruction(stlocal));
     emit(Instruction(ldconst, StackItem(0.0)));
@@ -162,41 +163,39 @@ void ByteCodeGenerator::emitComprehension(astnode* n) {
     emit(Instruction(stlocal));
 
     // loop test expr: index < list.length (IDX < length(SEQ))
-    int P1 = skipEmit(0);
+    int P1 = skipEmit(0); //jump target
     emit(Instruction(ldlocal, IDX)); //current index into list
     emit(Instruction(ldlocal, SEQ)); //current list to iterate
     emit(Instruction(list_len));      // obtain its length
     emit(Instruction(binop, VM_LT));  //more to go?
-    //Because we dont yet know the address to jump to, we reserve a space to back patch it into (L1)
+    //Because we dont yet know the address for the fail branch, 
+    //we reserve a space to back patch it into (L1)
     int L1 = skipEmit(0); 
     skipEmit(1);
     //start of loop body, at the beginning of each iteration
     //we push the value at the current index of the list being iterated on to the stack
-    //thats used as input to lambda which is called, storing the result at current idx
+    //to be used as input to lambda which is called, storing the result at current idx
     emit(Instruction(ldlocal, RET)); //result list
     emit(Instruction(ldlocal, SEQ)); //current list were iterating
     emit(Instruction(ldlocal, IDX));  // index of current position
     emit(Instruction(ldidx));         // get data at that index
-    //Now, we have regular application, and filtered application.
-    //regular application mutates list in place.
-    //filtered application appends result to new list _if input value matches a predicate_
+    //We have regular application and filtered application.
+    //filtered application appends result to new list _iff input value matches a predicate_
     if (is_filtered) {
         genCode(n->right->next, false); //get predicate expression
         emit(Instruction(call, -1, 1)); //execute it
         int IL1 = skipEmit(0); //will backpatch branch on false once we know jump point.
         skipEmit(1);
-        emit(Instruction(ldlocal, RET)); //result list
         emit(Instruction(ldlocal, SEQ)); //current list were iterating
         emit(Instruction(ldlocal, IDX));  // index of current position
         emit(Instruction(ldidx));         // get data at that index
-        genExpression(n->right, false);  //get lambda
+        genExpression(n->right, false);  //get 'as' lambda
         emit(Instruction(call, -1, 1)); // execute it
         emit(Instruction(list_append)); // save result
-        emit(Instruction(popstack));
         int L2 = skipEmit(0);//jump to here if result of predicate is false.
         emit(Instruction(popstack));
         skipTo(IL1);
-        emit(Instruction(brf, L2)); //baackpatch branch on false to L2.
+        emit(Instruction(brf, L2)); //backpatch branch on false to L2 to the space reserved at L1.
         restore();
     } else {
         genExpression(n->right, false);
