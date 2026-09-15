@@ -230,26 +230,32 @@ void VM::loadConst(Instruction& inst) {
         opstk[++sp] = (inst.operand[0]);
     }
 }
+
 void VM::loadAddress(Instruction& inst) {
     opstk[++sp] = (inst.operand[0]); 
 }
+
 void VM::randNumber(Instruction& inst) {
     opstk[++sp] = fmod(rand(), inst.operand[0].numval); 
 }
+
 void VM::branchOnFalse(Instruction& inst) {
     bool tmp = opstk[sp--].boolval;
     if (tmp == false) {
         ip = inst.operand[0].intval;
     }
 }
+
 void VM::uncondBranch(Instruction& inst) {
     ip = inst.operand[0].intval;
 }
+
 void VM::appendList() {
     if (top(1).type == OBJECT && top(1).objval->type == LIST)
         top(1).objval->list->push_back(top(0));
     sp--;
 }
+
 void VM::pushList() {
     if (top(1).type == OBJECT && top(1).objval->type == LIST)
         top(1).objval->list->push_front(top(0));

@@ -1,3 +1,5 @@
+let i := 6;
+println i;
 {
     let i := 13;
     println i; 
@@ -12,4 +14,6 @@
         println i;
     }
     println i;
+}
+println i;
 }

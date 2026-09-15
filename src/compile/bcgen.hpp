@@ -19,7 +19,6 @@ class  ByteCodeGenerator {
         int highCI;
         ScopingST symTable;
         STBuilder sr;
-        ResolveLocals rl;
         int scopeLevel();
         void emit(Instruction inst);
         int skipEmit(int numSpaces) ;

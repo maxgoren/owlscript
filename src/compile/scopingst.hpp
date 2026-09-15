@@ -105,7 +105,7 @@ class ScopingST {
         void closeScope() ;
         void insert(string name) ;
         bool existsInScope(string name);
-        SymbolTableEntry& lookup(string name) ;
+        SymbolTableEntry lookup(string name) ;
         ClassObject* lookupClass(string name);
         int depth();
         void print();

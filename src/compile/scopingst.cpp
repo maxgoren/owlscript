@@ -94,7 +94,9 @@ void ScopingST::openFunctionScope(string name, int L1) {
         int funcId = constPool.insert(alloc.alloc(new Function(name, L1, ns)));
         int constIdx = constPool.insert(alloc.alloc(new Closure(constPool.get(funcId).objval->func, nullptr)));
         int envAddr = nextAddr();
-        currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, FUNCVAR, depth(currentScope)+1));
+        int d = depth(currentScope)+1;
+        d = (d == 0) ? 1:d;
+        currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, FUNCVAR, d));
         currentScope = ns;
     }
 }
@@ -109,11 +111,13 @@ void ScopingST::insert(string name) {
 bool ScopingST::existsInScope(string name) {
     return currentScope->find(name) != currentScope->end();
 }
-SymbolTableEntry& ScopingST::lookup(string name) {
+SymbolTableEntry ScopingST::lookup(string name) {
     BlockScope* x = currentScope;
     while (x != nullptr) {
-        if (x->find(name) != x->end())
-            return x->find(name);
+        if (x->find(name) != x->end()) {    
+            auto t = x->find(name);
+            return t;
+        }
         x = x->getEnclosing();
     }
     return nfSentinel;

@@ -3,12 +3,12 @@
 
 void ByteCodeGenerator::emitLoadAddress(SymbolTableEntry& item, astnode* n) {
     emit(Instruction(ldaddr, item.addr));
-    if (noisey) cout << "LDADDR: " << n->token.getString()<<"scopelevel="<<n->token.scopeLevel() << " depth=" << item.depth<< endl;
+    if (noisey) cout << "LDADDR: " << n->token.getString()<<"scopelevel="<<n->token.scopeLevel() << " depth="<<(symTable.depth() - item.depth)<<" (raw): " << item.depth<< endl;
 }
 void ByteCodeGenerator::emitLoad(astnode* n, bool needLvalue) {
     if (noisey) cout<<"Compiling ID expression: ";
     SymbolTableEntry item = symTable.lookup(n->token.getString());
-    int depth = n->token.scopeLevel();
+    int depth = item.depth == -1 ? -1:symTable.depth() - item.depth;//n->token.scopeLevel();
     if (needLvalue) {
         emitLoadAddress(item, n);
     } else {
@@ -17,16 +17,16 @@ void ByteCodeGenerator::emitLoad(astnode* n, bool needLvalue) {
             if (noisey) cout << "LDGLOBAL: " << n->token.getString()<<"scopelevel="<<n->token.scopeLevel() << " depth=" << item.depth<<" addr="<<item.addr<<endl;
         } else if (depth == 0) {
             emit(Instruction(ldlocal, item.addr));
-            if (noisey) cout << "LDLOCAL: " << n->token.getString()<<", scopelevel= "<<n->token.scopeLevel() << " depth= " <<item.depth<<" addr="<<item.addr<< endl;
+            if (noisey) cout << "LDLOCAL: " << n->token.getString()<<", scopelevel= "<<n->token.scopeLevel() << " depth= " <<(symTable.depth() - item.depth)<<" (raw): "<<item.depth<<"addr="<<item.addr<< endl;
         } else {
             emit(Instruction(ldupval, item.addr, depth));
-            if (noisey) cout<< "LDUPVAL: " << n->token.getString()<<", scopelevel= "<<n->token.scopeLevel() << " depth= " <<item.depth<<" addr="<<item.addr<< endl;
+            if (noisey) cout<< "LDUPVAL: " << n->token.getString()<<", scopelevel= "<<n->token.scopeLevel() << " depth= " <<(symTable.depth() - item.depth)<<" (raw): "<<item.depth<<" addr="<<item.addr<< endl;
         }
     }
 }
 void ByteCodeGenerator::emitStore(astnode* n) {
     SymbolTableEntry item = symTable.lookup(n->left->token.getString());
-    int depth = n->left->token.scopeLevel();
+    int depth = item.depth == -1 ? -1:symTable.depth() - item.depth;//n->left->token.scopeLevel();
     if (depth == GLOBAL_SCOPE) {
         emit(Instruction(stglobal, item.addr));
         if (noisey) cout << "STGLOBAL: " << n->left->token.getString()<<", scopelevel= "<<n->left->token.scopeLevel() << " depth= " <<item.depth << endl;
