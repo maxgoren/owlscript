@@ -8,7 +8,7 @@ Parser::Parser(bool debug) {
 
 astnode* Parser::parse(vector<Token> tokens) {
     init(tokens);
-    astnode* p = stmt_list();
+    astnode* p = stmtList();
     if (noisey)
         preorder(p, 1);
     return p;

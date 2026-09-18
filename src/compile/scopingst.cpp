@@ -18,6 +18,7 @@ void BlockScopeIterator::next() {
 BlockScope::BlockScope(BlockScope* parent = nullptr) {
     n = 0;
     enclosingScope = parent;
+    nfSentinel = SymbolTableEntry("not found", -1, -1);
 }
 int BlockScope::size() {
     return n;
@@ -33,10 +34,10 @@ SymbolTableEntry& BlockScope::find(string name) {
         }
         idx++;
     }
-    return end();
+    return nfSentinel;
 }
 SymbolTableEntry& BlockScope::end() {
-    return data[n];
+    return nfSentinel;
 }
 SymbolTableEntry& BlockScope::operator[](string name) {
     if (find(name) == end())
@@ -53,6 +54,14 @@ BlockScope* BlockScope::getEnclosing() {
 ScopingST::ScopingST() {
     currentScope = new BlockScope();
     nfSentinel = SymbolTableEntry("not found", -1, -1);
+}
+
+ScopingST::~ScopingST() {
+    /*while (currentScope != nullptr) {
+        auto x = currentScope;
+        currentScope = currentScope->enclosingScope;
+        delete x;
+    }*/
 }
 ConstPool& ScopingST::getConstPool() {
     return constPool;
@@ -91,12 +100,12 @@ void ScopingST::openFunctionScope(string name, int L1) {
         currentScope = ns;
     } else {
         BlockScope*  ns = new BlockScope(currentScope);
-        int funcId = constPool.insert(alloc.alloc(new Function(name, L1, ns)));
-        int constIdx = constPool.insert(alloc.alloc(new Closure(constPool.get(funcId).objval->func, nullptr)));
+        int constIdx = constPool.insert(alloc.alloc(new Closure(new Function(name, L1, ns), nullptr)));
         int envAddr = nextAddr();
         int d = depth(currentScope)+1;
         d = (d == 0) ? 1:d;
         currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, FUNCVAR, d));
+        currentScope->find(name).isReady = true;
         currentScope = ns;
     }
 }
@@ -111,17 +120,48 @@ void ScopingST::insert(string name) {
 bool ScopingST::existsInScope(string name) {
     return currentScope->find(name) != currentScope->end();
 }
+
+void ScopingST::makeReady(string name) {
+    BlockScope* x = currentScope;
+    while (x != nullptr) {
+        auto t = x->find(name);
+        if (t != x->end() && t.isReady == false) {    
+            x->find(name).isReady = true;        
+            cout<<"Marked "<<name<<" as ready"<<endl;
+            return;
+        }
+        x = x->getEnclosing();
+    }
+}
+
 SymbolTableEntry ScopingST::lookup(string name) {
     BlockScope* x = currentScope;
     while (x != nullptr) {
-        if (x->find(name) != x->end()) {    
-            auto t = x->find(name);
+        auto t = x->find(name);
+        if (t != x->end()) {    
             return t;
         }
         x = x->getEnclosing();
     }
     return nfSentinel;
 }
+
+SymbolTableEntry ScopingST::findReady(string name) {
+        BlockScope* x = currentScope;
+    while (x != nullptr) {
+        auto t = x->find(name);
+        if (t != x->end() && t.isReady) {    
+            return t;
+        }
+        x = x->getEnclosing();
+    }
+    return nfSentinel;
+}
+
+BlockScope* ScopingST::scope() {
+    return currentScope;
+}
+
 ClassObject* ScopingST::lookupClass(string name) {
     if (objectDefs.find(name) != objectDefs.end())
         return objectDefs.at(name);
@@ -157,7 +197,7 @@ void ScopingST::printST(BlockScope* s, int d) {
         auto m = x->data[i];
         if (m.type != NONE) {
             for (int i = 0; i < d; i++) cout<<"  ";
-            cout<<m.name<<": "<<m.addr<<", "<<m.depth<<endl;
+            cout<<m.name<<": "<<m.addr<<", "<<m.depth<<"("<<m.lineNum<<")"<<endl;
             if (m.type == 2) {
                 printST(constPool.get(m.constPoolIndex).objval->closure->func->scope,d + 1);
             } else if (m.type == 3) {

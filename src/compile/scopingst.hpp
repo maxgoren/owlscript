@@ -27,9 +27,10 @@ struct SymbolTableEntry {
     int depth;
     int constPoolIndex;
     int lineNum;
-    SymbolTableEntry(string n, int adr, int cpi, SymTableType t, int d) : type(t), addr(adr), name(n), depth(d), constPoolIndex(cpi), lineNum(0) { }
-    SymbolTableEntry(string n, int adr, int d) : type(LOCALVAR), name(n), addr(adr), depth(d), constPoolIndex(-1), lineNum(0) { }
-    SymbolTableEntry() : type(NONE), addr(-1), constPoolIndex(-1), lineNum(0) { }
+    bool isReady;
+    SymbolTableEntry(string n, int adr, int cpi, SymTableType t, int d) : type(t), addr(adr), name(n), depth(d), constPoolIndex(cpi), lineNum(0), isReady(false) { }
+    SymbolTableEntry(string n, int adr, int d) : type(LOCALVAR), name(n), addr(adr), depth(d), constPoolIndex(-1), lineNum(0), isReady(false) { }
+    SymbolTableEntry() : type(NONE), addr(-1), constPoolIndex(-1), lineNum(0), isReady(false) { }
     SymbolTableEntry(const SymbolTableEntry& e) {
         name = e.name;
         type = e.type;
@@ -37,6 +38,7 @@ struct SymbolTableEntry {
         depth = e.depth;
         constPoolIndex = e.constPoolIndex;
         lineNum = e.lineNum;
+        isReady = e.isReady;
     }
     SymbolTableEntry& operator=(const SymbolTableEntry& e) {
         if (this != &e) {
@@ -45,7 +47,8 @@ struct SymbolTableEntry {
             addr = e.addr;
             depth = e.depth;
             constPoolIndex = e.constPoolIndex;
-            lineNum == e.lineNum;
+            lineNum = e.lineNum;
+            isReady = e.isReady;
         }
         return *this;
     }
@@ -76,6 +79,7 @@ class BlockScope {
         SymbolTableEntry data[MAX_LOCALS];
         int n;
         BlockScope* enclosingScope;
+        SymbolTableEntry nfSentinel;
     public:
         BlockScope(BlockScope* parent);
         int size();
@@ -98,15 +102,19 @@ class ScopingST {
         void printST(BlockScope* s, int d) ;
     public:
         ScopingST();
+        ~ScopingST();
         ConstPool& getConstPool();
         void openObjectScope(string name);
         void copyObjectScope(string instanceName, string objName);
         void openFunctionScope(string name, int L1);
         void closeScope() ;
         void insert(string name) ;
+        void makeReady(string name);
         bool existsInScope(string name);
         SymbolTableEntry lookup(string name) ;
+        SymbolTableEntry findReady(string name) ; 
         ClassObject* lookupClass(string name);
+        BlockScope* scope();
         int depth();
         void print();
 };

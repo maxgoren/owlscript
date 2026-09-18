@@ -11,7 +11,6 @@ ByteCodeGenerator::ByteCodeGenerator(bool debug) {
 vector<Instruction> ByteCodeGenerator::compile(astnode* n, CompilerState& cs) {
     cs = BUILD_ST;
     sr.buildSymbolTable(n, &symTable);
-    cs = RESOLVE_NAMES;
     cs = CODE_GEN;
     genCode(n, false);
     if (noisey) {

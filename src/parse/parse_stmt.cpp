@@ -23,7 +23,7 @@ astnode* Parser::statement() {
     return n;
 }
 
-astnode* Parser::stmt_list() {
+astnode* Parser::stmtList() {
     astnode* x = statement();
     astnode* m = x;
     while (!expect(TK_EOI) && !expect(TK_RCURLY)) {
@@ -64,7 +64,7 @@ astnode* Parser::functionBody(astnode* n) {
     match(TK_RPAREN);
     if (expect(TK_LCURLY)) {
         match(TK_LCURLY);
-        n->right = stmt_list();
+        n->right = stmtList();
         match(TK_RCURLY);
     } else if (expect(TK_PRODUCE)) {
         match(TK_PRODUCE);
@@ -79,7 +79,7 @@ astnode* Parser::parseIfStmt() {
     n->left = expression();
     match(TK_RPAREN);
     match(TK_LCURLY);
-    n->right = stmt_list();
+    n->right = stmtList();
     match(TK_RCURLY);
     if (expect(TK_ELSE)) {
         astnode* e = new astnode(ELSE_STMT, current());
@@ -88,7 +88,7 @@ astnode* Parser::parseIfStmt() {
             e->right = parseIfStmt();
         } else {
             match(TK_LCURLY);
-            e->right = stmt_list();
+            e->right = stmtList();
         }
         e->left = n->right;
         n->right = e;
@@ -104,7 +104,7 @@ astnode* Parser::parseWhileStmt() {
     n->left = expression();
     match(TK_RPAREN);
     match(TK_LCURLY);
-    n->right = stmt_list();
+    n->right = stmtList();
     match(TK_RCURLY);
     return n;
 }
@@ -130,7 +130,7 @@ astnode* Parser::parseVarDec() {
 }
 astnode* Parser::parseSequence() {
     match(TK_LCURLY);
-    astnode* t = stmt_list();
+    astnode* t = stmtList();
     match(TK_RCURLY);
     return t;
 }
@@ -190,7 +190,7 @@ astnode* Parser::parseForeach() {
     n->left = expression();
     match(TK_RPAREN);    
     match(TK_LCURLY);
-    n->right = stmt_list();
+    n->right = stmtList();
     match(TK_RCURLY);
     return n;
 }

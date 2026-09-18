@@ -227,6 +227,16 @@ void ByteCodeGenerator::emitLambda(astnode* n) {
     string name = n->token.getString();
     emit(Instruction(defun, name, numArgs, 0));
     symTable.openFunctionScope(name, L1+1);
+    for (auto tmp = n->left; tmp != nullptr; tmp = tmp->next) {
+        auto x = tmp;
+        while (x != nullptr) {
+            if (x->expr == ID_EXPR) {
+                symTable.makeReady(x->token.getString());
+                break;
+            }
+            x = x->left;
+        }
+    }
     genCode(n->right, false);
     emit(Instruction(retfun));
     int cpos = skipEmit(0);
@@ -267,7 +277,7 @@ void ByteCodeGenerator::emitBlessExpr(astnode* n) {
 }
 void ByteCodeGenerator::emitFunctionCall(astnode* n) {
     if (noisey) cout<<"Compiling Function Call."<<endl;
-    SymbolTableEntry fn_info = symTable.lookup(n->left->token.getString());
+    SymbolTableEntry fn_info = symTable.findReady(n->left->token.getString());
     int argsCount = 0;
     for (auto x = n->right; x != nullptr; x = x->next)
         argsCount++;

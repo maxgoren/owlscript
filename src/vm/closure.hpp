@@ -34,9 +34,6 @@ struct Closure {
         func = c.func;
         env = c.env;
     }
-    ~Closure() {
-
-    }
     Closure& operator=(const Closure& c) {
         if (this != &c) {
             func = c.func;

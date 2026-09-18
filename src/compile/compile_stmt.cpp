@@ -35,6 +35,22 @@ void ByteCodeGenerator::emitClassDef(astnode* n) {
 }
 
 void ByteCodeGenerator::emitLet(astnode* n) {
+    auto x = n->left;
+    while (x != nullptr) {
+        if (x->expr == ID_EXPR) {
+            symTable.makeReady(x->token.getString());
+            break;
+        }
+        x = x->left;
+    }
+    x = n->right;
+    while (x != nullptr) {
+        if (x->expr == ID_EXPR) {
+            symTable.makeReady(x->token.getString());
+            break;
+        }
+        x = x->left;
+    }
     switch (n->left->expr) {
         case BIN_EXPR:{
             emitBinaryOperator(n->left); 

@@ -100,7 +100,7 @@ class STBuilder {
                         }
                     } else if (symTable->lookup(t->token.getString()).addr == -1) {    
                         cout<<"Error: Unknown variable name: "<<t->token.getString()<<endl;
-                    } 
+                    }
                 } break;
                 case FUNC_EXPR: {
                     buildSymbolTable(t->left);

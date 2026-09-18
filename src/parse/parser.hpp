@@ -60,7 +60,7 @@ class Parser {
         astnode* parseImportStmt();
         astnode* parseReturn();
         astnode* statement();
-        astnode* stmt_list();
+        astnode* stmtList();
         bool noisey;
         int in_list_consxr;
     public:
