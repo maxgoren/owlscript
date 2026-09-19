@@ -14,9 +14,10 @@ void GarbageCollector::run(ActivationRecord* callstk, StackItem opstk[], int sp,
     GC_LIMIT *= 2;
 }
 
-void GarbageCollector::markObject(GCItem*& curr) {
-    if (curr == nullptr)
+void GarbageCollector::markObject(GCObject* cur) {
+    if (cur == nullptr)
         return;
+    GCItem* curr = (GCItem*)cur;
     if (curr != nullptr && curr->marked == false) {
         curr->marked = true;
         if (curr->type == LIST && curr->list != nullptr) {
@@ -29,8 +30,7 @@ void GarbageCollector::markObject(GCItem*& curr) {
             }
         } else if (curr->type == CLOSURE && curr->closure != nullptr) {
             markAR(curr->closure->env);
-        } else if (curr->type == FUNCTION && curr->func != nullptr) {
-            cout<<"Marked function "<<curr->func->name<<endl;
+            markObject(curr->closure->func);
         }
     }
 }
@@ -58,10 +58,10 @@ void GarbageCollector::sweep() {
             it->marked = false;
             nextGen.insert(it);
         } else {
-            if (it->isAR) {
-                freeAR((ActivationRecord*)it);
-            } else {
-                alloc.free((GCItem*)it);
+            switch (it->kind) {
+                case AR: freeAR((ActivationRecord*)it);
+                case FUNC: break;
+                case ITEM: alloc.free((GCItem*)it);
             }
         }
     }

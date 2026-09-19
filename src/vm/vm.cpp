@@ -12,6 +12,7 @@ VM::VM() {
     haltSentinel = Instruction(halt);
     globals =  new ActivationRecord(255, GLOBAL_SCOPE,0, nullptr, nullptr);
     callstk = globals;
+    alloc.registerObject(globals);
 }
 VM::~VM() {
     for (int i = MAX_OP_STACK-1; i > -1; i--) {
@@ -32,6 +33,11 @@ VM::~VM() {
 void VM::setConstPool(ConstPool& cp) {
     constPool = cp;
 }
+
+void VM::setAllocator(GCAllocator& ac) {
+    alloc = ac;
+}
+
 void VM::run(vector<Instruction>& cp, int verbosity) {
     init(cp, verbosity);
     running = true;
@@ -96,6 +102,7 @@ void VM::closeOver(Instruction& inst) {
 }
 void VM::openBlock(Instruction& inst) {
     callstk = new ActivationRecord(25, BLOCK_CPIDX, ip, callstk, callstk);
+    alloc.registerObject(globals);
 }
 void VM::closeBlock() {
     if (callstk != nullptr && callstk->control != nullptr) {
@@ -110,6 +117,8 @@ void VM::callProcedure(Instruction& inst) {
         Closure* close = opstk[sp--].objval->closure;
         if (close != nullptr) {
             callstk = new ActivationRecord(numArgs+15, cpIdx, ip, callstk, close->env);
+            alloc.registerObject(globals);
+
             for (int i = numArgs; i > 0; i--) {
                 callstk->locals[i] = opstk[sp--];
             }

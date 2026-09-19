@@ -18,6 +18,7 @@ class VM {
         vector<Instruction> codePage;
         int ip;
         int sp;
+        GCAllocator alloc;
         ConstPool constPool;
         GarbageCollector collector;
         ActivationRecord* callstk;
@@ -71,6 +72,7 @@ class VM {
         VM();
         ~VM();
         void setConstPool(ConstPool& cp);
+        void setAllocator(GCAllocator& ac);
         void run(vector<Instruction>& cp, int verbosity);
 };
 

@@ -21,7 +21,7 @@ class GCAllocator {
                 free_list.pop_front();
             }
             x->marked = false;
-            x->isAR = false;
+            x->kind = ITEM;
             return x;
         }
     public:
@@ -95,7 +95,5 @@ class GCAllocator {
             return live_items;
         }
 };
-
 static GCAllocator alloc;
-
 #endif

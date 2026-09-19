@@ -37,10 +37,10 @@ string dictToString(unordered_map<string,StackItem>* dict) {
 
 void freeClass(ClassObject* obj) {
     if (obj != nullptr) {
-        for (auto & m : obj->fields) {
+        /*for (auto & m : obj->fields) {
             if (m.second.type == OBJECT)
                 alloc.free(m.second.objval);
-        }
+        }*/
         delete obj;
     }
 }

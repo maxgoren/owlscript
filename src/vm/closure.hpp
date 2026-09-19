@@ -5,7 +5,7 @@ using namespace std;
 
 struct BlockScope;
 
-struct Function {
+struct Function : GCObject {
     string name;
     int start_ip;
     BlockScope* scope;

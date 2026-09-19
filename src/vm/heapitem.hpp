@@ -37,14 +37,14 @@ struct GCItem : GCObject {
         StackItem* reference;
         unordered_map<string,StackItem>* dict;
     };
-    GCItem(unordered_map<string,StackItem>* d) : type(DICT), dict(d) { }
-    GCItem(string* s) : type(STRING), strval(s) { }
-    GCItem(Function* f) : type(FUNCTION), func(f) { }
-    GCItem(Closure* c) : type(CLOSURE), closure(c) { }
-    GCItem(deque<StackItem>* l) : type(LIST), list(l) { }
-    GCItem(ClassObject* o) : type(CLASS), object(o) { } 
-    GCItem(StackItem* r) : type(REF), reference(r) { }
-    GCItem() : type(NILPTR) { }
+    GCItem(unordered_map<string,StackItem>* d) : GCObject(ITEM), type(DICT), dict(d) { }
+    GCItem(string* s) : GCObject(ITEM), type(STRING), strval(s) { }
+    GCItem(Function* f) : GCObject(ITEM), type(FUNCTION), func(f) { }
+    GCItem(Closure* c) : GCObject(ITEM), type(CLOSURE), closure(c) { }
+    GCItem(deque<StackItem>* l) : GCObject(ITEM), type(LIST), list(l) { }
+    GCItem(ClassObject* o) : GCObject(ITEM), type(CLASS), object(o) { } 
+    GCItem(StackItem* r) : GCObject(ITEM), type(REF), reference(r) { }
+    GCItem() : GCObject(ITEM), type(NILPTR) { }
     GCItem(const GCItem& si) {
         switch (si.type) {
             case STRING: strval = si.strval; break;
@@ -56,7 +56,7 @@ struct GCItem : GCObject {
             case DICT: dict = si.dict; break;
         }
         type = si.type;
-        isAR = si.isAR;
+        kind = si.kind;
         marked = si.marked;
     }
     GCItem& operator=(const GCItem& si) {
@@ -71,7 +71,7 @@ struct GCItem : GCObject {
                 case DICT: dict = si.dict; break;
             }
             type = si.type;
-            isAR = si.isAR;
+            kind = si.kind;
             marked = si.marked;
         }
         return *this;

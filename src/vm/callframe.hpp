@@ -19,17 +19,16 @@ struct ActivationRecord : GCObject {
         ret_addr = ra;
         control = calling;
         access = defining;
-        isAR = true;
+        kind = AR;
         num_locals = nl;
         locals = new StackItem[nl];
-        alloc.registerObject(this);
     }
     ActivationRecord(const ActivationRecord& ar) {
         cp_index = ar.cp_index;
         ret_addr = ar.ret_addr;
         control = ar.control;
         access = ar.access;
-        isAR = true;
+        kind = AR;
         marked = ar.marked;
         num_locals = ar.num_locals;
         locals = new StackItem[num_locals];
@@ -46,7 +45,7 @@ struct ActivationRecord : GCObject {
         ret_addr = ar.ret_addr;
         control = ar.control;
         access = ar.access;
-        isAR = true;
+        kind = ar.kind;
         marked = ar.marked;
         num_locals = ar.num_locals;
         locals = new StackItem[num_locals];

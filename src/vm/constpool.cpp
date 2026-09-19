@@ -30,11 +30,6 @@ ConstPool::ConstPool() {
 }
 
 ConstPool::~ConstPool() {
-    for (int i = 0; i < maxN; i++) {
-        if (data[i].type == OBJECT) {
-            alloc.free(data[i].objval);
-        }
-    }
     delete [] data;
 }
 

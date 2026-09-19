@@ -14,7 +14,9 @@ SymbolTableEntry& BlockScopeIterator::get() {
 void BlockScopeIterator::next() {
     ipos++;
 }
+BlockScope::~BlockScope() {
 
+}
 BlockScope::BlockScope(BlockScope* parent = nullptr) {
     n = 0;
     enclosingScope = parent;
@@ -62,6 +64,8 @@ ScopingST::~ScopingST() {
 ConstPool& ScopingST::getConstPool() {
     return constPool;
 }
+
+
 void ScopingST::openObjectScope(string name) {
     if (currentScope->find(name) != currentScope->end()) {
             if (currentScope->find(name).type == CLASSVAR) {
@@ -96,7 +100,9 @@ void ScopingST::openFunctionScope(string name, int L1) {
         currentScope = ns;
     } else {
         BlockScope*  ns = new BlockScope(currentScope);
-        int constIdx = constPool.insert(alloc.alloc(new Closure(new Function(name, L1, ns), nullptr)));
+        Function* f = new Function(name, L1, ns);
+        alloc.registerObject(f);
+        int constIdx = constPool.insert(alloc.alloc(new Closure(f, nullptr)));
         int envAddr = nextAddr();
         int d = depth(currentScope)+1;
         d = (d == 0) ? 1:d;
@@ -123,7 +129,7 @@ void ScopingST::makeReady(string name) {
         auto t = x->find(name);
         if (t != x->end() && t.isReady == false) {    
             x->find(name).isReady = true;        
-            cout<<"Marked "<<name<<" as ready"<<endl;
+            //cout<<"Marked "<<name<<" as ready"<<endl;
             return;
         }
         x = x->getEnclosing();

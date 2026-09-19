@@ -82,6 +82,7 @@ class BlockScope {
         SymbolTableEntry nfSentinel;
     public:
         BlockScope(BlockScope* parent);
+        ~BlockScope();
         int size();
         void insert(string name, SymbolTableEntry st);
         SymbolTableEntry& find(string name);

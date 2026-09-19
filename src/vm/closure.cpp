@@ -6,7 +6,6 @@ string closureToString(Closure* closure) {
 
 void freeClosure(Closure* cl) {
     if (cl != nullptr) {
-        //freeFunction(cl->func);
         delete cl;
     }   
 }
