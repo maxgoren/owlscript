@@ -55,7 +55,7 @@ class  ByteCodeGenerator {
         void genCode(astnode* n, bool needLvalue) ;
         void printOperand(StackItem& operand) ;
         void printByteCode() ;
-        
+        void markVariablesAsReadyToUse(astnode* n);
         void printConstPool() ;
     public:
         ByteCodeGenerator(bool debug = false);

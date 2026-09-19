@@ -218,6 +218,17 @@ void ByteCodeGenerator::emitComprehension(astnode* n) {
     emit(Instruction(ldlocal, RET));
 }
 
+void ByteCodeGenerator::markVariablesAsReadyToUse(astnode* n) {
+    auto x = n;
+    while (x != nullptr) {
+        if (x->expr == ID_EXPR) {
+            symTable.makeReady(x->token.getString());
+            break;
+        }
+        x = x->left;
+    }
+}
+
 void ByteCodeGenerator::emitLambda(astnode* n) {
     int numArgs = 0;
     for (astnode* x = n; x != nullptr; x = x->next)
@@ -228,14 +239,7 @@ void ByteCodeGenerator::emitLambda(astnode* n) {
     emit(Instruction(defun, name, numArgs, 0));
     symTable.openFunctionScope(name, L1+1);
     for (auto tmp = n->left; tmp != nullptr; tmp = tmp->next) {
-        auto x = tmp;
-        while (x != nullptr) {
-            if (x->expr == ID_EXPR) {
-                symTable.makeReady(x->token.getString());
-                break;
-            }
-            x = x->left;
-        }
+        markVariablesAsReadyToUse(tmp);
     }
     genCode(n->right, false);
     emit(Instruction(retfun));
@@ -246,6 +250,7 @@ void ByteCodeGenerator::emitLambda(astnode* n) {
     restore();
     emitStoreFuncInEnvironment(n, true);
 }
+
 void ByteCodeGenerator::emitBlessExpr(astnode* n) {
     string name = n->left->token.getString();
     int cpIdx = symTable.lookupClass(name) == nullptr ? -1:symTable.lookupClass(name)->cpIdx;
@@ -275,6 +280,7 @@ void ByteCodeGenerator::emitBlessExpr(astnode* n) {
         idxs.pop_back();
     }
 }
+
 void ByteCodeGenerator::emitFunctionCall(astnode* n) {
     if (noisey) cout<<"Compiling Function Call."<<endl;
     SymbolTableEntry fn_info = symTable.findReady(n->left->token.getString());
@@ -285,6 +291,7 @@ void ByteCodeGenerator::emitFunctionCall(astnode* n) {
     genExpression(n->left, false);
     emit(Instruction(call, fn_info.constPoolIndex, argsCount, n->left->token.scopeLevel()));
 }
+
 void ByteCodeGenerator::emitListConstructor(astnode* n) {
     emit(Instruction(mklist));
     if (n->left != nullptr) {
