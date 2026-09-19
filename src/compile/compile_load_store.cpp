@@ -25,7 +25,7 @@ void ByteCodeGenerator::emitLoad(astnode* n, bool needLvalue) {
     }
 }
 void ByteCodeGenerator::emitStore(astnode* n) {
-    SymbolTableEntry item = symTable.lookup(n->left->token.getString());
+    SymbolTableEntry item = symTable.findReady(n->left->token.getString());
     int depth = item.depth == -1 ? -1:symTable.depth() - item.depth;
     if (depth == GLOBAL_SCOPE) {
         emit(Instruction(stglobal, item.addr));

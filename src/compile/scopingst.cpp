@@ -123,7 +123,7 @@ void ScopingST::makeReady(string name) {
         auto t = x->find(name);
         if (t != x->end() && t.isReady == false) {    
             x->find(name).isReady = true;        
-            //cout<<"Marked "<<name<<" as ready"<<endl;
+            cout<<"Marked "<<name<<" as ready"<<endl;
             return;
         }
         x = x->getEnclosing();

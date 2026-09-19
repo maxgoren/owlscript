@@ -82,12 +82,13 @@ void ByteCodeGenerator::emitForeach(astnode* n) {
     //start of loop body, at the beginning of each iteration
     //we push the value at the current index of the list being iterated on to the stack
     //it's value is then stored by the name supplied by user for iterator object
+    symTable.makeReady(itexpr->left->token.getString());
     int L1 = skipEmit(0); 
     skipEmit(1);
     emit(Instruction(ldlocal, SEQ)); //current list were iterating
     emit(Instruction(ldlocal, IDX));  // index of current position
     emit(Instruction(ldidx));         // get data at that index
-    emit(Instruction(ldaddr, symTable.lookup(itexpr->left->token.getString()).addr)); //address of runtime iterator
+    emit(Instruction(ldaddr, symTable.findReady(itexpr->left->token.getString()).addr)); //address of runtime iterator
     emit(Instruction(stlocal));       //store data to iterator name
     
     //whatever code user wants to perform 
