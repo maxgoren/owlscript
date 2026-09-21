@@ -36,13 +36,11 @@ void ByteCodeGenerator::emitClassDef(astnode* n) {
 
 void ByteCodeGenerator::emitLet(astnode* n) {
     markVariablesAsReadyToUse(n->left);
-    markVariablesAsReadyToUse(n->right);
     switch (n->left->expr) {
         case BIN_EXPR:{
             emitBinaryOperator(n->left); 
         } break;
         case ID_EXPR: {
-            genCode(n->right, false); 
             genCode(n->left, true);
         } break;
     }  

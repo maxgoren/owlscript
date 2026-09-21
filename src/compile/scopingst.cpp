@@ -149,7 +149,7 @@ SymbolTableEntry ScopingST::lookup(string name) {
 }
 
 SymbolTableEntry ScopingST::findReady(string name) {
-        BlockScope* x = currentScope;
+    BlockScope* x = currentScope;
     while (x != nullptr) {
         auto t = x->find(name);
         if (t != x->end() && t.isReady) {    

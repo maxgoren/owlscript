@@ -1,5 +1,10 @@
 #include "bcgen.hpp"
 
+int runtimeDepth(int currDepth, int itemDepth) {
+    if (itemDepth == -1 || currDepth - itemDepth < 0)
+        return -1;
+    return currDepth - itemDepth;
+}
 
 void ByteCodeGenerator::emitLoadAddress(SymbolTableEntry& item, astnode* n) {
     emit(Instruction(ldaddr, item.addr));
@@ -8,7 +13,7 @@ void ByteCodeGenerator::emitLoadAddress(SymbolTableEntry& item, astnode* n) {
 void ByteCodeGenerator::emitLoad(astnode* n, bool needLvalue) {
     if (noisey) cout<<"Compiling ID expression: ";
     SymbolTableEntry item = symTable.findReady(n->token.getString());
-    int depth = item.depth == -1 ? -1:symTable.depth() - item.depth;
+    int depth = runtimeDepth(symTable.depth(), item.depth);
     if (needLvalue) {
         emitLoadAddress(item, n);
     } else {
@@ -24,9 +29,10 @@ void ByteCodeGenerator::emitLoad(astnode* n, bool needLvalue) {
         }
     }
 }
+
 void ByteCodeGenerator::emitStore(astnode* n) {
     SymbolTableEntry item = symTable.findReady(n->left->token.getString());
-    int depth = item.depth == -1 ? -1:symTable.depth() - item.depth;
+    int depth = runtimeDepth(symTable.depth(), item.depth);
     if (depth == GLOBAL_SCOPE) {
         emit(Instruction(stglobal, item.addr));
         if (noisey) cout << "STGLOBAL: " << n->left->token.getString()<<", scopelevel= "<<n->left->token.scopeLevel() << " depth= " <<item.depth << endl;

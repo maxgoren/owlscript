@@ -219,13 +219,13 @@ void ByteCodeGenerator::emitComprehension(astnode* n) {
 }
 
 void ByteCodeGenerator::markVariablesAsReadyToUse(astnode* n) {
-    auto x = n;
-    while (x != nullptr) {
-        if (x->expr == ID_EXPR) {
-            symTable.makeReady(x->token.getString());
-            break;
+    if (n != nullptr) {
+        if (n->kind == EXPRNODE && n->expr == ID_EXPR) {
+            symTable.makeReady(n->token.getString());
+        } else {
+            markVariablesAsReadyToUse(n->left);
+            markVariablesAsReadyToUse(n->right);
         }
-        x = x->left;
     }
 }
 
