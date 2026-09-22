@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <deque>
 #include "heapitem.hpp"
+#include "stackitem.hpp"
 using namespace std;
 
 
@@ -48,7 +49,7 @@ class GCAllocator {
                 } break;
                 case FUNCTION: {
                     freeFunction(item->func);
-                }
+                } break;
             };
             item->type = NILPTR;
             free_list.push_back(item);
@@ -57,35 +58,35 @@ class GCAllocator {
             GCItem* x = next();
             x->type = STRING;
             x->strval = s;
-            live_items.insert(x);
+            registerObject(x);
             return x;
         }
         GCItem* alloc(Closure* c) {
             GCItem* x = next();
             x->type = CLOSURE;
             x->closure = c;
-            live_items.insert(x);
+            registerObject(x);
             return x;
         }
         GCItem* alloc(Function* f) {
             GCItem* x = next();
             x->type = FUNCTION;
             x->func = f;
-            live_items.insert(x);
+            registerObject(x);
             return x;
         }
         GCItem* alloc(deque<StackItem>* l) {
             GCItem* x = next();
             x->type = LIST;
             x->list = l;
-            live_items.insert(x);
+            registerObject(x);
             return x;
         }
         GCItem* alloc(ClassObject* l) {
             GCItem* x = next();
             x->type = CLASS;
             x->object = l;
-            live_items.insert(x);
+            registerObject(x);
             return x;
         }
         void registerObject(GCObject* obj) {
@@ -95,5 +96,5 @@ class GCAllocator {
             return live_items;
         }
 };
-static GCAllocator alloc;
+extern GCAllocator alloc;
 #endif

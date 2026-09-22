@@ -34,9 +34,6 @@ void VM::setConstPool(ConstPool& cp) {
     constPool = cp;
 }
 
-void VM::setAllocator(GCAllocator& ac) {
-    alloc = ac;
-}
 
 void VM::run(vector<Instruction>& cp, int verbosity) {
     init(cp, verbosity);

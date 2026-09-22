@@ -45,6 +45,7 @@ struct GCItem : GCObject {
     GCItem(ClassObject* o) : GCObject(ITEM), type(CLASS), object(o) { } 
     GCItem(StackItem* r) : GCObject(ITEM), type(REF), reference(r) { }
     GCItem() : GCObject(ITEM), type(NILPTR) { }
+    ~GCItem() { }
     GCItem(const GCItem& si) {
         switch (si.type) {
             case STRING: strval = si.strval; break;

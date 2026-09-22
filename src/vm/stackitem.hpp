@@ -34,6 +34,7 @@ struct StackItem {
     StackItem();
     StackItem(const StackItem& si);
     StackItem& operator=(const StackItem& si);
+    ~StackItem() { }
     bool lessThan(StackItem& si);
     bool equals(StackItem& rhs);
     StackItem& add(StackItem& rhs);
