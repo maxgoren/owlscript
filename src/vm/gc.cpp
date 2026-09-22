@@ -1,7 +1,7 @@
 #include "gc.hpp"
 
 GarbageCollector::GarbageCollector() {
-    GC_LIMIT = 512 * sizeof(ActivationRecord);
+    GC_LIMIT = 144 * sizeof(ActivationRecord);
 }
 
 bool GarbageCollector::ready() {
@@ -17,21 +17,25 @@ void GarbageCollector::run(ActivationRecord* callstk, StackItem opstk[], int sp,
 void GarbageCollector::markObject(GCObject* cur) {
     if (cur == nullptr)
         return;
-    GCItem* curr = (GCItem*)cur;
-    if (curr != nullptr && curr->marked == false) {
-        curr->marked = true;
-        if (curr->type == LIST && curr->list != nullptr) {
-            for (auto & it : *curr->list) {
-                markItem(&it);
+    cur->marked = true;
+    if (cur->kind == ITEM) {
+        GCItem* curr = (GCItem*)cur;
+        if (curr != nullptr && curr->marked == false) {
+            if (curr->type == LIST && curr->list != nullptr) {
+                for (auto & it : *curr->list) {
+                    markItem(&it);
+                }
+            } else if (curr->type == CLASS && curr->object != nullptr) {
+                for (auto & it : curr->object->fields) {
+                    markItem(&it.second);
+                }
+            } else if (curr->type == CLOSURE && curr->closure != nullptr) {
+                markAR(curr->closure->env);
+                markObject(curr->closure->func);
             }
-        } else if (curr->type == CLASS && curr->object != nullptr) {
-            for (auto & it : curr->object->fields) {
-                markItem(&it.second);
-            }
-        } else if (curr->type == CLOSURE && curr->closure != nullptr) {
-            markAR(curr->closure->env);
-            markObject(curr->closure->func);
         }
+    } else if (cur->kind == AR) {
+        markAR((ActivationRecord*) cur);
     }
 }
 void GarbageCollector::markItem(StackItem* si) {
@@ -59,13 +63,15 @@ void GarbageCollector::sweep() {
             nextGen.insert(it);
         } else {
             switch (it->kind) {
-                case AR: freeAR((ActivationRecord*)it);
-                case FUNC: break;
-                case ITEM: alloc.free((GCItem*)it);
+                case AR: freeAR((ActivationRecord*)it); break;
+                case FUNC: freeFunction((Function*)it); break;
+                case ITEM: alloc.free((GCItem*)it); break;
             }
         }
     }
+    cout<<alloc.getLiveList().size()<<" -> "<<nextGen.size();
     alloc.getLiveList().swap(nextGen);
+    cout<<"\n ---> swept."<<endl;
 }
 void GarbageCollector::markOpStack(StackItem ops[], int sp) {
     for (int i = sp; i >= 0; i--) {
@@ -84,6 +90,7 @@ void GarbageCollector::markConstPool(ConstPool* constPool) {
     }
 }
 void GarbageCollector::markRoots(ActivationRecord* callstk, StackItem opstk[], int sp, ConstPool* constPool) { 
+    cout<<"\n ---> mark "<<endl;
     markOpStack(opstk, sp);
     markAR(callstk);
     markConstPool(constPool);
