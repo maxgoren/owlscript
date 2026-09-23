@@ -95,14 +95,12 @@ void ScopingST::copyObjectScope(string instanceName, string objName) {
 }
 void ScopingST::openFunctionScope(string name, int L1) {
     if (currentScope->find(name) != currentScope->end()) {
-        BlockScope* ns = constPool.get(currentScope->find(name).constPoolIndex).objval->closure->func->scope;
-        constPool.get(currentScope->find(name).constPoolIndex).objval->closure->func->start_ip = L1;
+        BlockScope* ns = constPool.get(currentScope->find(name).constPoolIndex).objval->closure->func.scope; 
+        constPool.get(currentScope->find(name).constPoolIndex).objval->closure->func.start_ip = L1;
         currentScope = ns;
     } else {
         BlockScope*  ns = new BlockScope(currentScope);
-        Function* f = new Function(name, L1, ns);
-        alloc.registerObject(f);
-        int constIdx = constPool.insert(alloc.alloc(new Closure(f, nullptr)));
+        int constIdx = constPool.insert(alloc.alloc(new Closure(Function(name, L1, ns), nullptr)));
         int envAddr = nextAddr();
         int d = depth(currentScope)+1;
         d = (d == 0) ? 1:d;
@@ -201,7 +199,7 @@ void ScopingST::printST(BlockScope* s, int d) {
             for (int i = 0; i < d; i++) cout<<"  ";
             cout<<m.name<<": "<<m.addr<<", "<<m.depth<<"("<<m.lineNum<<")"<<endl;
             if (m.type == 2) {
-                printST(constPool.get(m.constPoolIndex).objval->closure->func->scope,d + 1);
+                printST(constPool.get(m.constPoolIndex).objval->closure->func.scope,d + 1);
             } else if (m.type == 3) {
                 printST(constPool.get(m.constPoolIndex).objval->object->scope, d+1);
             }

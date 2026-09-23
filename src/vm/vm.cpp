@@ -27,7 +27,7 @@ VM::~VM() {
                 alloc.free(opstk[i].objval);
         }
         x = x->control;
-        delete tmp;
+        freeAR(tmp);
     }
 }
 void VM::setConstPool(ConstPool& cp) {
@@ -119,7 +119,7 @@ void VM::callProcedure(Instruction& inst) {
             for (int i = numArgs; i > 0; i--) {
                 callstk->locals[i] = opstk[sp--];
             }
-            ip = close->func->start_ip;
+            ip = close->func.start_ip;
             return;
         }
     }

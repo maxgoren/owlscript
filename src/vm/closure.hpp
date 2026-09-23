@@ -9,7 +9,7 @@ struct Function : GCObject {
     string name;
     int start_ip;
     BlockScope* scope;
-    Function(string n, int sip, BlockScope* sc) : name(n), start_ip(sip), scope(sc) { }
+    Function(string n = "<none>", int sip = -1, BlockScope* sc = nullptr) : name(n), start_ip(sip), scope(sc) { }
     Function(const Function& f) {
         name = f.name;
         start_ip  = f.start_ip;
@@ -26,10 +26,10 @@ struct Function : GCObject {
 };
 
 struct Closure {
-    Function* func;
+    Function func;
     ActivationRecord* env;
-    Closure(Function* f, ActivationRecord* e) : func(f), env(e) { }
-    Closure(Function* f) : func(f), env(nullptr) { }
+    Closure(Function f, ActivationRecord* e) : func(f), env(e) { }
+    Closure(Function f) : func(f), env(nullptr) { }
     Closure(const Closure& c) {
         func = c.func;
         env = c.env;
@@ -45,6 +45,5 @@ struct Closure {
 
 string closureToString(Closure* closure);
 void freeClosure(Closure* cl);
-void freeFunction(Function* f);
 
 #endif
