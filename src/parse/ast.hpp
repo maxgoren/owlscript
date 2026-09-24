@@ -7,7 +7,7 @@ using namespace std;
 
 
 enum NodeType {
-    EXPRNODE, STMTNODE
+    EXPRNODE, STMTNODE, TEMP_NODE
 };
 
 enum ExprType {
@@ -46,6 +46,7 @@ struct astnode {
     astnode* next;
     astnode(ExprType et, Token tk) : expr(et), kind(EXPRNODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
     astnode(StmtType st, Token tk) : stmt(st), kind(STMTNODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
+    astnode(Token tk) : kind(TEMP_NODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
     astnode() : token(Token(TK_EOI, "fin")), left(nullptr), right(nullptr), next(nullptr) { }
 };
 

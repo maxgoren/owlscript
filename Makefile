@@ -1,10 +1,6 @@
 owlscript:
 	g++ --std=c++17 -c src/parse/ast.cpp
 	g++ --std=c++17 -c src/vm/alloc.cpp
-	g++ --std=c++17 -c src/parse/lexer.cpp
-	g++ --std=c++17 -c src/parse/parser.cpp
-	g++ --std=c++17 -c src/parse/parse_expr.cpp
-	g++ --std=c++17 -c src/parse/parse_stmt.cpp
 	g++ --std=c++17 -c src/compile/bcgen.cpp
 	g++ --std=c++17 -c src/compile/compile_expr.cpp
 	g++ --std=c++17 -c src/compile/compile_stmt.cpp

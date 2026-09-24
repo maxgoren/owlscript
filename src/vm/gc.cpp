@@ -42,8 +42,7 @@ void GarbageCollector::markItem(StackItem* si) {
         markObject(si->objval);
     }
 }
-void GarbageCollector::markAR(ActivationRecord* callframe) {
-    ActivationRecord* ar = callframe;
+void GarbageCollector::markAR(ActivationRecord* ar) {
     if (ar != nullptr && !ar->marked) {
         ar->marked = true;
         for (int i = 0; i < 255; i++) {

@@ -41,6 +41,7 @@ class Compiler {
             if (tokens.size() > 1) {
                 state = PARSE;
                 astnode* ast = parser.parse(tokens);
+                preorder(ast, 1);
                 if (ast) {
                     while (isImportStatement(ast)) {
                         if (isIDExpr(ast->left)) {
@@ -58,6 +59,7 @@ class Compiler {
                     if (ast != nullptr) {
                         state = CODE_GEN;
                         vector<Instruction> pg = codeGen.compile(ast, state);
+                        cout<<"Aiite"<<endl;
                         state = DONE;
                         return pg;
                     } else {

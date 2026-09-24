@@ -90,7 +90,7 @@ void VM::closeOver(Instruction& inst) {
     auto funcobj = constPool.get(func_id);
     if (funcobj.type == OBJECT && funcobj.objval->type == CLOSURE) {
         auto func = funcobj.objval->closure->func;
-        auto env = mostRecentAR(func_id);
+        auto env = mostRecentAR(func.start_ip);
         opstk[++sp] = StackItem(alloc.alloc(new Closure(func, env)));
     } else {
         cout<<"Fatal Error: Invalid Environment."<<endl;
@@ -113,9 +113,8 @@ void VM::callProcedure(Instruction& inst) {
     if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
         Closure* close = opstk[sp--].objval->closure;
         if (close != nullptr) {
-            callstk = new ActivationRecord(numArgs+15, cpIdx, ip, callstk, close->env);
+            callstk = new ActivationRecord(numArgs+15, close->func.start_ip, ip, callstk, close->env);
             alloc.registerObject(globals);
-
             for (int i = numArgs; i > 0; i--) {
                 callstk->locals[i] = opstk[sp--];
             }
@@ -123,7 +122,7 @@ void VM::callProcedure(Instruction& inst) {
             return;
         }
     }
-    cout <<"Fatal error: attempted function application without a function."<<endl;
+    cout <<"Fatal error: attempted function application without a function. ("<<cpIdx<<")"<<endl;
     running = false;
 }
 void VM::retProcedure() {
