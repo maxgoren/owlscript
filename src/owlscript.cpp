@@ -7,8 +7,8 @@
 using namespace std;
 
 #define MAJOR_VER     0
-#define MINOR_VER    89
-#define RELEASE_VER  'a'
+#define MINOR_VER    91
+#define RELEASE_VER  'L'
 
 void printVersion() {
     printf("Owlscript v%d.%d%c, (c) 2026 MaxGCoding.com\n", MAJOR_VER, MINOR_VER, RELEASE_VER);

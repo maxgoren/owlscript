@@ -267,15 +267,17 @@ astnode* mkDotted(vector<astnode*>& reducing) {
     astnode* rr = reducing[2]; 
         nn->left = ll;
         nn->right = rr;
+    if (rr->expr == LIST_EXPR) nn->expr = LIST_EXPR;
     return nn;
 }
 
 astnode* mkListCon(vector<astnode*>& reducing) {
     reducing[0]->kind = EXPRNODE;
     reducing[0]->expr = LISTCON_EXPR;
-    if (reducing[1]->token.getSymbol() == TK_LB)
+    if (reducing[1]->token.getString() == "Epsilon") {
+        reducing[0]->left = nullptr;
         return reducing[0];
-    else {
+    } else {
         for (int i = 1; i < reducing.size()-1; i++) {
             if (reducing[0]->left == nullptr) {
                 reducing[0]->left = reducing[1];
@@ -287,6 +289,20 @@ astnode* mkListCon(vector<astnode*>& reducing) {
         }
     }
     return reducing[0];
+}
+
+astnode* mkSetComp(vector<astnode*>& reducing) {
+    astnode* nn = reducing[1];
+    nn->kind = EXPRNODE;
+    nn->expr = SETCOMP_EXPR;
+    if (nn->token.getSymbol() == TK_IF && reducing[0]->token.getSymbol() == TK_AS) {
+        reducing[0]->right->next = reducing[2];
+        nn = reducing[0];
+    } else {
+        nn->left = reducing[0];
+        nn->right = reducing[2];
+    }
+    return nn;
 }
 
 astnode* mkListOp(vector<astnode*>& reducing) {

@@ -13,9 +13,9 @@ def fib(let q) {
 def odd(let q) { 
     return q % 2 != 0; 
 }
-let even := &(let i) -> !odd(i);
+let even := &(let i) -> { !odd(i); };
 let xs := [ 13, 42, 86, 11, 24, 9];
-println [ 1 .. 10 as fact if even ];
-println [ 5 .. 20 as fib if odd ] 
-println [ xs as &(let i) -> i+i ];
-println [ xs as &(let i) -> i+i if odd ];
+{* println [ 1 .. 10 as fact if even ];
+println [ 5 .. 20 as fib if odd ]; *}
+println [ xs as &(let i) -> { i+i; } ];
+println [ xs as &(let i) -> { i+i; } if odd ];
