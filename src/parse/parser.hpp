@@ -16,10 +16,17 @@ class Parser {
         int tpos;
         vector<Token> tokens;
         Token& current() {
+            if (tokens[tpos].getSymbol() == TK_OPEN_COMMENT) {
+                advance();
+            }
             return tokens[tpos];
         }
         void advance() {
             if (tpos < tokens.size()) {
+                if (tokens[tpos].getSymbol() == TK_OPEN_COMMENT) {
+                    while (tpos < tokens.size() && tokens[tpos].getSymbol() != TK_CLOSE_COMMENT)
+                        tpos++;
+                }
                 tpos++;
             }
         }

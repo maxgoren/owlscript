@@ -1,6 +1,6 @@
 fn outer(let x) { 
     let y := x + 1; 
-    let inner := &(let z) -> z+y; 
+    let inner := &(let z) -> { z+y; }; 
     return inner; 
 }
 

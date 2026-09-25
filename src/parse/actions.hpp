@@ -38,6 +38,7 @@ astnode* mkbinop(vector<astnode*>& reducing) {
     astnode* nn = new astnode(BIN_EXPR, reducing[1]->token);
     nn->left = reducing[0];
     nn->right = reducing[2];
+    if (nn->token.getSymbol() == TK_RANGE) nn->expr = RANGE_EXPR;
     return nn; 
 }
 astnode* unary(vector<astnode*>& reducing) {
@@ -222,11 +223,12 @@ astnode* mkStruct(vector<astnode*>& reducing) {
 
 astnode* mkInstance(vector<astnode*>& reducing) {
     astnode* nn = reducing[0];
-    nn->kind = STMTNODE;
+    nn->kind = EXPRNODE;
     nn->expr = BLESS_EXPR;
     nn->left = reducing[1];
     nn->left->kind = EXPRNODE;
     nn->left->expr = ID_EXPR;
+    nn->right = reducing[3];
     return nn;
 }
 
