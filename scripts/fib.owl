@@ -1,6 +1,9 @@
 let fibs := [0,1];
 fn fib(let k) {
-	if (k < 2) {
+	if (k == 0) {
+		return 0;
+	}
+	if (k == 1) {
 		return 1;
 	}
 	if (k < fibs.size()) {

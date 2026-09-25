@@ -113,9 +113,6 @@ vector<Token> Lexer::lex(CharBuffer* buff) {
         }
     }
     tokens.push_back(Token(TK_EOI, "<fin>"));
-    //for (auto m : tokens) {
-    //    cout<<"["<<tokenStr[m.getSymbol()]<<"] ["<<m.getString()<<"]"<<endl;
-    //}
     return tokens;
 }
 

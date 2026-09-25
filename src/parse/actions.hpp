@@ -307,7 +307,7 @@ astnode* mkSetComp(vector<astnode*>& reducing) {
 
 astnode* mkListOp(vector<astnode*>& reducing) {
     astnode* nn = new astnode(LIST_EXPR, reducing[0]->token);
-    if (nn->token.getSymbol() == TK_APPEND) nn->left = reducing[2];
+    if (nn->token.getSymbol() == TK_APPEND || nn->token.getSymbol() == TK_PUSH) nn->left = reducing[2];
     return nn;
 }
 
