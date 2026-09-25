@@ -260,9 +260,13 @@ astnode* mkSubscript(vector<astnode*>& reducing) {
 }
 
 astnode* mkDotted(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(FIELD_EXPR, reducing[1]->token);
-    nn->left = reducing[0];
-    nn->right = reducing[2];
+    astnode* nn = reducing[1];
+    nn->kind = EXPRNODE;
+    nn->expr = FIELD_EXPR;
+    astnode* ll = reducing[0];
+    astnode* rr = reducing[2]; 
+        nn->left = ll;
+        nn->right = rr;
     return nn;
 }
 
@@ -311,6 +315,14 @@ astnode* mkRandom(vector<astnode*>& reducing) {
     astnode* nn = reducing[0];
     nn->kind = EXPRNODE;
     nn->expr = CONST_EXPR;
+    nn->left = reducing[2];
+    return nn;
+}
+
+astnode* mkBuiltin(vector<astnode*>& reducing) {
+    astnode* nn = reducing[0];
+    nn->kind = EXPRNODE;
+    nn->expr = UOP_EXPR;
     nn->left = reducing[2];
     return nn;
 }

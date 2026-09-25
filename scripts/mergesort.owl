@@ -23,9 +23,9 @@ fn merge(let xs, let aux, let l, let m, let r) {
 
 fn mergesortR(let xs, let aux, let l, let r) {
     if (r - l <= 1) {
-        return;
+        return xs;
     }
-    let m := floor((l+r)/2);
+    let m := (l+r)/2;
     println l + ", " + m + ", " + r;
     mergesortR(xs, aux, l, m);
     mergesortR(xs, aux, m, r);
@@ -34,7 +34,7 @@ fn mergesortR(let xs, let aux, let l, let r) {
 
 fn sort(let xs) {
     let i := 0;
-    let aux := [];
+    let aux := [2];
     while (i < xs.size()) {
         aux.append(xs[i]);
         i++;
@@ -42,10 +42,11 @@ fn sort(let xs) {
     return mergesortR(xs, aux, 0, xs.size());
 }
 
-let a := [];
+let a := [2,7,101,16,54,11,89,93,26];
 let i := 0;
-while (i < 8) {
+while (i < 15) {
     a.append(random(256));
     i++;
 }
+println a;
 println sort(a);
