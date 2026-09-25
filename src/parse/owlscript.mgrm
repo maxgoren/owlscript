@@ -1,4 +1,5 @@
 terminal_list owlscript.mlex
+type_returned astnode
 sp ::= PROG
 PROG ::= OPTIMPORTLIST STMTLIST                                @mkProg
 OPTIMPORTLIST ::= IMPORTLIST
