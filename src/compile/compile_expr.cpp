@@ -91,11 +91,11 @@ void ByteCodeGenerator::emitConstant(astnode* n) {
     if (noisey) cout<<"Compiling Constant: "<<n->token.getString()<<endl;
     switch (n->token.getSymbol()) {
         case TK_NUM:    {
-            int idx = symTable.getConstPool().insert(StackItem(stod(n->token.getString())));
+            int idx = symTable.getConstPool()->insert(StackItem(stod(n->token.getString())));
             emit(Instruction(ldconst, StackItem(stod(n->token.getString()))));  
         } break;
         case TK_STRING: {
-            int idx = symTable.getConstPool().insert(StackItem(n->token.getString()));
+            int idx = symTable.getConstPool()->insert(StackItem(alloc.alloc(n->token.getString())));
             emit(Instruction(ldconst, idx));  
         } break;
         case TK_RANDOM: {
@@ -136,7 +136,7 @@ void ByteCodeGenerator::emitListOperation(astnode* listExpr) {
         case TK_EMPTY: {
             genExpression(listname, false);
             emit(Instruction(list_len));  
-            emit(Instruction(ldconst, symTable.getConstPool().insert(0.0)));
+            emit(Instruction(ldconst, symTable.getConstPool()->insert(0.0)));
             emit(Instruction(binop, VM_EQU));
         } break;
     }
@@ -236,7 +236,7 @@ void ByteCodeGenerator::emitLambda(astnode* n) {
     int L1 = skipEmit(0);
     skipEmit(1);
     string name = n->token.getString();
-    emit(Instruction(defun, name, numArgs, 0));
+    emit(Instruction(defun, 0, numArgs, 0));
     symTable.openFunctionScope(name, L1+1);
     for (auto tmp = n->left; tmp != nullptr; tmp = tmp->next) {
         markVariablesAsReadyToUse(tmp);
@@ -271,7 +271,7 @@ void ByteCodeGenerator::emitBlessExpr(astnode* n) {
     vector<int> idxs;
     for (auto x = n->right; x != nullptr && !it.done(); x = x->next) {
         if (it.get().constPoolIndex == -1)
-            it.get().constPoolIndex = symTable.getConstPool().insert(it.get().name);
+            it.get().constPoolIndex = symTable.getConstPool()->insert(alloc.alloc(it.get().name));
         idxs.push_back(it.get().constPoolIndex);
         it.next();
     }

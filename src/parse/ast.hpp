@@ -49,6 +49,11 @@ struct astnode {
     astnode(StmtType st, Token tk) : stmt(st), kind(STMTNODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
     astnode(Token tk) : kind(TEMP_NODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
     astnode() : token(Token(TK_EOI, "fin")), left(nullptr), right(nullptr), next(nullptr) { }
+    ~astnode() {
+        delete next;
+        delete right;
+        delete left;
+    }
 };
 
 void preorder(astnode* node, int d);

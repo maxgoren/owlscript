@@ -16,8 +16,10 @@ VM::VM() {
 }
 VM::~VM() {
     for (int i = MAX_OP_STACK-1; i > -1; i--) {
-        if (opstk[i].type == OBJECT)
+        if (opstk[i].type == OBJECT) {
             alloc.free(opstk[i].objval);
+            cout<<".";
+        }
     }
     auto x = callstk;
     while (x != nullptr) {
@@ -28,10 +30,13 @@ VM::~VM() {
         }
         x = x->control;
         freeAR(tmp);
+        cout<<"-";
     }
+    cout<<endl;
 }
-void VM::setConstPool(ConstPool& cp) {
-    constPool = cp;
+
+ConstPool* VM::getConstPool() {
+    return &constPool;
 }
 
 
@@ -83,7 +88,7 @@ ActivationRecord* VM::mostRecentAR(int func_id) {
         }
         x = x->access;
     }
-    return (x == nullptr) ? callstk:x;
+    return x == nullptr ? callstk:x;
 }
 void VM::closeOver(Instruction& inst) {
     int func_id = inst.operand[0].intval;
@@ -153,8 +158,13 @@ void VM::loadLocal(Instruction& inst) {
     if (verbLev > 1)
         cout<<"loaded local: "<<opstk[sp].toString()<<endl;
 } 
+StackItem& VM::getUpValue(int depth, int addr) {
+    auto env = walkChain(depth);
+    return env == nullptr ? nilSent:env->locals[addr];
+}
+
 void VM::loadUpval(Instruction& inst) {
-    opstk[++sp] = walkChain(inst.operand[1].intval)->locals[inst.operand[0].intval];
+    opstk[++sp] = getUpValue(inst.operand[1].intval, inst.operand[0].intval);
     if (verbLev > 1)
         cout<<"loaded Upval: "<<opstk[sp].toString()<<"from "<<inst.operand[0].intval<<" of scope "<<(inst.operand[1].intval)<<endl;
 } 
@@ -421,7 +431,6 @@ void VM::execute(Instruction& inst) {
         default:
             break;
     }
-    if (collector.ready()) collector.run(callstk, opstk, sp, &constPool);       
 }
 Instruction& VM::fetch() {
     return ip < codePage.size() && ip > -1 ? codePage[ip++]:haltSentinel;

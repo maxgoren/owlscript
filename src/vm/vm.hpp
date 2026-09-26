@@ -18,12 +18,14 @@ class VM {
         vector<Instruction> codePage;
         int ip;
         int sp;
+        StackItem nilSent;
         ConstPool constPool;
         GarbageCollector collector;
         ActivationRecord* callstk;
         ActivationRecord* globals;
         StackItem opstk[MAX_OP_STACK];
         ActivationRecord* walkChain(int d);
+        StackItem& getUpValue(int d, int i);
         StackItem& top(int depth = 0);
         ActivationRecord* mostRecentAR(int func_id);
         void closeOver(Instruction& inst);
@@ -70,7 +72,7 @@ class VM {
     public:
         VM();
         ~VM();
-        void setConstPool(ConstPool& cp);
+        ConstPool* getConstPool();
         void run(vector<Instruction>& cp, int verbosity);
 };
 

@@ -15,40 +15,38 @@ void printVersion() {
 }
 
 void initStdLib(Compiler& compiler, VM& vm) {
-    FileStringBuffer* fb = new FileStringBuffer();
-    fb->readFile("/usr/local/bin/vm/stdlib.owl");
-    auto code = compiler.compile(fb);
-    vm.setConstPool(compiler.getConstPool());
+    FileStringBuffer fb;
+    fb.readFile("/usr/local/bin/vm/stdlib.owl");
+    auto code = compiler.compile(&fb);
     vm.run(code, 0);
 }
 
 void compileAndRun(CharBuffer* buff, int verbosity) {
     VM vm;
-    Compiler compiler(verbosity);
+    Compiler compiler(verbosity, vm.getConstPool());
     //initStdLib(compiler, vm);
     vector<Instruction> code = compiler.compile(buff);
-    vm.setConstPool(compiler.getConstPool());
     vm.run(code, verbosity);
 }
 
 void runScript(string filename, int verbosity) {
-    FileStringBuffer* fb = new FileStringBuffer();
-    fb->readFile(filename);
-    compileAndRun(fb, verbosity);
+    FileStringBuffer fb;
+    fb.readFile(filename);
+    compileAndRun(&fb, verbosity);
 }
 
 void runCommand(string cmd, int verbosity) {
     cout<< "Running: "<<cmd<<endl;
-    StringBuffer* sb = new StringBuffer();
-    sb->init(cmd);
-    compileAndRun(sb, verbosity);
+    StringBuffer sb;
+    sb.init(cmd);
+    compileAndRun(&sb, verbosity);
 }
 
 void repl(int vb) {
     bool looping = true;
     StringBuffer sb;
-    Compiler compiler(vb);
     VM vm;
+    Compiler compiler(vb, vm.getConstPool());
     //initStdLib(compiler, vm);
     unsigned int lno = 0;
     printVersion();
@@ -58,7 +56,6 @@ void repl(int vb) {
         getline(cin, input);
         sb.init(input);
         vector<Instruction> code = compiler.compile(&sb);
-        vm.setConstPool(compiler.getConstPool());
         vm.run(code, vb);
     }
 }

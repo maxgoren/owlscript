@@ -14,10 +14,6 @@ astnode* mkNum(vector<astnode*>& a) {
     return a[0]; 
 }
 
-astnode* through(vector<astnode*>& a) {
-    return a[0];
-}
-
 astnode* pass(vector<astnode*>& a) {
     return a[1];
 }
@@ -55,6 +51,7 @@ astnode* unary(vector<astnode*>& reducing) {
 
 astnode* mkProg(vector<astnode*>& reducing) {
     if (reducing[0]->token.getString() == "Epsilon") {
+        delete reducing[0];
         return reducing[1];
     }
     reducing[0]->next = reducing[1];
@@ -70,12 +67,18 @@ astnode* mkList(vector<astnode*>& reducing) {
             while (itr->next) itr = itr->next;
             itr->next = reducing[i]->token.getSymbol() == TK_COMMA ? reducing[i]->left:reducing[i];
     }
-    if (reducing[0]->token.getString() == "Epsilon") reducing[0] = reducing[0]->next;
+    if (reducing[0]->token.getString() == "Epsilon") {
+        auto tmp = reducing[0];
+        reducing[0] = reducing[0]->next;
+        tmp->next = nullptr;
+        delete tmp;
+    }
     return reducing[0];
 }
 
 astnode* mkPrint(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(PRINT_STMT,reducing[0]->token);
+    astnode* nn = reducing[0];
+    nn->kind = STMTNODE; nn->stmt = PRINT_STMT;
     nn->left = reducing[1];
     return nn;
 }
@@ -84,33 +87,51 @@ astnode* mkIf(vector<astnode*>& reducing) {
     astnode* nn = new astnode(IF_STMT,reducing[0]->token);
     nn->left = reducing[2];
     if (reducing[5]->token.getString() == "Epsilon") {
+        auto tmp = reducing[4];
         nn->right = reducing[4]->left;
+        delete reducing[5];
+        tmp->left = nullptr;
+        delete tmp;
     } else {
         reducing[5]->left = reducing[4]->left;
         nn->right = reducing[5];
+        reducing[4]->left = nullptr;
+        delete reducing[4];
     }
+    delete reducing[1];
+    delete reducing[3];
     return nn;
 }
 
 astnode* mkElse(vector<astnode*>& reducing) {
     astnode* nn = new astnode(ELSE_STMT, reducing[0]->token);
+    auto tmp = reducing[1];
     nn->right = reducing[1]->left;
+    tmp->left = nullptr;
+    delete tmp;
     return nn;
 }
 
 astnode* mkTern(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(IF_STMT, reducing[1]->token);
+    astnode* nn = reducing[1];
+    reducing[1]->kind = STMTNODE; reducing[1]->stmt = IF_STMT;
+    reducing[3]->kind = STMTNODE; reducing[3]->stmt = ELSE_STMT;
     nn->left = reducing[0];
-    nn->right = new astnode(ELSE_STMT, reducing[3]->token);
+    nn->right = reducing[3];
     nn->right->left = reducing[2];
     nn->right->right = reducing[4];
     return nn;
 }
 
 astnode* mkWhile(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(WHILE_STMT, reducing[0]->token);
+    astnode* nn = reducing[0];
+    nn->kind = STMTNODE; nn->stmt = WHILE_STMT;
     nn->left = reducing[2];
     nn->right = reducing[4]->left;
+    delete reducing[1];
+    delete reducing[3];
+    reducing[4]->left = nullptr;
+    delete reducing[4];
     return nn;
 }
 
@@ -118,6 +139,11 @@ astnode* mkFor(vector<astnode*>& reducing) {
     astnode* nn = new astnode(FOREACH_STMT, reducing[0]->token);
     nn->left = reducing[2];
     nn->right = reducing[4]->left;
+    reducing[4]->left = nullptr;
+    delete reducing[4];
+    delete reducing[3];
+    delete reducing[1];
+    delete reducing[0];
     return nn;
 }
 
@@ -133,8 +159,10 @@ astnode* mkOf(vector<astnode*>& reducing) {
 }
 
 astnode* mkBlock(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(BLOCK_STMT, reducing[0]->token);
+    astnode* nn = reducing[0];
+    nn->kind = STMTNODE; nn->stmt = BLOCK_STMT;
     nn->left = reducing[1];
+    delete reducing[2];
     return nn;
 }
 
@@ -151,8 +179,14 @@ astnode* mkCall(vector<astnode*>& reducing) {
     if (nn->left->kind == TEMP_NODE) {
         nn->left->expr = ID_EXPR;
     }
-    if (reducing[2]->token.getString() != "Epsilon")
+    if (reducing[2]->token.getString() != "Epsilon") {
         nn->right = reducing[2];
+    } else {
+        nn->right = nullptr;
+        delete reducing[2];
+    }
+    delete reducing[1];
+    delete reducing[3];
     return nn;
 }
 
@@ -181,8 +215,15 @@ astnode* mkFunc(vector<astnode*>& reducing) {
     nn->kind = EXPRNODE;
     nn->expr = LAMBDA_EXPR;
     if (reducing.size() == 6) {
-        nn->left = reducing[3]->token.getString() == "Epsilon" ? nullptr:reducing[3];
+        if( reducing[3]->token.getString() == "Epsilon") {
+            nn->left = nullptr;
+            delete reducing[3];
+        } else {
+            nn->left = reducing[3];
+        }
         nn->right = reducing[5]->left;
+        reducing[5]->left = nullptr;
+        delete reducing[5];
         for (auto m = nn->right; m != nullptr; m = m->next) {
             if (m->token.getSymbol() == TK_LET) {
                 if (m->left->expr != BIN_EXPR && m->left->expr != ID_EXPR) {
@@ -198,6 +239,8 @@ astnode* mkFunc(vector<astnode*>& reducing) {
         res->right = nn;
         ls->left = res;
         nn = ls;
+        delete reducing[2];
+        delete reducing[4];
     } 
     return nn;
 }
@@ -210,6 +253,8 @@ astnode* mkStruct(vector<astnode*>& reducing) {
     reducing[1]->expr = ID_EXPR;
     nn->left = reducing[1];
     nn->right = reducing[2]->left;
+    reducing[2]->left = nullptr;
+    delete reducing[2];
     return nn;
 }
 
@@ -231,6 +276,8 @@ astnode* mkLambda(vector<astnode*>& reducing) {
     nn->token.setString("lambda");
     nn->left = reducing[1];
     nn->right = reducing[4]->left;
+    reducing[4]->left = nullptr;
+    delete reducing[4];
     for (auto m = nn->right; m != nullptr; m = m->next) {
         if (m->token.getSymbol() == TK_LET) {
             m->left->kind = EXPRNODE;
@@ -241,7 +288,8 @@ astnode* mkLambda(vector<astnode*>& reducing) {
 }
 
 astnode* mkSubscript(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(SUBSCRIPT_EXPR, reducing[1]->token);
+    astnode* nn = reducing[1];
+    nn->kind = EXPRNODE; nn->expr = SUBSCRIPT_EXPR;
     nn->left = reducing[0];
     nn->right = reducing[2];
     return nn;
@@ -263,6 +311,7 @@ astnode* mkListCon(vector<astnode*>& reducing) {
     reducing[0]->kind = EXPRNODE;
     reducing[0]->expr = LISTCON_EXPR;
     if (reducing[1]->token.getString() == "Epsilon") {
+        delete reducing[1];
         reducing[0]->left = nullptr;
         return reducing[0];
     } else {
@@ -294,8 +343,16 @@ astnode* mkSetComp(vector<astnode*>& reducing) {
 }
 
 astnode* mkListOp(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(LIST_EXPR, reducing[0]->token);
-    if (nn->token.getSymbol() == TK_APPEND || nn->token.getSymbol() == TK_PUSH) nn->left = reducing[2];
+    astnode* nn = reducing[0];
+    nn->kind = EXPRNODE;
+    nn->expr = LIST_EXPR;
+    if (nn->token.getSymbol() == TK_APPEND || nn->token.getSymbol() == TK_PUSH) {
+        nn->left = reducing[2];
+    } else {
+        delete reducing[2];
+    }
+    delete reducing[1];
+    delete reducing[3];
     return nn;
 }
 
@@ -320,6 +377,8 @@ astnode* mkRandom(vector<astnode*>& reducing) {
     nn->kind = EXPRNODE;
     nn->expr = CONST_EXPR;
     nn->left = reducing[2];
+    delete reducing[1];
+    delete reducing[3];
     return nn;
 }
 
@@ -328,6 +387,8 @@ astnode* mkBuiltin(vector<astnode*>& reducing) {
     nn->kind = EXPRNODE;
     nn->expr = UOP_EXPR;
     nn->left = reducing[2];
+    delete reducing[1];
+    delete reducing[3];
     return nn;
 }
 

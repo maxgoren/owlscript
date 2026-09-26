@@ -95,7 +95,7 @@ class BlockScope {
 class ScopingST {
     private:
         BlockScope* currentScope;
-        ConstPool constPool;
+        ConstPool* constPool;
         SymbolTableEntry nfSentinel;
         unordered_map<string, ClassObject*> objectDefs;
         int nextAddr() ;
@@ -104,7 +104,10 @@ class ScopingST {
     public:
         ScopingST();
         ~ScopingST();
-        ConstPool& getConstPool();
+        ConstPool* getConstPool() {
+            return constPool;
+        }
+        void setConstPool(ConstPool* constPool);
         void openObjectScope(string name);
         void copyObjectScope(string instanceName, string objName);
         void openFunctionScope(string name, int L1);

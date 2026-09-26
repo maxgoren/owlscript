@@ -11,25 +11,26 @@ void ConstPool::grow() {
 }
 
 int ConstPool::nextAddress() {
-    if (!freeList.empty()) {
-        int next = freeList.front();
-        freeList.pop();
-        return next;
+    if (n+1 == maxN) {
+        cout<<"Out of space G."<<endl;
+        return n;
     }
-    if (n+1 == maxN)
-        grow();
-    int next = n;
     n += 1;
-    return next;
+    return n;
 }
 
 ConstPool::ConstPool() {
     n = 0;
-    maxN = 255;
+    maxN = 1024;
     data = new StackItem[maxN];
 }
 
 ConstPool::~ConstPool() {
+    for (int i = 0; i < n; i++) {
+        if (data[i].type == OBJECT) {
+            alloc.free(data[i].objval);
+        }
+    }
     delete [] data;
 }
 

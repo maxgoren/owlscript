@@ -15,7 +15,7 @@ class ConstPool {
     friend class GarbageCollector;
         unordered_map<string, int> stringPool;
         StackItem* data;
-        queue<int> freeList;
+        //queue<int> freeList;
         int n;
         int maxN;
         void grow();

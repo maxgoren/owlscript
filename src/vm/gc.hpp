@@ -10,7 +10,7 @@ using namespace std;
 class GarbageCollector {
     private:
         void markObject(GCObject* curr);
-        void markItem(StackItem* si) ;
+        void markItem(StackItem& si) ;
         void markAR(ActivationRecord* callframe);
         void sweep() ;
         void markOpStack(StackItem ops[], int sp);

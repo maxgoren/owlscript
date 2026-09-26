@@ -24,20 +24,16 @@ class Compiler {
             return isExprType(ast, ID_EXPR);
         }
     public:
-        Compiler(int verbosity = 0) {
+        Compiler(int verbosity = 0, ConstPool* pool = nullptr) {
             if (verbosity > 0) {
                 lexer = Lexer(true);
                 parser = Parser(true);
-                codeGen = ByteCodeGenerator(true);
             } else {
                 lexer = Lexer(false);
                 parser = Parser(false);
-                codeGen = ByteCodeGenerator(false);
             }
+            codeGen.setConstPool(pool);
             state = READY;
-        }
-        ConstPool& getConstPool() {
-            return codeGen.getConstPool();
         }
         vector<Instruction> compile(CharBuffer* buff) {
             state = LEX;
