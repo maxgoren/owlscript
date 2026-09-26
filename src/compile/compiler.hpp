@@ -29,6 +29,10 @@ class Compiler {
                 lexer = Lexer(true);
                 parser = Parser(true);
                 codeGen = ByteCodeGenerator(true);
+            } else {
+                lexer = Lexer(false);
+                parser = Parser(false);
+                codeGen = ByteCodeGenerator(false);
             }
             state = READY;
         }
@@ -41,7 +45,6 @@ class Compiler {
             if (tokens.size() > 1) {
                 state = PARSE;
                 astnode* ast = parser.parse(tokens);
-                preorder(ast, 1);
                 if (ast) {
                     while (isImportStatement(ast)) {
                         if (isIDExpr(ast->left)) {
@@ -54,12 +57,15 @@ class Compiler {
                             }
                             compile(fsb);
                         }
+                        auto tmp = ast;
                         ast = ast->next;
+                        tmp->next = nullptr;
+                        delete tmp;
                     }
                     if (ast != nullptr) {
                         state = CODE_GEN;
                         vector<Instruction> pg = codeGen.compile(ast, state);
-                        cout<<"Aiite"<<endl;
+                        delete ast;
                         state = DONE;
                         return pg;
                     } else {

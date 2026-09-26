@@ -145,11 +145,6 @@ astnode* mkStmtList(vector<astnode*>& reducing) {
 }
 
 astnode* mkCall(vector<astnode*>& reducing) {
-    cout<<"mk call from: ";
-    int i = 0;
-    for (auto m : reducing) {
-        cout<<++i<<": "<<m->token.getString()<<endl;
-    }
     astnode* nn = new astnode(FUNC_EXPR, reducing[0]->token);
     nn->left = reducing[0];
     nn->left->kind = EXPRNODE;
@@ -182,7 +177,6 @@ astnode* mkRet(vector<astnode*>& reducing) {
 
 astnode* mkFunc(vector<astnode*>& reducing) {
     astnode* ls = new astnode(LET_STMT, reducing[1]->token);
-
     astnode* nn = reducing[0];
     nn->kind = EXPRNODE;
     nn->expr = LAMBDA_EXPR;
@@ -204,9 +198,7 @@ astnode* mkFunc(vector<astnode*>& reducing) {
         res->right = nn;
         ls->left = res;
         nn = ls;
-    } else {
-        cout<<"Nah man."<<endl;
-    }
+    } 
     return nn;
 }
 
@@ -236,10 +228,6 @@ astnode* mkLambda(vector<astnode*>& reducing) {
     astnode* nn = reducing[0];
     nn->kind = EXPRNODE;
     nn->expr = LAMBDA_EXPR;
-    cout<<"mk lambda from ";
-    for (auto m : reducing) {
-        cout<<tokenStr[m->token.getSymbol()]<<" "<< m->token.getString()<<endl;
-    }
     nn->token.setString("lambda");
     nn->left = reducing[1];
     nn->right = reducing[4]->left;

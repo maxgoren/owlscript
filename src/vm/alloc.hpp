@@ -34,18 +34,24 @@ class GCAllocator {
                 return;
             switch (item->type) {
                 case STRING: {
-                    if (item->strval)
+                    if (item->strval) {
                         delete item->strval;
+                        item->strval = nullptr;
+                    }
                 } break;
                 case LIST: {
-                    if (item->list)
-                        delete item->list;
+                    if (item->list) {
+                        //delete item->list;
+                        item->list = nullptr;
+                    }
                 } break;
                 case CLOSURE: {
                     freeClosure(item->closure);
+                    item->closure = nullptr;
                 } break;
                 case CLASS: {
                     freeClass(item->object);
+                    item->object = nullptr;
                 } break;
             };
             item->type = NILPTR;

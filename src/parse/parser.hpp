@@ -15,6 +15,7 @@ class Parser {
         stack<int> st;
         int tpos;
         vector<Token> tokens;
+        bool debug_noise;
         Token& current() {
             if (tokens[tpos].getSymbol() == TK_OPEN_COMMENT) {
                 advance();
@@ -31,27 +32,29 @@ class Parser {
             }
         }
     public:
-        Parser(bool loud = true) {
+        Parser(bool loud = false) {
             initprod();
             initactTab();
             initgoTab();
             initActions();
+            debug_noise = loud;
         }
         void doShift(int next) {
-            cout<<"SHIFT "<<current().getString()<<endl;
+            if (debug_noise)
+                cout<<"SHIFT "<<current().getString()<<endl;
             st.push(next);
             semStack.push(new astnode(current()));
             advance();
         }
         void doReduce(Production& X) {
-            cout<<"REDUCE on '"<<X.toString()<<"'"<<endl;
+            if (debug_noise)
+                cout<<"REDUCE on '"<<X.toString()<<"'"<<endl;
             vector<astnode*> tmp;
             for (int i = 0; i < X.rhs.size(); i++) {
                 st.pop();
                 if (!semStack.empty()) {
                     auto m = semStack.top();
                     if (m->token.getString() != "<nil>") {
-                        //cout<<tokenStr[m->token.getSymbol()]<<", "<<m->token.getString()<<endl;
                         tmp.push_back(semStack.top());
                     }
                     semStack.pop();
@@ -61,11 +64,11 @@ class Parser {
             }
             reverse(tmp.begin(), tmp.end());
             if (X.action.empty() == false) {
-                cout<<"And do: "<<X.action<<endl;
+                if (debug_noise) cout<<"And do: "<<X.action<<endl;
                 semStack.push(actions[X.action.substr(1)](tmp));
-                preorder(semStack.top(), 1);
+                if (debug_noise)
+                    preorder(semStack.top(), 1);
             } else {
-                //cout<<"<no action>"<<endl;
                 if (X.rhs.empty()) {
                     semStack.push(new astnode(Token(TK_EOI, "Epsilon")));
                 } else {
@@ -81,7 +84,8 @@ class Parser {
         }
         bool checkAccept(int state_num, Token& T) {
             if (T.getSymbol() == TK_EOI && actTab[state_num]["$"] == "accept") {
-                cout<<"ACCEPT"<<endl;
+                if (debug_noise)
+                    cout<<"ACCEPT"<<endl;
                 return true;
             }
             return false;
@@ -103,15 +107,18 @@ class Parser {
                 }
                 if (actTab[curr_state].find(tokenStr[curr_token.getSymbol()]) == actTab[curr_state].end()) {
                     cout<<"Hmm, no actions on '"<<tokenStr[curr_token.getSymbol()]<<"'?"<<endl;
-                    cout<<"Possible Transitions from Current: "<<endl;
-                    int i = 1;
-                    for (auto m : actTab[curr_state]) {
-                        cout<<i<<": "<<m.first<<": "<<m.second<<endl;
+                    if (debug_noise) {
+                        cout<<"Possible Transitions from Current: "<<endl;
+                        int i = 1;
+                        for (auto m : actTab[curr_state]) {
+                            cout<<i<<": "<<m.first<<": "<<m.second<<endl;
+                        }
                     }
                     cout<<"Bailing out."<<endl;
                     return nullptr;
                 } else {
-                  //  printCurrent(curr_state, curr_token);
+                    if (debug_noise)
+                        printCurrent(curr_state, curr_token);
                     string act = actTab[curr_state].at(tokenStr[curr_token.getSymbol()]);
                     int next = stoi(act.substr(1));
                     switch (act[0]) {

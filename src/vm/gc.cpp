@@ -15,7 +15,7 @@ void GarbageCollector::run(ActivationRecord* callstk, StackItem opstk[], int sp,
 }
 
 void GarbageCollector::markObject(GCObject* cur) {
-    if (cur == nullptr)
+    if (cur == nullptr || cur == NULL)
         return;
     cur->marked = true;
     if (cur->kind == ITEM) {
@@ -38,18 +38,19 @@ void GarbageCollector::markObject(GCObject* cur) {
     }
 }
 void GarbageCollector::markItem(StackItem* si) {
-    if (si->type == OBJECT) {
+    if (si->type == OBJECT && si->objval != nullptr) {
         markObject(si->objval);
     }
 }
 void GarbageCollector::markAR(ActivationRecord* ar) {
     if (ar != nullptr && !ar->marked) {
         ar->marked = true;
-        for (int i = 0; i < 255; i++) {
-            markItem(&ar->locals[i]);
+        for (int i = 0; i < ar->num_locals; i++) {
+            markItem(&(ar->locals[i]));
         }
         markAR(ar->access);
-        markAR(ar->control);
+        if (ar->access != ar->control)
+            markAR(ar->control);
     }
 }
 void GarbageCollector::sweep() {
@@ -61,33 +62,26 @@ void GarbageCollector::sweep() {
             nextGen.insert(it);
         } else {
             switch (it->kind) {
-                case AR:   freeAR((ActivationRecord*)it); break;
-                case ITEM: alloc.free((GCItem*)it); break;
+                case AR:   //freeAR((ActivationRecord*)it); break;
+                case ITEM: //alloc.free((GCItem*)it); break;
+                default: break;
             }
         }
     }
-    //cout<<alloc.getLiveList().size()<<" -> "<<nextGen.size();
+    cout<<alloc.getLiveList().size()<<" -> "<<nextGen.size()<<endl;
     alloc.getLiveList().swap(nextGen);
-    //cout<<"\n ---> swept."<<endl;
 }
 void GarbageCollector::markOpStack(StackItem ops[], int sp) {
-    for (int i = sp; i >= 0; i--) {
+    for (int i = sp; i > 0; i--) {
         markItem(&ops[i]);
     }
-    int i = 1;
 }
 void GarbageCollector::markConstPool(ConstPool* constPool) {
     for (int i = 0; i < constPool->maxN; i++) {
-        if (constPool->data[i].type == OBJECT && constPool->data[i].objval->marked == false) { 
-            constPool->data[i].objval->marked = true;
-            if (constPool->data[i].objval->type == CLOSURE && constPool->data[i].objval->closure->env != nullptr) {
-                markAR(constPool->data[i].objval->closure->env);
-            }
-        }
+       markItem(&(constPool->data[i]));
     }
 }
 void GarbageCollector::markRoots(ActivationRecord* callstk, StackItem opstk[], int sp, ConstPool* constPool) { 
-    //cout<<"\n ---> mark "<<endl;
     markOpStack(opstk, sp);
     markAR(callstk);
     markConstPool(constPool);

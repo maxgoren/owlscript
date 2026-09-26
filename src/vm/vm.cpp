@@ -90,7 +90,7 @@ void VM::closeOver(Instruction& inst) {
     auto funcobj = constPool.get(func_id);
     if (funcobj.type == OBJECT && funcobj.objval->type == CLOSURE) {
         auto func = funcobj.objval->closure->func;
-        auto env = mostRecentAR(func.start_ip);
+        auto env = mostRecentAR(func_id);
         opstk[++sp] = StackItem(alloc.alloc(new Closure(func, env)));
     } else {
         cout<<"Fatal Error: Invalid Environment."<<endl;
@@ -99,7 +99,7 @@ void VM::closeOver(Instruction& inst) {
 }
 void VM::openBlock(Instruction& inst) {
     callstk = new ActivationRecord(25, BLOCK_CPIDX, ip, callstk, callstk);
-    alloc.registerObject(globals);
+    alloc.registerObject(callstk);
 }
 void VM::closeBlock() {
     if (callstk != nullptr && callstk->control != nullptr) {
@@ -114,7 +114,7 @@ void VM::callProcedure(Instruction& inst) {
         Closure* close = opstk[sp--].objval->closure;
         if (close != nullptr) {
             callstk = new ActivationRecord(numArgs+15, close->func.start_ip, ip, callstk, close->env);
-            alloc.registerObject(globals);
+            alloc.registerObject(callstk);
             for (int i = numArgs; i > 0; i--) {
                 callstk->locals[i] = opstk[sp--];
             }

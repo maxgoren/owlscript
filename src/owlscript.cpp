@@ -46,7 +46,7 @@ void runCommand(string cmd, int verbosity) {
 
 void repl(int vb) {
     bool looping = true;
-    StringBuffer* sb = new StringBuffer();
+    StringBuffer sb;
     Compiler compiler(vb);
     VM vm;
     //initStdLib(compiler, vm);
@@ -56,8 +56,8 @@ void repl(int vb) {
         string input;
         cout<<"Owlscript("<<lno++<<")> ";
         getline(cin, input);
-        sb->init(input);
-        vector<Instruction> code = compiler.compile(sb);
+        sb.init(input);
+        vector<Instruction> code = compiler.compile(&sb);
         vm.setConstPool(compiler.getConstPool());
         vm.run(code, vb);
     }

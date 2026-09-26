@@ -52,11 +52,10 @@ struct astnode {
 };
 
 void preorder(astnode* node, int d);
-
 bool isStmtNode(astnode* ast);
-
 bool isExprNode(astnode* ast);
-
 bool isExprType(astnode* ast, ExprType type);
 bool isStmtType(astnode* ast, StmtType type);
+void cleanUpAST(astnode* node);
+
 #endif
