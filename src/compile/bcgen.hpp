@@ -6,7 +6,7 @@
 #include "../vm/instruction.hpp"
 #include "../vm/constpool.hpp"
 #include "scopingst.hpp"
-#include "stresolver.hpp"
+#include "stbuilder.hpp"
 #include "compiler_state.hpp"
 using namespace std;
 
@@ -58,7 +58,7 @@ class  ByteCodeGenerator {
         void markVariablesAsReadyToUse(astnode* n);
         void printConstPool() ;
     public:
-        ByteCodeGenerator(bool debug = true, ConstPool* constPool = nullptr);
+        ByteCodeGenerator(bool debug = false, ConstPool* constPool = nullptr);
         void setConstPool(ConstPool* pool);
         vector<Instruction> compile(astnode* n, CompilerState& cs);
 };

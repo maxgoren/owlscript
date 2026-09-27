@@ -4,10 +4,10 @@
 using namespace std;
 
 enum COMPILER_STATE {
-    READY, LEX, PARSE, BUILD_ST, RESOLVE_NAMES, CODE_GEN, ERROR, DONE
+    READY, LEX, PARSE, BUILD_ST, CODE_GEN, ERROR, DONE
 };
 
-static const string stateNames[] = { "Ready", "Lexical Analysis", "Parsing", "Building Symbol Table", "Resolving Variable Names", "Generating Bytecode", "Error", "Done" };
+static const string stateNames[] = { "Ready", "Lexical Analysis", "Parsing", "Building Symbol Table", "Generating Bytecode", "Error", "Done" };
 
 struct CompilerState {
     COMPILER_STATE current;

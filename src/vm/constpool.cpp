@@ -12,8 +12,7 @@ void ConstPool::grow() {
 
 int ConstPool::nextAddress() {
     if (n+1 == maxN) {
-        cout<<"Out of space G."<<endl;
-        return n;
+        grow();
     }
     n += 1;
     return n;

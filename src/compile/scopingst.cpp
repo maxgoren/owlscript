@@ -14,9 +14,6 @@ SymbolTableEntry& BlockScopeIterator::get() {
 void BlockScopeIterator::next() {
     ipos++;
 }
-BlockScope::~BlockScope() {
-    delete enclosingScope;
-}
 BlockScope::BlockScope(BlockScope* parent = nullptr) {
     n = 0;
     enclosingScope = parent;
@@ -55,11 +52,15 @@ BlockScope* BlockScope::getEnclosing() {
 
 ScopingST::ScopingST() {
     currentScope = new BlockScope();
-    nfSentinel = SymbolTableEntry("not found", -1, -1);
+    nfSentinel = currentScope->end();
 }
 
 ScopingST::~ScopingST() {
-    delete currentScope;
+    while (currentScope != nullptr) {
+        auto tmp = currentScope;
+        currentScope = currentScope->enclosingScope;
+        delete tmp;
+    }
 }
 void ScopingST::setConstPool(ConstPool* pool) {
     constPool = pool;
@@ -157,6 +158,10 @@ SymbolTableEntry ScopingST::findReady(string name) {
         }
         x = x->getEnclosing();
     }
+    return nfSentinel;
+}
+
+SymbolTableEntry ScopingST::end() {
     return nfSentinel;
 }
 

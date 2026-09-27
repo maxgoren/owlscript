@@ -24,7 +24,6 @@ void initStdLib(Compiler& compiler, VM& vm) {
 void compileAndRun(CharBuffer* buff, int verbosity) {
     VM vm;
     Compiler compiler(verbosity, vm.getConstPool());
-    //initStdLib(compiler, vm);
     vector<Instruction> code = compiler.compile(buff);
     vm.run(code, verbosity);
 }
@@ -36,7 +35,6 @@ void runScript(string filename, int verbosity) {
 }
 
 void runCommand(string cmd, int verbosity) {
-    cout<< "Running: "<<cmd<<endl;
     StringBuffer sb;
     sb.init(cmd);
     compileAndRun(&sb, verbosity);
@@ -47,7 +45,6 @@ void repl(int vb) {
     StringBuffer sb;
     VM vm;
     Compiler compiler(vb, vm.getConstPool());
-    //initStdLib(compiler, vm);
     unsigned int lno = 0;
     printVersion();
     while (looping) {

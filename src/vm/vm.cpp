@@ -18,7 +18,6 @@ VM::~VM() {
     for (int i = MAX_OP_STACK-1; i > -1; i--) {
         if (opstk[i].type == OBJECT) {
             alloc.free(opstk[i].objval);
-            cout<<".";
         }
     }
     auto x = callstk;
@@ -30,9 +29,7 @@ VM::~VM() {
         }
         x = x->control;
         freeAR(tmp);
-        cout<<"-";
     }
-    cout<<endl;
 }
 
 ConstPool* VM::getConstPool() {
@@ -96,7 +93,8 @@ void VM::closeOver(Instruction& inst) {
     if (funcobj.type == OBJECT && funcobj.objval->type == CLOSURE) {
         auto func = funcobj.objval->closure->func;
         auto env = mostRecentAR(func_id);
-        opstk[++sp] = StackItem(alloc.alloc(new Closure(func, env)));
+        func_id = constPool.insert((alloc.alloc(new Closure(func, env))));
+        opstk[++sp] = constPool.get(func_id);
     } else {
         cout<<"Fatal Error: Invalid Environment."<<endl;
         running = false;
@@ -314,7 +312,7 @@ void VM::haltvm() {
     running = false;
 }
 void VM::printTopOfStack() {
-    cout<<opstk[sp--].toString();
+    cout<<opstk[sp--].toString()<<std::flush;
 }
 void VM::unaryOperation(Instruction& inst) {
     switch (inst.operand[0].intval) {

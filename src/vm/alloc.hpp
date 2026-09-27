@@ -95,5 +95,7 @@ class GCAllocator {
             return live_items;
         }
 };
+
 extern GCAllocator alloc;
+
 #endif

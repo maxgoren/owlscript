@@ -58,6 +58,9 @@ struct SymbolTableEntry {
     bool operator!=(const SymbolTableEntry& st) const {
         return !(*this==st);
     }
+    ~SymbolTableEntry() {
+
+    }
 };
 
 class BlockScopeIterator {
@@ -82,7 +85,6 @@ class BlockScope {
         SymbolTableEntry nfSentinel;
     public:
         BlockScope(BlockScope* parent);
-        ~BlockScope();
         int size();
         void insert(string name, SymbolTableEntry st);
         SymbolTableEntry& find(string name);
@@ -117,6 +119,7 @@ class ScopingST {
         bool existsInScope(string name);
         SymbolTableEntry lookup(string name) ;
         SymbolTableEntry findReady(string name) ; 
+        SymbolTableEntry end();
         ClassObject* lookupClass(string name);
         BlockScope* scope();
         int depth();

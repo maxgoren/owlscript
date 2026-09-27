@@ -50,9 +50,10 @@ struct astnode {
     astnode(Token tk) : kind(TEMP_NODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
     astnode() : token(Token(TK_EOI, "fin")), left(nullptr), right(nullptr), next(nullptr) { }
     ~astnode() {
-        delete next;
-        delete right;
-        delete left;
+        if (right != nullptr)
+            delete right;
+        if (left != nullptr)
+            delete left;
     }
 };
 

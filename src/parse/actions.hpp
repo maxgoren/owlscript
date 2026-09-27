@@ -15,6 +15,9 @@ astnode* mkNum(vector<astnode*>& a) {
 }
 
 astnode* pass(vector<astnode*>& a) {
+    delete a[0];
+    if (a.size() > 2)
+        delete a[2];
     return a[1];
 }
 
@@ -30,8 +33,16 @@ astnode* mkString(vector<astnode*>& a) {
     return a[0]; 
 }
 
+astnode* mkExprStmt(vector<astnode*>& reducing) {
+    reducing[1]->kind = STMTNODE;
+    reducing[1]->stmt = EXPR_STMT;
+    reducing[1]->left = reducing[0];
+    return reducing[1];
+}
+
 astnode* mkbinop(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(BIN_EXPR, reducing[1]->token);
+    astnode* nn = reducing[1];
+    nn->kind = EXPRNODE; nn->expr = BIN_EXPR;
     nn->left = reducing[0];
     nn->right = reducing[2];
     if (nn->token.getSymbol() == TK_RANGE) nn->expr = RANGE_EXPR;
@@ -40,10 +51,12 @@ astnode* mkbinop(vector<astnode*>& reducing) {
 astnode* unary(vector<astnode*>& reducing) {
     astnode* nn = nullptr;
     if (reducing[0]->token.getSymbol() == TK_NOT || reducing[0]->token.getSymbol() == TK_SUB) {
-        nn = new astnode(UOP_EXPR, reducing[0]->token);
+        nn = reducing[0];
+        nn->kind = EXPRNODE; nn->expr = UOP_EXPR;
         nn->left = reducing[1];
     } else if (reducing[1]->token.getSymbol() == TK_INCREMENT || reducing[1]->token.getSymbol() == TK_DECREMENT) {
-        nn = new astnode(UOP_EXPR, reducing[1]->token);
+        nn = reducing[1];
+        nn->kind = EXPRNODE; nn->expr = UOP_EXPR;
         nn->left = reducing[0];
     }
     return nn;
@@ -59,19 +72,18 @@ astnode* mkProg(vector<astnode*>& reducing) {
 }
 
 astnode* mkList(vector<astnode*>& reducing) {
-    if (reducing[0]->token.getSymbol() == TK_LPAREN && reducing[1]->token.getSymbol() == TK_RPAREN) {
+    if (reducing[0]->token.getSymbol() == TK_LPAREN && (reducing[1]->token.getSymbol() == TK_RPAREN || reducing[1]->token.getString() == "Epsilon")) {
+        delete reducing[1];
         return  reducing[0];
     }
     for (int i = 1; i < reducing.size(); i++) {
-            astnode* itr = reducing[0];
-            while (itr->next) itr = itr->next;
-            itr->next = reducing[i]->token.getSymbol() == TK_COMMA ? reducing[i]->left:reducing[i];
-    }
-    if (reducing[0]->token.getString() == "Epsilon") {
-        auto tmp = reducing[0];
-        reducing[0] = reducing[0]->next;
-        tmp->next = nullptr;
-        delete tmp;
+            if (reducing[i]->token.getString() != "Epsilon") {
+                astnode* itr = reducing[0];
+                while (itr->next) itr = itr->next;
+                itr->next = reducing[i]->token.getSymbol() == TK_COMMA ? reducing[i]->left:reducing[i];
+            } else {
+                delete reducing[i];
+            }
     }
     return reducing[0];
 }
@@ -80,18 +92,20 @@ astnode* mkPrint(vector<astnode*>& reducing) {
     astnode* nn = reducing[0];
     nn->kind = STMTNODE; nn->stmt = PRINT_STMT;
     nn->left = reducing[1];
+    delete reducing[2];
     return nn;
 }
 
 astnode* mkIf(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(IF_STMT,reducing[0]->token);
+    astnode* nn = reducing[0];
+    nn->kind = STMTNODE; nn->stmt = IF_STMT;
     nn->left = reducing[2];
     if (reducing[5]->token.getString() == "Epsilon") {
         auto tmp = reducing[4];
-        nn->right = reducing[4]->left;
-        delete reducing[5];
+        nn->right = tmp->left;
         tmp->left = nullptr;
         delete tmp;
+        delete reducing[5];
     } else {
         reducing[5]->left = reducing[4]->left;
         nn->right = reducing[5];
@@ -104,7 +118,8 @@ astnode* mkIf(vector<astnode*>& reducing) {
 }
 
 astnode* mkElse(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(ELSE_STMT, reducing[0]->token);
+    astnode* nn = reducing[0];
+    nn->kind = STMTNODE; nn->stmt = ELSE_STMT;
     auto tmp = reducing[1];
     nn->right = reducing[1]->left;
     tmp->left = nullptr;
@@ -167,13 +182,16 @@ astnode* mkBlock(vector<astnode*>& reducing) {
 }
 
 astnode* mkStmtList(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(STMT_LIST, reducing[0]->token);
+    astnode* nn = reducing[0];
+    nn->kind = STMTNODE; nn->stmt = STMT_LIST;
     nn->left = reducing[1];
     return nn;
 }
 
 astnode* mkCall(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(FUNC_EXPR, reducing[0]->token);
+    astnode* nn = reducing[1];
+    nn->kind = EXPRNODE;
+    nn->expr = FUNC_EXPR;
     nn->left = reducing[0];
     nn->left->kind = EXPRNODE;
     if (nn->left->kind == TEMP_NODE) {
@@ -185,7 +203,6 @@ astnode* mkCall(vector<astnode*>& reducing) {
         nn->right = nullptr;
         delete reducing[2];
     }
-    delete reducing[1];
     delete reducing[3];
     return nn;
 }
@@ -205,6 +222,7 @@ astnode* mkRet(vector<astnode*>& reducing) {
     reducing[0]->kind = STMTNODE;
     reducing[0]->stmt = RETURN_STMT;
     reducing[0]->left = reducing[1];
+    delete reducing[2];
     return reducing[0];
 }
 
@@ -265,7 +283,13 @@ astnode* mkInstance(vector<astnode*>& reducing) {
     nn->left = reducing[1];
     nn->left->kind = EXPRNODE;
     nn->left->expr = ID_EXPR;
-    nn->right = reducing[3];
+    if (reducing[3]->token.getString() == "Epsilon") {
+        delete reducing[3];
+    } else {
+        nn->right = reducing[3];
+    }
+    delete reducing[2];
+    delete reducing[4];
     return nn;
 }
 
@@ -278,6 +302,8 @@ astnode* mkLambda(vector<astnode*>& reducing) {
     nn->right = reducing[4]->left;
     reducing[4]->left = nullptr;
     delete reducing[4];
+    delete reducing[2];
+    delete reducing[3];
     for (auto m = nn->right; m != nullptr; m = m->next) {
         if (m->token.getSymbol() == TK_LET) {
             m->left->kind = EXPRNODE;
@@ -292,6 +318,7 @@ astnode* mkSubscript(vector<astnode*>& reducing) {
     nn->kind = EXPRNODE; nn->expr = SUBSCRIPT_EXPR;
     nn->left = reducing[0];
     nn->right = reducing[2];
+    delete reducing[3];
     return nn;
 }
 
@@ -348,11 +375,11 @@ astnode* mkListOp(vector<astnode*>& reducing) {
     nn->expr = LIST_EXPR;
     if (nn->token.getSymbol() == TK_APPEND || nn->token.getSymbol() == TK_PUSH) {
         nn->left = reducing[2];
+        delete reducing[3];
     } else {
         delete reducing[2];
     }
     delete reducing[1];
-    delete reducing[3];
     return nn;
 }
 
