@@ -25,7 +25,7 @@ ConstPool::ConstPool() {
 }
 
 ConstPool::~ConstPool() {
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < maxN; i++) {
         if (data[i].type == OBJECT) {
             alloc.free(data[i].objval);
         }
@@ -37,7 +37,7 @@ ConstPool::ConstPool(const ConstPool& cp) {
     n = cp.n;
     maxN = cp.maxN;
     data = new StackItem[maxN];
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < maxN; i++)
         data[i] = cp.data[i];
     stringPool = cp.stringPool;
 }
@@ -53,12 +53,18 @@ ConstPool& ConstPool::operator=(const ConstPool& cp) {
     }
     return *this;
 }
-
+bool ConstPool::checkStringPool(string str) {
+    return stringPool.find(str) != stringPool.end();
+}
+int ConstPool::getStringIndex(string str) {
+    return stringPool.at(str);
+}
 int ConstPool::insert(StackItem item) {
     string strval;
     if (item.type == OBJECT && item.objval->type == STRING) {
         strval = item.toString();
         if (stringPool.find(strval) != stringPool.end()) {
+            alloc.free(item.objval);
             return stringPool.at(strval);
         }
     }

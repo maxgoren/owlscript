@@ -11,7 +11,7 @@ using namespace std;
 
 const unsigned int MAX_LOCALS = 255;
 
-struct Scope;
+class BlockScope;
 
 enum SymTableType {
     NONE = 0,
@@ -28,9 +28,10 @@ struct SymbolTableEntry {
     int constPoolIndex;
     int lineNum;
     bool isReady;
-    SymbolTableEntry(string n, int adr, int cpi, SymTableType t, int d) : type(t), addr(adr), name(n), depth(d), constPoolIndex(cpi), lineNum(0), isReady(false) { }
-    SymbolTableEntry(string n, int adr, int d) : type(LOCALVAR), name(n), addr(adr), depth(d), constPoolIndex(-1), lineNum(0), isReady(false) { }
-    SymbolTableEntry() : type(NONE), addr(-1), constPoolIndex(-1), lineNum(0), isReady(false) { }
+    BlockScope* scope;
+    SymbolTableEntry(string n, int adr, int cpi, SymTableType t, int d) : type(t), addr(adr), name(n), depth(d), constPoolIndex(cpi), lineNum(0), isReady(false), scope(nullptr) { }
+    SymbolTableEntry(string n, int adr, int d) : type(LOCALVAR), name(n), addr(adr), depth(d), constPoolIndex(-1), lineNum(0), isReady(false), scope(nullptr) { }
+    SymbolTableEntry() : type(NONE), addr(-1), constPoolIndex(-1), lineNum(0), isReady(false), scope(nullptr) { }
     SymbolTableEntry(const SymbolTableEntry& e) {
         name = e.name;
         type = e.type;
@@ -39,6 +40,7 @@ struct SymbolTableEntry {
         constPoolIndex = e.constPoolIndex;
         lineNum = e.lineNum;
         isReady = e.isReady;
+        scope = e.scope;
     }
     SymbolTableEntry& operator=(const SymbolTableEntry& e) {
         if (this != &e) {
@@ -49,6 +51,7 @@ struct SymbolTableEntry {
             constPoolIndex = e.constPoolIndex;
             lineNum = e.lineNum;
             isReady = e.isReady;
+            scope = e.scope;
         }
         return *this;
     }

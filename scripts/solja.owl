@@ -1,0 +1,7 @@
+let x := "sergio tell 'em";
+println x;
+let i := 0;
+while (i < x.size()) {
+	println x[i];
+	i++;
+}

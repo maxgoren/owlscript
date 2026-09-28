@@ -77,11 +77,14 @@ astnode* mkList(vector<astnode*>& reducing) {
         return  reducing[0];
     }
     for (int i = 1; i < reducing.size(); i++) {
-            if (reducing[i]->token.getString() != "Epsilon") {
+            if (reducing[i]->token.getString() != "Epsilon" && reducing[i]->token.getSymbol() != TK_COMMA) {
                 astnode* itr = reducing[0];
                 while (itr->next) itr = itr->next;
-                itr->next = reducing[i]->token.getSymbol() == TK_COMMA ? reducing[i]->left:reducing[i];
+                itr->next = reducing[i];
             } else {
+                reducing[i]->next = nullptr;
+                reducing[i]->left = nullptr;
+                reducing[i]->right = nullptr;
                 delete reducing[i];
             }
     }
@@ -151,14 +154,15 @@ astnode* mkWhile(vector<astnode*>& reducing) {
 }
 
 astnode* mkFor(vector<astnode*>& reducing) {
-    astnode* nn = new astnode(FOREACH_STMT, reducing[0]->token);
+    astnode* nn = reducing[0];
+    reducing[0]->kind = STMTNODE;
+    reducing[0]->stmt = FOREACH_STMT;
     nn->left = reducing[2];
     nn->right = reducing[4]->left;
     reducing[4]->left = nullptr;
     delete reducing[4];
     delete reducing[3];
     delete reducing[1];
-    delete reducing[0];
     return nn;
 }
 
@@ -215,6 +219,7 @@ astnode* mkLet(vector<astnode*>& reducing) {
         reducing[0]->left->kind = EXPRNODE;
         reducing[0]->left->expr = ID_EXPR;
     }
+    if (reducing.size() == 3) delete reducing[2];
     return reducing[0];
 }
 
@@ -273,6 +278,7 @@ astnode* mkStruct(vector<astnode*>& reducing) {
     nn->right = reducing[2]->left;
     reducing[2]->left = nullptr;
     delete reducing[2];
+    delete reducing[3];
     return nn;
 }
 
@@ -339,6 +345,7 @@ astnode* mkListCon(vector<astnode*>& reducing) {
     reducing[0]->expr = LISTCON_EXPR;
     if (reducing[1]->token.getString() == "Epsilon") {
         delete reducing[1];
+        delete reducing[2];
         reducing[0]->left = nullptr;
         return reducing[0];
     } else {
@@ -346,12 +353,17 @@ astnode* mkListCon(vector<astnode*>& reducing) {
             if (reducing[0]->left == nullptr) {
                 reducing[0]->left = reducing[1];
             } else {
-                astnode* itr = reducing[0]->left;
-                while (itr->next != nullptr) itr = itr->next;
-                itr->next = reducing[i];
+                if (reducing[i]->token.getSymbol() != TK_COMMA) {
+                    astnode* itr = reducing[0]->left;
+                    while (itr->next != nullptr) itr = itr->next;
+                    itr->next = reducing[i];
+                } else {
+                    delete reducing[i];
+                }
             }
         }
     }
+    delete reducing[2];
     return reducing[0];
 }
 
@@ -362,6 +374,7 @@ astnode* mkSetComp(vector<astnode*>& reducing) {
     if (nn->token.getSymbol() == TK_IF && reducing[0]->token.getSymbol() == TK_AS) {
         reducing[0]->right->next = reducing[2];
         nn = reducing[0];
+        delete reducing[1];
     } else {
         nn->left = reducing[0];
         nn->right = reducing[2];

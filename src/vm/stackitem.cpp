@@ -104,29 +104,17 @@ bool StackItem::equals(StackItem& rhs) {
     return false;
 }
 StackItem& StackItem::add(StackItem& rhs) {
-    if ((type == OBJECT && objval->type == STRING) || (rhs.type == OBJECT && rhs.objval->type == STRING)) {
-        string str;
-        for (char c : toString()) {
-            str.push_back(c);
-        }
-        for (char c : rhs.toString()) {
-            str.push_back(c);
-        }
-        objval = alloc.alloc(new string(str));
-        type = OBJECT;
-    } else {
-        double v = rhs.type == INTEGER ? rhs.intval:rhs.numval;
-        switch (type) {
-            case INTEGER: {
-                intval += v;
-            } break;
-            case NUMBER: {
-                numval += v;
-            } break;
-            case BOOLEAN: {
-                boolval += v;
-            } break;
-        }
+    double v = rhs.type == INTEGER ? rhs.intval:rhs.numval;
+    switch (type) {
+        case INTEGER: {
+            intval += v;
+        } break;
+        case NUMBER: {
+            numval += v;
+        } break;
+        case BOOLEAN: {
+            boolval += v;
+        } break;
     }
     return *this;
 }

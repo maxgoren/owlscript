@@ -46,12 +46,12 @@ class Compiler {
                         if (isIDExpr(ast->left)) {
                             string name = ast->left->token.getString();
                             name += ".owl";
-                            FileStringBuffer* fsb = new FileStringBuffer();
-                            if (!fsb->readFile(name)) {
+                            FileStringBuffer fsb;
+                            if (!fsb.readFile(name)) {
                                 state = DONE;
                                 return {halt};
                             }
-                            compile(fsb);
+                            compile(&fsb);
                         }
                         auto tmp = ast;
                         ast = ast->next;

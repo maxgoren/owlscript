@@ -42,7 +42,7 @@ class StringBuffer : public CharBuffer {
         }
         string sliceFromStart(int matchlen) {
             string slice;
-            for (int i = start; i <= start+matchlen; i++) {
+            for (int i = start, k = 0; k < matchlen; k++, i++) {
                 if (buff[i] == '"') continue;
                 slice.push_back(buff[i]);
             }

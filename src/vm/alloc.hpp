@@ -24,15 +24,24 @@ class GCAllocator {
             x->marked = false;
             x->kind = ITEM;
             live_items.insert(x);
+            cout<<"Allocating: "<<x<<endl;
             return x;
         }
     public:
         GCAllocator() {
 
         }
+        ~GCAllocator() {
+            for (auto & m : live_items) {
+                if (m != nullptr) {
+                    delete m;
+                }
+            }
+        }
         void free(GCItem* item) {
             if (item == nullptr)
                 return;
+            cout<<"Freeing item "<<item<<endl;
             switch (item->type) {
                 case STRING: {
                     if (item->strval) {

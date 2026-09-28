@@ -56,6 +56,8 @@ class Parser {
                     auto m = semStack.top();
                     if (m->token.getString() != "<nil>") {
                         tmp.push_back(semStack.top());
+                    } else {
+                        delete m;
                     }
                     semStack.pop();
                 } else {
@@ -99,8 +101,17 @@ class Parser {
                 int curr_state = st.top();
                 if (checkAccept(curr_state, curr_token)) {
                     astnode* tmp = semStack.top();
+                    semStack.pop();
+                    while (!semStack.empty()) {
+                        auto t = semStack.top();
+                        semStack.pop();
+                        delete t;
+                    }
                     if (tmp->token.getString() == "Epsilon") {
-                        return tmp->next;
+                        auto ret = tmp->next;
+                        tmp->next = nullptr;
+                        delete tmp;
+                        return ret;
                     } else {
                         return tmp;
                     }

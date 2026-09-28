@@ -12,10 +12,9 @@ VM::VM() {
     haltSentinel = Instruction(halt);
     globals =  new ActivationRecord(255, GLOBAL_SCOPE,0, nullptr, nullptr);
     callstk = globals;
-    alloc.registerObject(globals);
 }
 VM::~VM() {
-    for (int i = MAX_OP_STACK-1; i > -1; i--) {
+    for (int i = sp; i > -1; i--) {
         if (opstk[i].type == OBJECT) {
             alloc.free(opstk[i].objval);
         }
@@ -28,8 +27,8 @@ VM::~VM() {
                 alloc.free(opstk[i].objval);
         }
         x = x->control;
-        freeAR(tmp);
     }
+    delete globals;
 }
 
 ConstPool* VM::getConstPool() {
@@ -93,7 +92,8 @@ void VM::closeOver(Instruction& inst) {
     if (funcobj.type == OBJECT && funcobj.objval->type == CLOSURE) {
         auto func = funcobj.objval->closure->func;
         auto env = mostRecentAR(func_id);
-        func_id = constPool.insert((alloc.alloc(new Closure(func, env))));
+        Closure* cl = new Closure(func, env);
+        func_id = constPool.insert((alloc.alloc(cl)));
         opstk[++sp] = constPool.get(func_id);
     } else {
         cout<<"Fatal Error: Invalid Environment."<<endl;
@@ -139,7 +139,8 @@ void VM::instantiate(Instruction& inst) {
     for (auto m : master->fields) {
         clone->fields[m.first] = StackItem();
     }
-    opstk[++sp] = alloc.alloc(clone); 
+    int idx = constPool.insert(alloc.alloc(clone));
+    opstk[++sp] = constPool.get(idx);
 }
 void VM::storeGlobal() {
     StackItem t = opstk[sp--];
@@ -182,7 +183,8 @@ void VM::storeUpval(Instruction& inst) {
 }
 
 void VM::makeList(Instruction& inst) {
-    opstk[++sp] = StackItem(alloc.alloc(new deque<StackItem>()));
+    int idx = constPool.insert(alloc.alloc(new deque<StackItem>()));
+    opstk[++sp] = constPool.get(idx);
 }
 
 void VM::makeSet(Instruction& inst) {
@@ -206,7 +208,13 @@ void VM::loadIndexed(Instruction& inst) {
                 char c = top(1).objval->strval->at(top(0).numval);
                 string str;
                 str.push_back(c);
-                top(1) = (alloc.alloc(new string(str))); sp--; 
+                int idx = -1;
+                if (constPool.checkStringPool(str)) {
+                    idx = constPool.getStringIndex(str);
+                } else {
+                    idx = constPool.insert(alloc.alloc(new string(str)));
+                }
+                top(1) = (constPool.get(idx)); sp--; 
                 return;
         }
     }
@@ -368,7 +376,12 @@ void VM::relationOperation(Instruction& inst) {
 void VM::arithmeticOperation(Instruction& inst) {
     switch (inst.operand[0].intval) {
         case VM_ADD:  {
-            top(1).add(top());
+            if ((top(1).type == OBJECT && top(1).objval->type == STRING) || (top().type == OBJECT && top().objval->type == STRING)) {
+                string lhs = top(1).toString();
+                string rhs = top().toString();
+                int idx = constPool.insert(alloc.alloc(lhs+rhs));
+                top(1).objval = constPool.get(idx).objval;
+            } else top(1).add(top());
         } break;
         case VM_SUB:  {
             top(1).sub(top());

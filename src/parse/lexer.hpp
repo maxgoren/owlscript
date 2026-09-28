@@ -16,6 +16,7 @@ class Lexer {
         bool shouldSkip(char ch);
         Token makeLexToken(TKSymbol symbol, char* text, int length);
         Token nextToken();
+        int find(int curr, char p);
         int get_next(int state, char p);
     public:
         Lexer(bool debug = false, bool comp = true);

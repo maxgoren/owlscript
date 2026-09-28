@@ -1,4 +1,5 @@
 def check(let x) {
+    println x;
     if (x % 3 == 0) {
         print "Fizz";
     } 

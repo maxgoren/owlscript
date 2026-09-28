@@ -25,7 +25,9 @@ class ConstPool {
         ~ConstPool();
         ConstPool(const ConstPool& cp);
         ConstPool& operator=(const ConstPool& cp) ;
+        bool checkStringPool(string str);
         int insert(StackItem item) ;
+        int getStringIndex(string str);
         StackItem& get(int indx);
         int size();
 };
