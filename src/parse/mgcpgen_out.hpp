@@ -1065,4 +1065,4 @@ static const map<string, function<astnode*(vector<astnode*>&)>> actions = {
 	 {"mkbinop",mkbinop}, 
 	 {"pass",pass}, 
 	 {"unary",unary}
-	};
+};
