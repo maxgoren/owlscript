@@ -51,9 +51,13 @@ void repl(int vb) {
         string input;
         cout<<"Owlscript("<<lno++<<")> ";
         getline(cin, input);
-        sb.init(input);
-        vector<Instruction> code = compiler.compile(&sb);
-        vm.run(code, vb);
+        if (input == ".exit" || input == ".quit") {
+            looping = false;
+        } else {
+            sb.init(input);
+            vector<Instruction> code = compiler.compile(&sb);
+            vm.run(code, vb);
+        }
     }
 }
 

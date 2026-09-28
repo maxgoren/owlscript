@@ -31,12 +31,17 @@ class Parser {
                 tpos++;
             }
         }
+        int nextState(const string *table[], int state, Symbol sym) {
+            int N = stoi(table[state][0]);
+            for (int i = 1; i < 2*N+1; i+=2) {
+                if (table[state][i] == sym) {
+                    return i+1;
+                }
+            }
+            return -1;
+        }
     public:
         Parser(bool loud = false) {
-            initprod();
-            initactTab();
-            initgoTab();
-            initActions();
             debug_noise = loud;
         }
         void doShift(int next) {
@@ -67,7 +72,8 @@ class Parser {
             reverse(tmp.begin(), tmp.end());
             if (X.action.empty() == false) {
                 if (debug_noise) cout<<"And do: "<<X.action<<endl;
-                semStack.push(actions[X.action.substr(1)](tmp));
+                string f = X.action.substr(1);
+                semStack.push(actions.at(f)(tmp));
                 if (debug_noise)
                     preorder(semStack.top(), 1);
             } else {
@@ -77,18 +83,25 @@ class Parser {
                     semStack.push(tmp.front());
                 }
             }
-            if (goTab[st.top()].find(X.lhs) != goTab[st.top()].end()) {
-                st.push(stoi(goTab[st.top()][X.lhs]));
+            int ns = nextState(goTab, st.top(), X.lhs);
+            if (ns != -1) {
+                st.push(stoi(goTab[st.top()][ns]));
             }
         }
         void printCurrent(int state_num, Token& T) {
-            cout<<"[ state: "<<state_num<<"][ token: "<<tokenStr[T.getSymbol()]<<"]"<<actTab[state_num][T.getString()]<<endl<<"Action: ";
+            cout<<"[ state: "<<state_num<<"][ token: "<<tokenStr[T.getSymbol()]<<"]"<<actTab[state_num][nextState(actTab, state_num, tokenStr[T.getSymbol()])]<<endl<<"Action: ";
         }
         bool checkAccept(int state_num, Token& T) {
-            if (T.getSymbol() == TK_EOI && actTab[state_num]["$"] == "accept") {
-                if (debug_noise)
-                    cout<<"ACCEPT"<<endl;
-                return true;
+            if (actTab[state_num] == NULL) {
+                return false;
+            }
+            int N = stoi(actTab[state_num][0]);
+            for (int i = 1; i < 2*N+1; i+=2) {
+                if (actTab[state_num][i] == "$") {
+                    if (debug_noise)
+                        cout<<"ACCEPT"<<endl;
+                    return true;
+                }
             }
             return false;
         }
@@ -116,21 +129,19 @@ class Parser {
                         return tmp;
                     }
                 }
-                if (actTab[curr_state].find(tokenStr[curr_token.getSymbol()]) == actTab[curr_state].end()) {
-                    cout<<"Hmm, no actions on '"<<tokenStr[curr_token.getSymbol()]<<"'?"<<endl;
-                    if (debug_noise) {
-                        cout<<"Possible Transitions from Current: "<<endl;
-                        int i = 1;
-                        for (auto m : actTab[curr_state]) {
-                            cout<<i<<": "<<m.first<<": "<<m.second<<endl;
-                        }
+                int ns = nextState(actTab, curr_state, tokenStr[curr_token.getSymbol()]);
+                if (ns == -1) {
+                    cout<<"Hmm, no actions on '"<<tokenStr[curr_token.getSymbol()]<<"' from state "<<curr_state<<"?"<<endl;
+                    int nument = 2*stoi(actTab[curr_state][0])+1;
+                    for (int i = 1; i < nument; i+=2) {
+                        cout<<actTab[curr_state][i]<<endl;
                     }
                     cout<<"Bailing out."<<endl;
                     return nullptr;
                 } else {
                     if (debug_noise)
                         printCurrent(curr_state, curr_token);
-                    string act = actTab[curr_state].at(tokenStr[curr_token.getSymbol()]);
+                    string act = actTab[curr_state][ns];
                     int next = stoi(act.substr(1));
                     switch (act[0]) {
                         case 's': {

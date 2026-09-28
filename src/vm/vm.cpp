@@ -376,29 +376,35 @@ void VM::relationOperation(Instruction& inst) {
 void VM::arithmeticOperation(Instruction& inst) {
     switch (inst.operand[0].intval) {
         case VM_ADD:  {
-            if ((top(1).type == OBJECT && top(1).objval->type == STRING) || (top().type == OBJECT && top().objval->type == STRING)) {
+            if ((top(1).type == OBJECT && top(1).objval->type == STRING) || (top(0).type == OBJECT && top(0).objval->type == STRING)) {
                 string lhs = top(1).toString();
-                string rhs = top().toString();
-                int idx = constPool.insert(alloc.alloc(lhs+rhs));
-                top(1).objval = constPool.get(idx).objval;
-            } else top(1).add(top());
+                string rhs = top(0).toString();
+                string result;
+                for (char c : lhs) result.push_back(c);
+                for (char c : rhs) result.push_back(c);
+                int idx = constPool.insert(alloc.alloc(result));
+                opstk[++sp] = constPool.get(idx);
+            } else {
+                top(1).add(top());
+                sp--;
+            }
         } break;
         case VM_SUB:  {
-            top(1).sub(top());
+            top(1).sub(top());     sp--;
         } break;
         case VM_MUL:  {
-            top(1).mul(top());
+            top(1).mul(top());     sp--;
         } break;
         case VM_DIV:  {
-            top(1).div(top());
+            top(1).div(top());    sp--;
         } break;
         case VM_MOD:  {
             top(1).mod(top());
+            sp--;
         } break;
         default:
             break;
     }
-    sp--;
 }
 void VM::execute(Instruction& inst) {
     switch (inst.op) {

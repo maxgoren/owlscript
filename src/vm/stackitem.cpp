@@ -3,12 +3,6 @@
 StackItem::StackItem(int value) { intval = value; type = INTEGER; }
 StackItem::StackItem(double value) { numval = value; type = NUMBER; }
 StackItem::StackItem(bool balue) { boolval = balue; type = BOOLEAN; }
-/*
-StackItem::StackItem(string value) { objval = alloc.alloc(new string(value)); type = OBJECT; }
-StackItem::StackItem(Closure* c) { objval = alloc.alloc(c); type = OBJECT; }
-StackItem::StackItem(deque<StackItem>* l) { objval = alloc.alloc(l); type = OBJECT; }
-StackItem::StackItem(ClassObject* o) { objval = alloc.alloc(o); type = OBJECT; }
-*/
 StackItem::StackItem(GCItem* i) { objval = i; type = OBJECT; }
 StackItem::StackItem() { type = NIL; intval = -66; }
 StackItem::StackItem(const StackItem& si) {
@@ -46,7 +40,6 @@ string StackItem::toString() {
         case OBJECT: return objval->toString();
         case BOOLEAN: return boolval ? "true":"false";
         case NIL: return "(nil)";
-        
     }
     return "(nil)";
 }
