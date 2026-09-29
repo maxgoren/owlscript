@@ -7,59 +7,57 @@
 using namespace std;
 
 #define MAJOR_VER     0
-#define MINOR_VER    89
-#define RELEASE_VER  'a'
+#define MINOR_VER    91
+#define RELEASE_VER  'L'
 
 void printVersion() {
     printf("Owlscript v%d.%d%c, (c) 2026 MaxGCoding.com\n", MAJOR_VER, MINOR_VER, RELEASE_VER);
 }
 
 void initStdLib(Compiler& compiler, VM& vm) {
-    FileStringBuffer* fb = new FileStringBuffer();
-    fb->readFile("/usr/local/bin/vm/stdlib.owl");
-    auto code = compiler.compile(fb);
-    vm.setConstPool(compiler.getConstPool());
+    FileStringBuffer fb;
+    fb.readFile("/usr/local/bin/vm/stdlib.owl");
+    auto code = compiler.compile(&fb);
     vm.run(code, 0);
 }
 
 void compileAndRun(CharBuffer* buff, int verbosity) {
     VM vm;
-    Compiler compiler(verbosity);
-    //initStdLib(compiler, vm);
+    Compiler compiler(verbosity, vm.getConstPool());
     vector<Instruction> code = compiler.compile(buff);
-    vm.setConstPool(compiler.getConstPool());
     vm.run(code, verbosity);
 }
 
 void runScript(string filename, int verbosity) {
-    FileStringBuffer* fb = new FileStringBuffer();
-    fb->readFile(filename);
-    compileAndRun(fb, verbosity);
+    FileStringBuffer fb;
+    fb.readFile(filename);
+    compileAndRun(&fb, verbosity);
 }
 
 void runCommand(string cmd, int verbosity) {
-    cout<< "Running: "<<cmd<<endl;
-    StringBuffer* sb = new StringBuffer();
-    sb->init(cmd);
-    compileAndRun(sb, verbosity);
+    StringBuffer sb;
+    sb.init(cmd);
+    compileAndRun(&sb, verbosity);
 }
 
 void repl(int vb) {
     bool looping = true;
-    StringBuffer* sb = new StringBuffer();
-    Compiler compiler(vb);
+    StringBuffer sb;
     VM vm;
-    //initStdLib(compiler, vm);
+    Compiler compiler(vb, vm.getConstPool());
     unsigned int lno = 0;
     printVersion();
     while (looping) {
         string input;
         cout<<"Owlscript("<<lno++<<")> ";
         getline(cin, input);
-        sb->init(input);
-        vector<Instruction> code = compiler.compile(sb);
-        vm.setConstPool(compiler.getConstPool());
-        vm.run(code, vb);
+        if (input == ".exit" || input == ".quit") {
+            looping = false;
+        } else {
+            sb.init(input);
+            vector<Instruction> code = compiler.compile(&sb);
+            vm.run(code, vb);
+        }
     }
 }
 

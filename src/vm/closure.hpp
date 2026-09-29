@@ -9,17 +9,15 @@ struct Function : GCObject {
     string name;
     int start_ip;
     BlockScope* scope;
-    Function(string n = "<none>", int sip = -1, BlockScope* sc = nullptr) : name(n), start_ip(sip), scope(sc) { }
+    Function(string n = "<none>", int sip = -1) : name(n), start_ip(sip) { }
     Function(const Function& f) {
         name = f.name;
         start_ip  = f.start_ip;
-        scope = f.scope;
     }
     Function& operator=(const Function& f) {
         if (this != &f) {
             name = f.name;
             start_ip  = f.start_ip;
-            scope = f.scope;
         }
         return *this;
     }
@@ -33,6 +31,9 @@ struct Closure {
     Closure(const Closure& c) {
         func = c.func;
         env = c.env;
+    }
+    ~Closure() {
+       
     }
     Closure& operator=(const Closure& c) {
         if (this != &c) {

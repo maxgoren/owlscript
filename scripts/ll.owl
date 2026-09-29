@@ -10,16 +10,18 @@ fn B() {
    let a := new Link();
    a.info := 13;
    let b := new Link();
+   println a;
    b.info := 42;
+   println b;
    a.next := b;
+   println a;
    a.next.next := new Link();
    a.next.next.info := 37;
    println a.info;
-   println a.next.info;
-   println a.next.next.info;
+   println a.next;
+   println a.next.next;
    a.next.next.next := new Link();
    a.next.next.next.info := 15;
    println a;
 }
 B();
-println 2*2;

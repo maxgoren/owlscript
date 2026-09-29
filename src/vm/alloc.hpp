@@ -23,60 +23,78 @@ class GCAllocator {
             }
             x->marked = false;
             x->kind = ITEM;
+            live_items.insert(x);
+            //cout<<"Allocating: "<<x<<endl;
             return x;
         }
     public:
         GCAllocator() {
 
         }
+        ~GCAllocator() {
+            for (auto & m : live_items) {
+                if (m != nullptr) {
+                    delete m;
+                }
+            }
+        }
         void free(GCItem* item) {
             if (item == nullptr)
                 return;
+            //cout<<"Freeing item "<<item<<endl;
             switch (item->type) {
                 case STRING: {
-                    if (item->strval)
+                    if (item->strval) {
                         delete item->strval;
+                        item->strval = nullptr;
+                    }
                 } break;
                 case LIST: {
-                    if (item->list)
+                    if (item->list) {
                         delete item->list;
+                        item->list = nullptr;
+                    }
                 } break;
                 case CLOSURE: {
                     freeClosure(item->closure);
+                    item->closure = nullptr;
                 } break;
                 case CLASS: {
                     freeClass(item->object);
+                    item->object = nullptr;
                 } break;
             };
             item->type = NILPTR;
             free_list.push_back(item);
         }
+        GCItem* alloc(string s) {
+            GCItem* x = next();
+            x->type = STRING;
+            x->strval = new string(s);
+            return x;
+        }
         GCItem* alloc(string* s) {
             GCItem* x = next();
             x->type = STRING;
             x->strval = s;
-            registerObject(x);
             return x;
         }
         GCItem* alloc(Closure* c) {
             GCItem* x = next();
             x->type = CLOSURE;
             x->closure = c;
-            registerObject(x);
             return x;
         }
         GCItem* alloc(deque<StackItem>* l) {
             GCItem* x = next();
             x->type = LIST;
             x->list = l;
-            registerObject(x);
             return x;
         }
         GCItem* alloc(ClassObject* l) {
             GCItem* x = next();
             x->type = CLASS;
             x->object = l;
-            registerObject(x);
             return x;
         }
         void registerObject(GCObject* obj) {
@@ -86,5 +104,7 @@ class GCAllocator {
             return live_items;
         }
 };
+
 extern GCAllocator alloc;
+
 #endif

@@ -15,6 +15,15 @@ void preorder(astnode* node, int d) {
     }
 }
 
+void cleanUpAST(astnode* node) {
+    if (node != nullptr) {
+        cleanUpAST(node->next);
+        cleanUpAST(node->left);
+        cleanUpAST(node->right);
+        delete node;
+    }
+}
+
 bool isStmtNode(astnode* ast) {
     return ast != nullptr && ast->kind == STMTNODE;
 }

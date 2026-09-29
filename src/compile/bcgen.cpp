@@ -1,11 +1,16 @@
 #include "bcgen.hpp"
 
-ByteCodeGenerator::ByteCodeGenerator(bool debug) {
+ByteCodeGenerator::ByteCodeGenerator(bool debug, ConstPool* constPool) {
     code = vector<Instruction>(1024, Instruction(halt, 0));
     code.resize(1024);
     cpos = 0;
     highCI = 0;
     noisey = debug;
+    setConstPool(constPool);
+}
+
+void ByteCodeGenerator::setConstPool(ConstPool* pool) {
+    symTable.setConstPool(pool);
 }
 
 vector<Instruction> ByteCodeGenerator::compile(astnode* n, CompilerState& cs) {
@@ -95,10 +100,6 @@ void ByteCodeGenerator::restore() {
     cpos = highCI;
 }
 
-ConstPool& ByteCodeGenerator::getConstPool() {
-    return symTable.getConstPool();
-}
-
 void ByteCodeGenerator::printOperand(StackItem& operand) {
     switch (operand.type) {
         case INTEGER: cout<<to_string(operand.intval); break;
@@ -128,8 +129,8 @@ void ByteCodeGenerator::printByteCode() {
 
 void ByteCodeGenerator::printConstPool() {
     cout<<"Constant Pool: "<<endl;
-    for (int i = 0; i < symTable.getConstPool().size(); i++) {
-        cout<<i<<": {"<<symTable.getConstPool().get(i).toString()<<"}"<<endl;
+    for (int i = 0; i < symTable.getConstPool()->size(); i++) {
+        cout<<i<<": {"<<symTable.getConstPool()->get(i).toString()<<"}"<<endl;
     }
     cout<<"-------------------"<<endl;
 }

@@ -1,0 +1,1068 @@
+#include <vector>
+#include <map>
+#include <set>
+#include <functional>
+#include "production.hpp"
+using namespace std; 
+enum NTSYMBOL {
+AEXPR, ARGSLIST, BLESSEXPR, BLOCKSTMT, BUILTINEXPR, COMPEXPR, 
+DECLLIST, DECLSTMT, DEFSTMT, EXPLIST, EXPR, 
+EXPSTMT, FACT, FEXPR, FORSTMT, IFSTMT, 
+IMPORT, IMPORTLIST, LAMBDAEXPR, LCOMPEXPR, LETSTMT, 
+LISTCON, LISTOPEXPR, LOGICEXPR, OFEXPR, OPTELSE, 
+OPTIMPORTLIST, PARAMLIST, POST, PRI, PRINTSTMT, 
+PROG, RANDEXPR, RELEXPR, RETSTMT, STMT, 
+STMTLIST, STRUCTSTMT, TERM, WHILESTMT, sp
+
+};
+static const Production prod[] = {
+ 	Production(0, "dummy", SymbolString(), ""),
+	 Production(1,"sp", SymbolString({"PROG"}),""), 
+	 Production(2,"PROG", SymbolString({"OPTIMPORTLIST","STMTLIST"}),"@mkProg"), 
+	 Production(3,"OPTIMPORTLIST", SymbolString({"IMPORTLIST"}),""), 
+	 Production(4,"OPTIMPORTLIST", SymbolString(),""), 
+	 Production(5,"IMPORTLIST", SymbolString({"IMPORTLIST","IMPORT"}),"@mkList"), 
+	 Production(6,"IMPORTLIST", SymbolString({"IMPORT"}),""), 
+	 Production(7,"IMPORT", SymbolString({"TK_IMPORT","TK_ID","TK_SEMI"}),"@mkImport"), 
+	 Production(8,"STMTLIST", SymbolString({"STMT","STMTLIST"}),"@mkList"), 
+	 Production(9,"STMTLIST", SymbolString({"STMT"}),""), 
+	 Production(10,"STMT", SymbolString({"EXPSTMT"}),""), 
+	 Production(11,"STMT", SymbolString({"IFSTMT"}),""), 
+	 Production(12,"STMT", SymbolString({"WHILESTMT"}),""), 
+	 Production(13,"STMT", SymbolString({"FORSTMT"}),""), 
+	 Production(14,"STMT", SymbolString({"BLOCKSTMT"}),""), 
+	 Production(15,"STMT", SymbolString({"PRINTSTMT"}),""), 
+	 Production(16,"STMT", SymbolString({"LETSTMT"}),""), 
+	 Production(17,"STMT", SymbolString({"DEFSTMT"}),""), 
+	 Production(18,"STMT", SymbolString({"RETSTMT"}),""), 
+	 Production(19,"STMT", SymbolString({"STRUCTSTMT"}),""), 
+	 Production(20,"PARAMLIST", SymbolString({"DECLLIST"}),""), 
+	 Production(21,"PARAMLIST", SymbolString(),""), 
+	 Production(22,"DECLSTMT", SymbolString({"TK_LET","TK_ID"}),"@mkLet"), 
+	 Production(23,"DECLLIST", SymbolString({"DECLSTMT","TK_COMMA","DECLLIST"}),"@mkList"), 
+	 Production(24,"DECLLIST", SymbolString({"DECLSTMT"}),""), 
+	 Production(25,"LETSTMT", SymbolString({"TK_LET","AEXPR","TK_SEMI"}),"@mkLet"), 
+	 Production(26,"PRINTSTMT", SymbolString({"TK_PRINT","AEXPR","TK_SEMI"}),"@mkPrint"), 
+	 Production(27,"PRINTSTMT", SymbolString({"TK_PRINTLN","AEXPR","TK_SEMI"}),"@mkPrint"), 
+	 Production(28,"BLOCKSTMT", SymbolString({"TK_LCURLY","STMTLIST","TK_RCURLY"}),"@mkBlock"), 
+	 Production(29,"IFSTMT", SymbolString({"TK_IF","TK_LPAREN","AEXPR","TK_RPAREN","BLOCKSTMT","OPTELSE"}),"@mkIf"), 
+	 Production(30,"OPTELSE", SymbolString({"TK_ELSE","BLOCKSTMT"}),"@mkElse"), 
+	 Production(31,"OPTELSE", SymbolString(),""), 
+	 Production(32,"WHILESTMT", SymbolString({"TK_WHILE","TK_LPAREN","AEXPR","TK_RPAREN","BLOCKSTMT"}),"@mkWhile"), 
+	 Production(33,"FORSTMT", SymbolString({"TK_FOR","TK_LPAREN","OFEXPR","TK_RPAREN","BLOCKSTMT"}),"@mkFor"), 
+	 Production(34,"OFEXPR", SymbolString({"TK_ID","TK_OF","AEXPR"}),"@mkOf"), 
+	 Production(35,"DEFSTMT", SymbolString({"TK_FN","TK_ID","TK_LPAREN","PARAMLIST","TK_RPAREN","BLOCKSTMT"}),"@mkFunc"), 
+	 Production(36,"STRUCTSTMT", SymbolString({"TK_CLASS","TK_ID","BLOCKSTMT","TK_SEMI"}),"@mkStruct"), 
+	 Production(37,"RETSTMT", SymbolString({"TK_RETURN","AEXPR","TK_SEMI"}),"@mkRet"), 
+	 Production(38,"EXPSTMT", SymbolString({"AEXPR","TK_SEMI"}),"@mkExprStmt"), 
+	 Production(39,"AEXPR", SymbolString({"LOGICEXPR","TK_ASSIGN","AEXPR"}),"@mkbinop"), 
+	 Production(40,"AEXPR", SymbolString({"LOGICEXPR","TK_ASSIGN_SUM","AEXPR"}),"@mkbinop"), 
+	 Production(41,"AEXPR", SymbolString({"LOGICEXPR","TK_ASSIGN_DIFF","AEXPR"}),"@mkbinop"), 
+	 Production(42,"AEXPR", SymbolString({"LOGICEXPR"}),""), 
+	 Production(43,"LOGICEXPR", SymbolString({"LOGICEXPR","TK_LOGIC_AND","COMPEXPR"}),"@mkbinop"), 
+	 Production(44,"LOGICEXPR", SymbolString({"LOGICEXPR","TK_LOGIC_OR","COMPEXPR"}),"@mkbinop"), 
+	 Production(45,"LOGICEXPR", SymbolString({"LOGICEXPR","TK_QM","LOGICEXPR","TK_COLON","COMPEXPR"}),"@mkTern"), 
+	 Production(46,"LOGICEXPR", SymbolString({"COMPEXPR"}),""), 
+	 Production(47,"COMPEXPR", SymbolString({"COMPEXPR","TK_EQU","RELEXPR"}),"@mkbinop"), 
+	 Production(48,"COMPEXPR", SymbolString({"COMPEXPR","TK_NEQ","RELEXPR"}),"@mkbinop"), 
+	 Production(49,"COMPEXPR", SymbolString({"COMPEXPR","TK_MATCHRE","RELEXPR"}),"@mkbinop"), 
+	 Production(50,"COMPEXPR", SymbolString({"RELEXPR"}),""), 
+	 Production(51,"RELEXPR", SymbolString({"RELEXPR","TK_LT","EXPR"}),"@mkbinop"), 
+	 Production(52,"RELEXPR", SymbolString({"RELEXPR","TK_GT","EXPR"}),"@mkbinop"), 
+	 Production(53,"RELEXPR", SymbolString({"RELEXPR","TK_GTE","EXPR"}),"@mkbinop"), 
+	 Production(54,"RELEXPR", SymbolString({"RELEXPR","TK_LTE","EXPR"}),"@mkbinop"), 
+	 Production(55,"RELEXPR", SymbolString({"EXPR"}),""), 
+	 Production(56,"EXPR", SymbolString({"EXPR","TK_ADD","TERM"}),"@mkbinop"), 
+	 Production(57,"EXPR", SymbolString({"EXPR","TK_SUB","TERM"}),"@mkbinop"), 
+	 Production(58,"EXPR", SymbolString({"TERM"}),""), 
+	 Production(59,"TERM", SymbolString({"TERM","TK_MUL","FACT"}),"@mkbinop"), 
+	 Production(60,"TERM", SymbolString({"TERM","TK_DIV","FACT"}),"@mkbinop"), 
+	 Production(61,"TERM", SymbolString({"TERM","TK_MOD","FACT"}),"@mkbinop"), 
+	 Production(62,"TERM", SymbolString({"FACT"}),""), 
+	 Production(63,"FACT", SymbolString({"TK_SUB","FEXPR"}),"@unary"), 
+	 Production(64,"FACT", SymbolString({"TK_NOT","FEXPR"}),"@unary"), 
+	 Production(65,"FACT", SymbolString({"FEXPR"}),""), 
+	 Production(66,"FEXPR", SymbolString({"LCOMPEXPR","TK_PERIOD","FEXPR"}),"@mkDotted"), 
+	 Production(67,"FEXPR", SymbolString({"LCOMPEXPR"}),""), 
+	 Production(68,"LCOMPEXPR", SymbolString({"LCOMPEXPR","TK_AS","POST"}),"@mkSetComp"), 
+	 Production(69,"LCOMPEXPR", SymbolString({"LCOMPEXPR","TK_IF","POST"}),"@mkSetComp"), 
+	 Production(70,"LCOMPEXPR", SymbolString({"POST"}),""), 
+	 Production(71,"POST", SymbolString({"POST","TK_RANGE","PRI"}),"@mkbinop"), 
+	 Production(72,"POST", SymbolString({"POST","TK_LB","PRI","TK_RB"}),"@mkSubscript"), 
+	 Production(73,"POST", SymbolString({"POST","TK_LPAREN","ARGSLIST","TK_RPAREN"}),"@mkCall"), 
+	 Production(74,"POST", SymbolString({"POST","TK_DECREMENT"}),"@unary"), 
+	 Production(75,"POST", SymbolString({"POST","TK_INCREMENT"}),"@unary"), 
+	 Production(76,"POST", SymbolString({"PRI"}),""), 
+	 Production(77,"PRI", SymbolString({"TK_LPAREN","AEXPR","TK_RPAREN"}),"@pass"), 
+	 Production(78,"PRI", SymbolString({"TK_NUM"}),"@mkNum"), 
+	 Production(79,"PRI", SymbolString({"TK_ID"}),"@mkId"), 
+	 Production(80,"PRI", SymbolString({"TK_STRING"}),"@mkString"), 
+	 Production(81,"PRI", SymbolString({"TK_NIL"}),"@mkConst"), 
+	 Production(82,"PRI", SymbolString({"TK_TRUE"}),"@mkConst"), 
+	 Production(83,"PRI", SymbolString({"TK_FALSE"}),"@mkConst"), 
+	 Production(84,"PRI", SymbolString({"LISTCON"}),""), 
+	 Production(85,"PRI", SymbolString({"BUILTINEXPR"}),""), 
+	 Production(86,"PRI", SymbolString({"LISTOPEXPR"}),""), 
+	 Production(87,"PRI", SymbolString({"BLESSEXPR"}),""), 
+	 Production(88,"PRI", SymbolString({"LAMBDAEXPR"}),""), 
+	 Production(89,"PRI", SymbolString({"RANDEXPR"}),""), 
+	 Production(90,"RANDEXPR", SymbolString({"TK_RANDOM","TK_LPAREN","ARGSLIST","TK_RPAREN"}),"@mkRandom"), 
+	 Production(91,"ARGSLIST", SymbolString({"EXPLIST"}),""), 
+	 Production(92,"ARGSLIST", SymbolString(),""), 
+	 Production(93,"EXPLIST", SymbolString({"COMPEXPR","TK_COMMA","EXPLIST"}),"@mkList"), 
+	 Production(94,"EXPLIST", SymbolString({"COMPEXPR"}),""), 
+	 Production(95,"LISTCON", SymbolString({"TK_LB","ARGSLIST","TK_RB"}),"@mkListCon"), 
+	 Production(96,"BLESSEXPR", SymbolString({"TK_NEW","TK_ID","TK_LPAREN","ARGSLIST","TK_RPAREN"}),"@mkInstance"), 
+	 Production(97,"LAMBDAEXPR", SymbolString({"TK_LAMBDA","PARAMLIST","TK_RPAREN","TK_PRODUCE","STMT"}),"@mkLambda"), 
+	 Production(98,"LISTOPEXPR", SymbolString({"TK_SIZE","TK_LPAREN","TK_RPAREN"}),"@mkListOp"), 
+	 Production(99,"LISTOPEXPR", SymbolString({"TK_EMPTY","TK_LPAREN","TK_RPAREN"}),"@mkListOp"), 
+	 Production(100,"LISTOPEXPR", SymbolString({"TK_APPEND","TK_LPAREN","AEXPR","TK_RPAREN"}),"@mkListOp"), 
+	 Production(101,"LISTOPEXPR", SymbolString({"TK_PUSH","TK_LPAREN","AEXPR","TK_RPAREN"}),"@mkListOp"), 
+	 Production(102,"BUILTINEXPR", SymbolString({"TK_FLOOR","TK_LPAREN","ARGSLIST","TK_RPAREN"}),"@mkBuiltin")
+};
+static const string goTab_row_0[] = {"4","IMPORT", "2", "IMPORTLIST", "3", "OPTIMPORTLIST", "4", "PROG", "5"};
+
+static const string goTab_row_3[] = {"1","IMPORT", "7"};
+
+static const string goTab_row_4[] = {"29","AEXPR", "35", "BLESSEXPR", "15", "BLOCKSTMT", "29", "BUILTINEXPR", "17", "COMPEXPR", "62", "DEFSTMT", "26", "EXPR", "47", "EXPSTMT", "40", "FACT", "43", "FEXPR", "23", "FORSTMT", "31", "IFSTMT", "39", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LETSTMT", "25", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "PRINTSTMT", "27", "RANDEXPR", "14", "RELEXPR", "64", "RETSTMT", "34", "STMT", "30", "STMTLIST", "41", "STRUCTSTMT", "38", "TERM", "59", "WHILESTMT", "46"};
+
+static const string goTab_row_9[] = {"3","DECLLIST", "68", "DECLSTMT", "67", "PARAMLIST", "70"};
+
+static const string goTab_row_13[] = {"17","ARGSLIST", "75", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "74", "EXPLIST", "76", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_28[] = {"10","BLESSEXPR", "15", "BUILTINEXPR", "17", "FEXPR", "79", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14"};
+
+static const string goTab_row_30[] = {"29","AEXPR", "35", "BLESSEXPR", "15", "BLOCKSTMT", "29", "BUILTINEXPR", "17", "COMPEXPR", "62", "DEFSTMT", "26", "EXPR", "47", "EXPSTMT", "40", "FACT", "43", "FEXPR", "23", "FORSTMT", "31", "IFSTMT", "39", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LETSTMT", "25", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "PRINTSTMT", "27", "RANDEXPR", "14", "RELEXPR", "64", "RETSTMT", "34", "STMT", "30", "STMTLIST", "80", "STRUCTSTMT", "38", "TERM", "59", "WHILESTMT", "46"};
+
+static const string goTab_row_37[] = {"17","AEXPR", "88", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_49[] = {"29","AEXPR", "35", "BLESSEXPR", "15", "BLOCKSTMT", "29", "BUILTINEXPR", "17", "COMPEXPR", "62", "DEFSTMT", "26", "EXPR", "47", "EXPSTMT", "40", "FACT", "43", "FEXPR", "23", "FORSTMT", "31", "IFSTMT", "39", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LETSTMT", "25", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "PRINTSTMT", "27", "RANDEXPR", "14", "RELEXPR", "64", "RETSTMT", "34", "STMT", "30", "STMTLIST", "95", "STRUCTSTMT", "38", "TERM", "59", "WHILESTMT", "46"};
+
+static const string goTab_row_51[] = {"10","BLESSEXPR", "15", "BUILTINEXPR", "17", "FEXPR", "96", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14"};
+
+static const string goTab_row_53[] = {"17","AEXPR", "98", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_54[] = {"17","AEXPR", "99", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_57[] = {"17","AEXPR", "102", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_60[] = {"17","AEXPR", "106", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_66[] = {"17","ARGSLIST", "121", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "74", "EXPLIST", "76", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_72[] = {"17","AEXPR", "126", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_73[] = {"17","AEXPR", "127", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_77[] = {"17","ARGSLIST", "130", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "74", "EXPLIST", "76", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_78[] = {"1","OFEXPR", "132"};
+
+static const string goTab_row_84[] = {"17","ARGSLIST", "134", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "74", "EXPLIST", "76", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_85[] = {"7","BLESSEXPR", "15", "BUILTINEXPR", "17", "LAMBDAEXPR", "58", "LISTCON", "18", "LISTOPEXPR", "16", "PRI", "135", "RANDEXPR", "14"};
+
+static const string goTab_row_87[] = {"7","BLESSEXPR", "15", "BUILTINEXPR", "17", "LAMBDAEXPR", "58", "LISTCON", "18", "LISTOPEXPR", "16", "PRI", "136", "RANDEXPR", "14"};
+
+static const string goTab_row_89[] = {"17","AEXPR", "138", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_90[] = {"12","BLESSEXPR", "15", "BUILTINEXPR", "17", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "TERM", "139"};
+
+static const string goTab_row_91[] = {"12","BLESSEXPR", "15", "BUILTINEXPR", "17", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "TERM", "140"};
+
+static const string goTab_row_92[] = {"8","BLESSEXPR", "15", "BUILTINEXPR", "17", "LAMBDAEXPR", "58", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "141", "PRI", "22", "RANDEXPR", "14"};
+
+static const string goTab_row_93[] = {"8","BLESSEXPR", "15", "BUILTINEXPR", "17", "LAMBDAEXPR", "58", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "142", "PRI", "22", "RANDEXPR", "14"};
+
+static const string goTab_row_94[] = {"10","BLESSEXPR", "15", "BUILTINEXPR", "17", "FEXPR", "143", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14"};
+
+static const string goTab_row_97[] = {"17","AEXPR", "145", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_103[] = {"11","BLESSEXPR", "15", "BUILTINEXPR", "17", "FACT", "151", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14"};
+
+static const string goTab_row_104[] = {"11","BLESSEXPR", "15", "BUILTINEXPR", "17", "FACT", "152", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14"};
+
+static const string goTab_row_105[] = {"11","BLESSEXPR", "15", "BUILTINEXPR", "17", "FACT", "153", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14"};
+
+static const string goTab_row_107[] = {"16","BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "155", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_108[] = {"15","BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "156", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_109[] = {"17","AEXPR", "157", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_110[] = {"17","AEXPR", "158", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_111[] = {"15","BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "159", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_112[] = {"17","AEXPR", "160", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_113[] = {"14","BLESSEXPR", "15", "BUILTINEXPR", "17", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "161", "TERM", "59"};
+
+static const string goTab_row_114[] = {"14","BLESSEXPR", "15", "BUILTINEXPR", "17", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "162", "TERM", "59"};
+
+static const string goTab_row_115[] = {"14","BLESSEXPR", "15", "BUILTINEXPR", "17", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "163", "TERM", "59"};
+
+static const string goTab_row_116[] = {"1","BLOCKSTMT", "164"};
+
+static const string goTab_row_117[] = {"13","BLESSEXPR", "15", "BUILTINEXPR", "17", "EXPR", "165", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "TERM", "59"};
+
+static const string goTab_row_118[] = {"13","BLESSEXPR", "15", "BUILTINEXPR", "17", "EXPR", "166", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "TERM", "59"};
+
+static const string goTab_row_119[] = {"13","BLESSEXPR", "15", "BUILTINEXPR", "17", "EXPR", "167", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "TERM", "59"};
+
+static const string goTab_row_120[] = {"13","BLESSEXPR", "15", "BUILTINEXPR", "17", "EXPR", "168", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "TERM", "59"};
+
+static const string goTab_row_122[] = {"2","DECLLIST", "170", "DECLSTMT", "67"};
+
+static const string goTab_row_125[] = {"17","ARGSLIST", "172", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "74", "EXPLIST", "76", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_128[] = {"16","BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "74", "EXPLIST", "175", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_148[] = {"3","DECLLIST", "68", "DECLSTMT", "67", "PARAMLIST", "183"};
+
+static const string goTab_row_171[] = {"28","AEXPR", "35", "BLESSEXPR", "15", "BLOCKSTMT", "29", "BUILTINEXPR", "17", "COMPEXPR", "62", "DEFSTMT", "26", "EXPR", "47", "EXPSTMT", "40", "FACT", "43", "FEXPR", "23", "FORSTMT", "31", "IFSTMT", "39", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LETSTMT", "25", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "PRINTSTMT", "27", "RANDEXPR", "14", "RELEXPR", "64", "RETSTMT", "34", "STMT", "186", "STRUCTSTMT", "38", "TERM", "59", "WHILESTMT", "46"};
+
+static const string goTab_row_177[] = {"17","AEXPR", "188", "BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "62", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "LOGICEXPR", "61", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_178[] = {"1","BLOCKSTMT", "189"};
+
+static const string goTab_row_181[] = {"1","BLOCKSTMT", "190"};
+
+static const string goTab_row_182[] = {"1","BLOCKSTMT", "191"};
+
+static const string goTab_row_184[] = {"15","BLESSEXPR", "15", "BUILTINEXPR", "17", "COMPEXPR", "193", "EXPR", "47", "FACT", "43", "FEXPR", "23", "LAMBDAEXPR", "58", "LCOMPEXPR", "48", "LISTCON", "18", "LISTOPEXPR", "16", "POST", "36", "PRI", "22", "RANDEXPR", "14", "RELEXPR", "64", "TERM", "59"};
+
+static const string goTab_row_190[] = {"1","OPTELSE", "195"};
+
+static const string goTab_row_192[] = {"1","BLOCKSTMT", "196"};
+
+static const string goTab_row_194[] = {"1","BLOCKSTMT", "197"};
+
+static const string *goTab[] = {
+	 goTab_row_0, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_3, 
+	 goTab_row_4, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_9, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_13, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_28, 
+	 NULL, 
+	 goTab_row_30, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_37, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_49, 
+	 NULL, 
+	 goTab_row_51, 
+	 NULL, 
+	 goTab_row_53, 
+	 goTab_row_54, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_57, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_60, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_66, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_72, 
+	 goTab_row_73, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_77, 
+	 goTab_row_78, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_84, 
+	 goTab_row_85, 
+	 NULL, 
+	 goTab_row_87, 
+	 NULL, 
+	 goTab_row_89, 
+	 goTab_row_90, 
+	 goTab_row_91, 
+	 goTab_row_92, 
+	 goTab_row_93, 
+	 goTab_row_94, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_97, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_103, 
+	 goTab_row_104, 
+	 goTab_row_105, 
+	 NULL, 
+	 goTab_row_107, 
+	 goTab_row_108, 
+	 goTab_row_109, 
+	 goTab_row_110, 
+	 goTab_row_111, 
+	 goTab_row_112, 
+	 goTab_row_113, 
+	 goTab_row_114, 
+	 goTab_row_115, 
+	 goTab_row_116, 
+	 goTab_row_117, 
+	 goTab_row_118, 
+	 goTab_row_119, 
+	 goTab_row_120, 
+	 NULL, 
+	 goTab_row_122, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_125, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_128, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_148, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_171, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_177, 
+	 goTab_row_178, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_181, 
+	 goTab_row_182, 
+	 NULL, 
+	 goTab_row_184, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 NULL, 
+	 goTab_row_190, 
+	 NULL, 
+	 goTab_row_192, 
+	 NULL, 
+	 goTab_row_194
+};
+static const string actTab_row_0[] = {"29","TK_APPEND", "r4", "TK_CLASS", "r4", "TK_EMPTY", "r4", "TK_FALSE", "r4", "TK_FLOOR", "r4", "TK_FN", "r4", "TK_FOR", "r4", "TK_ID", "r4", "TK_IF", "r4", "TK_IMPORT", "s1", "TK_LAMBDA", "r4", "TK_LB", "r4", "TK_LCURLY", "r4", "TK_LET", "r4", "TK_LPAREN", "r4", "TK_NEW", "r4", "TK_NIL", "r4", "TK_NOT", "r4", "TK_NUM", "r4", "TK_PRINT", "r4", "TK_PRINTLN", "r4", "TK_PUSH", "r4", "TK_RANDOM", "r4", "TK_RETURN", "r4", "TK_SIZE", "r4", "TK_STRING", "r4", "TK_SUB", "r4", "TK_TRUE", "r4", "TK_WHILE", "r4"};
+
+static const string actTab_row_1[] = {"1","TK_ID", "s6"};
+
+static const string actTab_row_2[] = {"29","TK_APPEND", "r6", "TK_CLASS", "r6", "TK_EMPTY", "r6", "TK_FALSE", "r6", "TK_FLOOR", "r6", "TK_FN", "r6", "TK_FOR", "r6", "TK_ID", "r6", "TK_IF", "r6", "TK_IMPORT", "r6", "TK_LAMBDA", "r6", "TK_LB", "r6", "TK_LCURLY", "r6", "TK_LET", "r6", "TK_LPAREN", "r6", "TK_NEW", "r6", "TK_NIL", "r6", "TK_NOT", "r6", "TK_NUM", "r6", "TK_PRINT", "r6", "TK_PRINTLN", "r6", "TK_PUSH", "r6", "TK_RANDOM", "r6", "TK_RETURN", "r6", "TK_SIZE", "r6", "TK_STRING", "r6", "TK_SUB", "r6", "TK_TRUE", "r6", "TK_WHILE", "r6"};
+
+static const string actTab_row_3[] = {"29","TK_APPEND", "r3", "TK_CLASS", "r3", "TK_EMPTY", "r3", "TK_FALSE", "r3", "TK_FLOOR", "r3", "TK_FN", "r3", "TK_FOR", "r3", "TK_ID", "r3", "TK_IF", "r3", "TK_IMPORT", "s1", "TK_LAMBDA", "r3", "TK_LB", "r3", "TK_LCURLY", "r3", "TK_LET", "r3", "TK_LPAREN", "r3", "TK_NEW", "r3", "TK_NIL", "r3", "TK_NOT", "r3", "TK_NUM", "r3", "TK_PRINT", "r3", "TK_PRINTLN", "r3", "TK_PUSH", "r3", "TK_RANDOM", "r3", "TK_RETURN", "r3", "TK_SIZE", "r3", "TK_STRING", "r3", "TK_SUB", "r3", "TK_TRUE", "r3", "TK_WHILE", "r3"};
+
+static const string actTab_row_4[] = {"28","TK_APPEND", "s12", "TK_CLASS", "s63", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_FN", "s55", "TK_FOR", "s24", "TK_ID", "s50", "TK_IF", "s45", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LCURLY", "s49", "TK_LET", "s37", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PRINT", "s53", "TK_PRINTLN", "s60", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_RETURN", "s57", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19", "TK_WHILE", "s52"};
+
+static const string actTab_row_5[] = {"1","$", "accept"};
+
+static const string actTab_row_6[] = {"1","TK_SEMI", "s65"};
+
+static const string actTab_row_7[] = {"29","TK_APPEND", "r5", "TK_CLASS", "r5", "TK_EMPTY", "r5", "TK_FALSE", "r5", "TK_FLOOR", "r5", "TK_FN", "r5", "TK_FOR", "r5", "TK_ID", "r5", "TK_IF", "r5", "TK_IMPORT", "r5", "TK_LAMBDA", "r5", "TK_LB", "r5", "TK_LCURLY", "r5", "TK_LET", "r5", "TK_LPAREN", "r5", "TK_NEW", "r5", "TK_NIL", "r5", "TK_NOT", "r5", "TK_NUM", "r5", "TK_PRINT", "r5", "TK_PRINTLN", "r5", "TK_PUSH", "r5", "TK_RANDOM", "r5", "TK_RETURN", "r5", "TK_SIZE", "r5", "TK_STRING", "r5", "TK_SUB", "r5", "TK_TRUE", "r5", "TK_WHILE", "r5"};
+
+static const string actTab_row_8[] = {"1","TK_LPAREN", "s66"};
+
+static const string actTab_row_9[] = {"2","TK_LET", "s69", "TK_RPAREN", "r21"};
+
+static const string actTab_row_10[] = {"1","TK_ID", "s71"};
+
+static const string actTab_row_11[] = {"1","TK_LPAREN", "s72"};
+
+static const string actTab_row_12[] = {"1","TK_LPAREN", "s73"};
+
+static const string actTab_row_13[] = {"19","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_RB", "r92", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_14[] = {"31","TK_ADD", "r89", "TK_AS", "r89", "TK_ASSIGN", "r89", "TK_ASSIGN_DIFF", "r89", "TK_ASSIGN_SUM", "r89", "TK_COLON", "r89", "TK_COMMA", "r89", "TK_DECREMENT", "r89", "TK_DIV", "r89", "TK_EQU", "r89", "TK_GT", "r89", "TK_GTE", "r89", "TK_IF", "r89", "TK_INCREMENT", "r89", "TK_LB", "r89", "TK_LOGIC_AND", "r89", "TK_LOGIC_OR", "r89", "TK_LPAREN", "r89", "TK_LT", "r89", "TK_LTE", "r89", "TK_MATCHRE", "r89", "TK_MOD", "r89", "TK_MUL", "r89", "TK_NEQ", "r89", "TK_PERIOD", "r89", "TK_QM", "r89", "TK_RANGE", "r89", "TK_RB", "r89", "TK_RPAREN", "r89", "TK_SEMI", "r89", "TK_SUB", "r89"};
+
+static const string actTab_row_15[] = {"31","TK_ADD", "r87", "TK_AS", "r87", "TK_ASSIGN", "r87", "TK_ASSIGN_DIFF", "r87", "TK_ASSIGN_SUM", "r87", "TK_COLON", "r87", "TK_COMMA", "r87", "TK_DECREMENT", "r87", "TK_DIV", "r87", "TK_EQU", "r87", "TK_GT", "r87", "TK_GTE", "r87", "TK_IF", "r87", "TK_INCREMENT", "r87", "TK_LB", "r87", "TK_LOGIC_AND", "r87", "TK_LOGIC_OR", "r87", "TK_LPAREN", "r87", "TK_LT", "r87", "TK_LTE", "r87", "TK_MATCHRE", "r87", "TK_MOD", "r87", "TK_MUL", "r87", "TK_NEQ", "r87", "TK_PERIOD", "r87", "TK_QM", "r87", "TK_RANGE", "r87", "TK_RB", "r87", "TK_RPAREN", "r87", "TK_SEMI", "r87", "TK_SUB", "r87"};
+
+static const string actTab_row_16[] = {"31","TK_ADD", "r86", "TK_AS", "r86", "TK_ASSIGN", "r86", "TK_ASSIGN_DIFF", "r86", "TK_ASSIGN_SUM", "r86", "TK_COLON", "r86", "TK_COMMA", "r86", "TK_DECREMENT", "r86", "TK_DIV", "r86", "TK_EQU", "r86", "TK_GT", "r86", "TK_GTE", "r86", "TK_IF", "r86", "TK_INCREMENT", "r86", "TK_LB", "r86", "TK_LOGIC_AND", "r86", "TK_LOGIC_OR", "r86", "TK_LPAREN", "r86", "TK_LT", "r86", "TK_LTE", "r86", "TK_MATCHRE", "r86", "TK_MOD", "r86", "TK_MUL", "r86", "TK_NEQ", "r86", "TK_PERIOD", "r86", "TK_QM", "r86", "TK_RANGE", "r86", "TK_RB", "r86", "TK_RPAREN", "r86", "TK_SEMI", "r86", "TK_SUB", "r86"};
+
+static const string actTab_row_17[] = {"31","TK_ADD", "r85", "TK_AS", "r85", "TK_ASSIGN", "r85", "TK_ASSIGN_DIFF", "r85", "TK_ASSIGN_SUM", "r85", "TK_COLON", "r85", "TK_COMMA", "r85", "TK_DECREMENT", "r85", "TK_DIV", "r85", "TK_EQU", "r85", "TK_GT", "r85", "TK_GTE", "r85", "TK_IF", "r85", "TK_INCREMENT", "r85", "TK_LB", "r85", "TK_LOGIC_AND", "r85", "TK_LOGIC_OR", "r85", "TK_LPAREN", "r85", "TK_LT", "r85", "TK_LTE", "r85", "TK_MATCHRE", "r85", "TK_MOD", "r85", "TK_MUL", "r85", "TK_NEQ", "r85", "TK_PERIOD", "r85", "TK_QM", "r85", "TK_RANGE", "r85", "TK_RB", "r85", "TK_RPAREN", "r85", "TK_SEMI", "r85", "TK_SUB", "r85"};
+
+static const string actTab_row_18[] = {"31","TK_ADD", "r84", "TK_AS", "r84", "TK_ASSIGN", "r84", "TK_ASSIGN_DIFF", "r84", "TK_ASSIGN_SUM", "r84", "TK_COLON", "r84", "TK_COMMA", "r84", "TK_DECREMENT", "r84", "TK_DIV", "r84", "TK_EQU", "r84", "TK_GT", "r84", "TK_GTE", "r84", "TK_IF", "r84", "TK_INCREMENT", "r84", "TK_LB", "r84", "TK_LOGIC_AND", "r84", "TK_LOGIC_OR", "r84", "TK_LPAREN", "r84", "TK_LT", "r84", "TK_LTE", "r84", "TK_MATCHRE", "r84", "TK_MOD", "r84", "TK_MUL", "r84", "TK_NEQ", "r84", "TK_PERIOD", "r84", "TK_QM", "r84", "TK_RANGE", "r84", "TK_RB", "r84", "TK_RPAREN", "r84", "TK_SEMI", "r84", "TK_SUB", "r84"};
+
+static const string actTab_row_19[] = {"31","TK_ADD", "r82", "TK_AS", "r82", "TK_ASSIGN", "r82", "TK_ASSIGN_DIFF", "r82", "TK_ASSIGN_SUM", "r82", "TK_COLON", "r82", "TK_COMMA", "r82", "TK_DECREMENT", "r82", "TK_DIV", "r82", "TK_EQU", "r82", "TK_GT", "r82", "TK_GTE", "r82", "TK_IF", "r82", "TK_INCREMENT", "r82", "TK_LB", "r82", "TK_LOGIC_AND", "r82", "TK_LOGIC_OR", "r82", "TK_LPAREN", "r82", "TK_LT", "r82", "TK_LTE", "r82", "TK_MATCHRE", "r82", "TK_MOD", "r82", "TK_MUL", "r82", "TK_NEQ", "r82", "TK_PERIOD", "r82", "TK_QM", "r82", "TK_RANGE", "r82", "TK_RB", "r82", "TK_RPAREN", "r82", "TK_SEMI", "r82", "TK_SUB", "r82"};
+
+static const string actTab_row_20[] = {"31","TK_ADD", "r80", "TK_AS", "r80", "TK_ASSIGN", "r80", "TK_ASSIGN_DIFF", "r80", "TK_ASSIGN_SUM", "r80", "TK_COLON", "r80", "TK_COMMA", "r80", "TK_DECREMENT", "r80", "TK_DIV", "r80", "TK_EQU", "r80", "TK_GT", "r80", "TK_GTE", "r80", "TK_IF", "r80", "TK_INCREMENT", "r80", "TK_LB", "r80", "TK_LOGIC_AND", "r80", "TK_LOGIC_OR", "r80", "TK_LPAREN", "r80", "TK_LT", "r80", "TK_LTE", "r80", "TK_MATCHRE", "r80", "TK_MOD", "r80", "TK_MUL", "r80", "TK_NEQ", "r80", "TK_PERIOD", "r80", "TK_QM", "r80", "TK_RANGE", "r80", "TK_RB", "r80", "TK_RPAREN", "r80", "TK_SEMI", "r80", "TK_SUB", "r80"};
+
+static const string actTab_row_21[] = {"1","TK_LPAREN", "s77"};
+
+static const string actTab_row_22[] = {"31","TK_ADD", "r76", "TK_AS", "r76", "TK_ASSIGN", "r76", "TK_ASSIGN_DIFF", "r76", "TK_ASSIGN_SUM", "r76", "TK_COLON", "r76", "TK_COMMA", "r76", "TK_DECREMENT", "r76", "TK_DIV", "r76", "TK_EQU", "r76", "TK_GT", "r76", "TK_GTE", "r76", "TK_IF", "r76", "TK_INCREMENT", "r76", "TK_LB", "r76", "TK_LOGIC_AND", "r76", "TK_LOGIC_OR", "r76", "TK_LPAREN", "r76", "TK_LT", "r76", "TK_LTE", "r76", "TK_MATCHRE", "r76", "TK_MOD", "r76", "TK_MUL", "r76", "TK_NEQ", "r76", "TK_PERIOD", "r76", "TK_QM", "r76", "TK_RANGE", "r76", "TK_RB", "r76", "TK_RPAREN", "r76", "TK_SEMI", "r76", "TK_SUB", "r76"};
+
+static const string actTab_row_23[] = {"23","TK_ADD", "r65", "TK_ASSIGN", "r65", "TK_ASSIGN_DIFF", "r65", "TK_ASSIGN_SUM", "r65", "TK_COLON", "r65", "TK_COMMA", "r65", "TK_DIV", "r65", "TK_EQU", "r65", "TK_GT", "r65", "TK_GTE", "r65", "TK_LOGIC_AND", "r65", "TK_LOGIC_OR", "r65", "TK_LT", "r65", "TK_LTE", "r65", "TK_MATCHRE", "r65", "TK_MOD", "r65", "TK_MUL", "r65", "TK_NEQ", "r65", "TK_QM", "r65", "TK_RB", "r65", "TK_RPAREN", "r65", "TK_SEMI", "r65", "TK_SUB", "r65"};
+
+static const string actTab_row_24[] = {"1","TK_LPAREN", "s78"};
+
+static const string actTab_row_25[] = {"57","TK_ADD", "r16", "TK_APPEND", "r16", "TK_AS", "r16", "TK_ASSIGN", "r16", "TK_ASSIGN_DIFF", "r16", "TK_ASSIGN_SUM", "r16", "TK_CLASS", "r16", "TK_COLON", "r16", "TK_COMMA", "r16", "TK_DECREMENT", "r16", "TK_DIV", "r16", "TK_EMPTY", "r16", "TK_EOI", "r16", "TK_EQU", "r16", "TK_FALSE", "r16", "TK_FLOOR", "r16", "TK_FN", "r16", "TK_FOR", "r16", "TK_GT", "r16", "TK_GTE", "r16", "TK_ID", "r16", "TK_IF", "r16", "TK_INCREMENT", "r16", "TK_LAMBDA", "r16", "TK_LB", "r16", "TK_LCURLY", "r16", "TK_LET", "r16", "TK_LOGIC_AND", "r16", "TK_LOGIC_OR", "r16", "TK_LPAREN", "r16", "TK_LT", "r16", "TK_LTE", "r16", "TK_MATCHRE", "r16", "TK_MOD", "r16", "TK_MUL", "r16", "TK_NEQ", "r16", "TK_NEW", "r16", "TK_NIL", "r16", "TK_NOT", "r16", "TK_NUM", "r16", "TK_PERIOD", "r16", "TK_PRINT", "r16", "TK_PRINTLN", "r16", "TK_PUSH", "r16", "TK_QM", "r16", "TK_RANDOM", "r16", "TK_RANGE", "r16", "TK_RB", "r16", "TK_RCURLY", "r16", "TK_RETURN", "r16", "TK_RPAREN", "r16", "TK_SEMI", "r16", "TK_SIZE", "r16", "TK_STRING", "r16", "TK_SUB", "r16", "TK_TRUE", "r16", "TK_WHILE", "r16"};
+
+static const string actTab_row_26[] = {"57","TK_ADD", "r17", "TK_APPEND", "r17", "TK_AS", "r17", "TK_ASSIGN", "r17", "TK_ASSIGN_DIFF", "r17", "TK_ASSIGN_SUM", "r17", "TK_CLASS", "r17", "TK_COLON", "r17", "TK_COMMA", "r17", "TK_DECREMENT", "r17", "TK_DIV", "r17", "TK_EMPTY", "r17", "TK_EOI", "r17", "TK_EQU", "r17", "TK_FALSE", "r17", "TK_FLOOR", "r17", "TK_FN", "r17", "TK_FOR", "r17", "TK_GT", "r17", "TK_GTE", "r17", "TK_ID", "r17", "TK_IF", "r17", "TK_INCREMENT", "r17", "TK_LAMBDA", "r17", "TK_LB", "r17", "TK_LCURLY", "r17", "TK_LET", "r17", "TK_LOGIC_AND", "r17", "TK_LOGIC_OR", "r17", "TK_LPAREN", "r17", "TK_LT", "r17", "TK_LTE", "r17", "TK_MATCHRE", "r17", "TK_MOD", "r17", "TK_MUL", "r17", "TK_NEQ", "r17", "TK_NEW", "r17", "TK_NIL", "r17", "TK_NOT", "r17", "TK_NUM", "r17", "TK_PERIOD", "r17", "TK_PRINT", "r17", "TK_PRINTLN", "r17", "TK_PUSH", "r17", "TK_QM", "r17", "TK_RANDOM", "r17", "TK_RANGE", "r17", "TK_RB", "r17", "TK_RCURLY", "r17", "TK_RETURN", "r17", "TK_RPAREN", "r17", "TK_SEMI", "r17", "TK_SIZE", "r17", "TK_STRING", "r17", "TK_SUB", "r17", "TK_TRUE", "r17", "TK_WHILE", "r17"};
+
+static const string actTab_row_27[] = {"57","TK_ADD", "r15", "TK_APPEND", "r15", "TK_AS", "r15", "TK_ASSIGN", "r15", "TK_ASSIGN_DIFF", "r15", "TK_ASSIGN_SUM", "r15", "TK_CLASS", "r15", "TK_COLON", "r15", "TK_COMMA", "r15", "TK_DECREMENT", "r15", "TK_DIV", "r15", "TK_EMPTY", "r15", "TK_EOI", "r15", "TK_EQU", "r15", "TK_FALSE", "r15", "TK_FLOOR", "r15", "TK_FN", "r15", "TK_FOR", "r15", "TK_GT", "r15", "TK_GTE", "r15", "TK_ID", "r15", "TK_IF", "r15", "TK_INCREMENT", "r15", "TK_LAMBDA", "r15", "TK_LB", "r15", "TK_LCURLY", "r15", "TK_LET", "r15", "TK_LOGIC_AND", "r15", "TK_LOGIC_OR", "r15", "TK_LPAREN", "r15", "TK_LT", "r15", "TK_LTE", "r15", "TK_MATCHRE", "r15", "TK_MOD", "r15", "TK_MUL", "r15", "TK_NEQ", "r15", "TK_NEW", "r15", "TK_NIL", "r15", "TK_NOT", "r15", "TK_NUM", "r15", "TK_PERIOD", "r15", "TK_PRINT", "r15", "TK_PRINTLN", "r15", "TK_PUSH", "r15", "TK_QM", "r15", "TK_RANDOM", "r15", "TK_RANGE", "r15", "TK_RB", "r15", "TK_RCURLY", "r15", "TK_RETURN", "r15", "TK_RPAREN", "r15", "TK_SEMI", "r15", "TK_SIZE", "r15", "TK_STRING", "r15", "TK_SUB", "r15", "TK_TRUE", "r15", "TK_WHILE", "r15"};
+
+static const string actTab_row_28[] = {"16","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_TRUE", "s19"};
+
+static const string actTab_row_29[] = {"57","TK_ADD", "r14", "TK_APPEND", "r14", "TK_AS", "r14", "TK_ASSIGN", "r14", "TK_ASSIGN_DIFF", "r14", "TK_ASSIGN_SUM", "r14", "TK_CLASS", "r14", "TK_COLON", "r14", "TK_COMMA", "r14", "TK_DECREMENT", "r14", "TK_DIV", "r14", "TK_EMPTY", "r14", "TK_EOI", "r14", "TK_EQU", "r14", "TK_FALSE", "r14", "TK_FLOOR", "r14", "TK_FN", "r14", "TK_FOR", "r14", "TK_GT", "r14", "TK_GTE", "r14", "TK_ID", "r14", "TK_IF", "r14", "TK_INCREMENT", "r14", "TK_LAMBDA", "r14", "TK_LB", "r14", "TK_LCURLY", "r14", "TK_LET", "r14", "TK_LOGIC_AND", "r14", "TK_LOGIC_OR", "r14", "TK_LPAREN", "r14", "TK_LT", "r14", "TK_LTE", "r14", "TK_MATCHRE", "r14", "TK_MOD", "r14", "TK_MUL", "r14", "TK_NEQ", "r14", "TK_NEW", "r14", "TK_NIL", "r14", "TK_NOT", "r14", "TK_NUM", "r14", "TK_PERIOD", "r14", "TK_PRINT", "r14", "TK_PRINTLN", "r14", "TK_PUSH", "r14", "TK_QM", "r14", "TK_RANDOM", "r14", "TK_RANGE", "r14", "TK_RB", "r14", "TK_RCURLY", "r14", "TK_RETURN", "r14", "TK_RPAREN", "r14", "TK_SEMI", "r14", "TK_SIZE", "r14", "TK_STRING", "r14", "TK_SUB", "r14", "TK_TRUE", "r14", "TK_WHILE", "r14"};
+
+static const string actTab_row_30[] = {"30","TK_APPEND", "s12", "TK_CLASS", "s63", "TK_EMPTY", "s56", "TK_EOI", "r9", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_FN", "s55", "TK_FOR", "s24", "TK_ID", "s50", "TK_IF", "s45", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LCURLY", "s49", "TK_LET", "s37", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PRINT", "s53", "TK_PRINTLN", "s60", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_RCURLY", "r9", "TK_RETURN", "s57", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19", "TK_WHILE", "s52"};
+
+static const string actTab_row_31[] = {"57","TK_ADD", "r13", "TK_APPEND", "r13", "TK_AS", "r13", "TK_ASSIGN", "r13", "TK_ASSIGN_DIFF", "r13", "TK_ASSIGN_SUM", "r13", "TK_CLASS", "r13", "TK_COLON", "r13", "TK_COMMA", "r13", "TK_DECREMENT", "r13", "TK_DIV", "r13", "TK_EMPTY", "r13", "TK_EOI", "r13", "TK_EQU", "r13", "TK_FALSE", "r13", "TK_FLOOR", "r13", "TK_FN", "r13", "TK_FOR", "r13", "TK_GT", "r13", "TK_GTE", "r13", "TK_ID", "r13", "TK_IF", "r13", "TK_INCREMENT", "r13", "TK_LAMBDA", "r13", "TK_LB", "r13", "TK_LCURLY", "r13", "TK_LET", "r13", "TK_LOGIC_AND", "r13", "TK_LOGIC_OR", "r13", "TK_LPAREN", "r13", "TK_LT", "r13", "TK_LTE", "r13", "TK_MATCHRE", "r13", "TK_MOD", "r13", "TK_MUL", "r13", "TK_NEQ", "r13", "TK_NEW", "r13", "TK_NIL", "r13", "TK_NOT", "r13", "TK_NUM", "r13", "TK_PERIOD", "r13", "TK_PRINT", "r13", "TK_PRINTLN", "r13", "TK_PUSH", "r13", "TK_QM", "r13", "TK_RANDOM", "r13", "TK_RANGE", "r13", "TK_RB", "r13", "TK_RCURLY", "r13", "TK_RETURN", "r13", "TK_RPAREN", "r13", "TK_SEMI", "r13", "TK_SIZE", "r13", "TK_STRING", "r13", "TK_SUB", "r13", "TK_TRUE", "r13", "TK_WHILE", "r13"};
+
+static const string actTab_row_32[] = {"1","TK_LPAREN", "s81"};
+
+static const string actTab_row_33[] = {"31","TK_ADD", "r83", "TK_AS", "r83", "TK_ASSIGN", "r83", "TK_ASSIGN_DIFF", "r83", "TK_ASSIGN_SUM", "r83", "TK_COLON", "r83", "TK_COMMA", "r83", "TK_DECREMENT", "r83", "TK_DIV", "r83", "TK_EQU", "r83", "TK_GT", "r83", "TK_GTE", "r83", "TK_IF", "r83", "TK_INCREMENT", "r83", "TK_LB", "r83", "TK_LOGIC_AND", "r83", "TK_LOGIC_OR", "r83", "TK_LPAREN", "r83", "TK_LT", "r83", "TK_LTE", "r83", "TK_MATCHRE", "r83", "TK_MOD", "r83", "TK_MUL", "r83", "TK_NEQ", "r83", "TK_PERIOD", "r83", "TK_QM", "r83", "TK_RANGE", "r83", "TK_RB", "r83", "TK_RPAREN", "r83", "TK_SEMI", "r83", "TK_SUB", "r83"};
+
+static const string actTab_row_34[] = {"57","TK_ADD", "r18", "TK_APPEND", "r18", "TK_AS", "r18", "TK_ASSIGN", "r18", "TK_ASSIGN_DIFF", "r18", "TK_ASSIGN_SUM", "r18", "TK_CLASS", "r18", "TK_COLON", "r18", "TK_COMMA", "r18", "TK_DECREMENT", "r18", "TK_DIV", "r18", "TK_EMPTY", "r18", "TK_EOI", "r18", "TK_EQU", "r18", "TK_FALSE", "r18", "TK_FLOOR", "r18", "TK_FN", "r18", "TK_FOR", "r18", "TK_GT", "r18", "TK_GTE", "r18", "TK_ID", "r18", "TK_IF", "r18", "TK_INCREMENT", "r18", "TK_LAMBDA", "r18", "TK_LB", "r18", "TK_LCURLY", "r18", "TK_LET", "r18", "TK_LOGIC_AND", "r18", "TK_LOGIC_OR", "r18", "TK_LPAREN", "r18", "TK_LT", "r18", "TK_LTE", "r18", "TK_MATCHRE", "r18", "TK_MOD", "r18", "TK_MUL", "r18", "TK_NEQ", "r18", "TK_NEW", "r18", "TK_NIL", "r18", "TK_NOT", "r18", "TK_NUM", "r18", "TK_PERIOD", "r18", "TK_PRINT", "r18", "TK_PRINTLN", "r18", "TK_PUSH", "r18", "TK_QM", "r18", "TK_RANDOM", "r18", "TK_RANGE", "r18", "TK_RB", "r18", "TK_RCURLY", "r18", "TK_RETURN", "r18", "TK_RPAREN", "r18", "TK_SEMI", "r18", "TK_SIZE", "r18", "TK_STRING", "r18", "TK_SUB", "r18", "TK_TRUE", "r18", "TK_WHILE", "r18"};
+
+static const string actTab_row_35[] = {"1","TK_SEMI", "s82"};
+
+static const string actTab_row_36[] = {"31","TK_ADD", "r70", "TK_AS", "r70", "TK_ASSIGN", "r70", "TK_ASSIGN_DIFF", "r70", "TK_ASSIGN_SUM", "r70", "TK_COLON", "r70", "TK_COMMA", "r70", "TK_DECREMENT", "s86", "TK_DIV", "r70", "TK_EQU", "r70", "TK_GT", "r70", "TK_GTE", "r70", "TK_IF", "r70", "TK_INCREMENT", "s83", "TK_LB", "s85", "TK_LOGIC_AND", "r70", "TK_LOGIC_OR", "r70", "TK_LPAREN", "s84", "TK_LT", "r70", "TK_LTE", "r70", "TK_MATCHRE", "r70", "TK_MOD", "r70", "TK_MUL", "r70", "TK_NEQ", "r70", "TK_PERIOD", "r70", "TK_QM", "r70", "TK_RANGE", "s87", "TK_RB", "r70", "TK_RPAREN", "r70", "TK_SEMI", "r70", "TK_SUB", "r70"};
+
+static const string actTab_row_37[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_38[] = {"57","TK_ADD", "r19", "TK_APPEND", "r19", "TK_AS", "r19", "TK_ASSIGN", "r19", "TK_ASSIGN_DIFF", "r19", "TK_ASSIGN_SUM", "r19", "TK_CLASS", "r19", "TK_COLON", "r19", "TK_COMMA", "r19", "TK_DECREMENT", "r19", "TK_DIV", "r19", "TK_EMPTY", "r19", "TK_EOI", "r19", "TK_EQU", "r19", "TK_FALSE", "r19", "TK_FLOOR", "r19", "TK_FN", "r19", "TK_FOR", "r19", "TK_GT", "r19", "TK_GTE", "r19", "TK_ID", "r19", "TK_IF", "r19", "TK_INCREMENT", "r19", "TK_LAMBDA", "r19", "TK_LB", "r19", "TK_LCURLY", "r19", "TK_LET", "r19", "TK_LOGIC_AND", "r19", "TK_LOGIC_OR", "r19", "TK_LPAREN", "r19", "TK_LT", "r19", "TK_LTE", "r19", "TK_MATCHRE", "r19", "TK_MOD", "r19", "TK_MUL", "r19", "TK_NEQ", "r19", "TK_NEW", "r19", "TK_NIL", "r19", "TK_NOT", "r19", "TK_NUM", "r19", "TK_PERIOD", "r19", "TK_PRINT", "r19", "TK_PRINTLN", "r19", "TK_PUSH", "r19", "TK_QM", "r19", "TK_RANDOM", "r19", "TK_RANGE", "r19", "TK_RB", "r19", "TK_RCURLY", "r19", "TK_RETURN", "r19", "TK_RPAREN", "r19", "TK_SEMI", "r19", "TK_SIZE", "r19", "TK_STRING", "r19", "TK_SUB", "r19", "TK_TRUE", "r19", "TK_WHILE", "r19"};
+
+static const string actTab_row_39[] = {"57","TK_ADD", "r11", "TK_APPEND", "r11", "TK_AS", "r11", "TK_ASSIGN", "r11", "TK_ASSIGN_DIFF", "r11", "TK_ASSIGN_SUM", "r11", "TK_CLASS", "r11", "TK_COLON", "r11", "TK_COMMA", "r11", "TK_DECREMENT", "r11", "TK_DIV", "r11", "TK_EMPTY", "r11", "TK_EOI", "r11", "TK_EQU", "r11", "TK_FALSE", "r11", "TK_FLOOR", "r11", "TK_FN", "r11", "TK_FOR", "r11", "TK_GT", "r11", "TK_GTE", "r11", "TK_ID", "r11", "TK_IF", "r11", "TK_INCREMENT", "r11", "TK_LAMBDA", "r11", "TK_LB", "r11", "TK_LCURLY", "r11", "TK_LET", "r11", "TK_LOGIC_AND", "r11", "TK_LOGIC_OR", "r11", "TK_LPAREN", "r11", "TK_LT", "r11", "TK_LTE", "r11", "TK_MATCHRE", "r11", "TK_MOD", "r11", "TK_MUL", "r11", "TK_NEQ", "r11", "TK_NEW", "r11", "TK_NIL", "r11", "TK_NOT", "r11", "TK_NUM", "r11", "TK_PERIOD", "r11", "TK_PRINT", "r11", "TK_PRINTLN", "r11", "TK_PUSH", "r11", "TK_QM", "r11", "TK_RANDOM", "r11", "TK_RANGE", "r11", "TK_RB", "r11", "TK_RCURLY", "r11", "TK_RETURN", "r11", "TK_RPAREN", "r11", "TK_SEMI", "r11", "TK_SIZE", "r11", "TK_STRING", "r11", "TK_SUB", "r11", "TK_TRUE", "r11", "TK_WHILE", "r11"};
+
+static const string actTab_row_40[] = {"57","TK_ADD", "r10", "TK_APPEND", "r10", "TK_AS", "r10", "TK_ASSIGN", "r10", "TK_ASSIGN_DIFF", "r10", "TK_ASSIGN_SUM", "r10", "TK_CLASS", "r10", "TK_COLON", "r10", "TK_COMMA", "r10", "TK_DECREMENT", "r10", "TK_DIV", "r10", "TK_EMPTY", "r10", "TK_EOI", "r10", "TK_EQU", "r10", "TK_FALSE", "r10", "TK_FLOOR", "r10", "TK_FN", "r10", "TK_FOR", "r10", "TK_GT", "r10", "TK_GTE", "r10", "TK_ID", "r10", "TK_IF", "r10", "TK_INCREMENT", "r10", "TK_LAMBDA", "r10", "TK_LB", "r10", "TK_LCURLY", "r10", "TK_LET", "r10", "TK_LOGIC_AND", "r10", "TK_LOGIC_OR", "r10", "TK_LPAREN", "r10", "TK_LT", "r10", "TK_LTE", "r10", "TK_MATCHRE", "r10", "TK_MOD", "r10", "TK_MUL", "r10", "TK_NEQ", "r10", "TK_NEW", "r10", "TK_NIL", "r10", "TK_NOT", "r10", "TK_NUM", "r10", "TK_PERIOD", "r10", "TK_PRINT", "r10", "TK_PRINTLN", "r10", "TK_PUSH", "r10", "TK_QM", "r10", "TK_RANDOM", "r10", "TK_RANGE", "r10", "TK_RB", "r10", "TK_RCURLY", "r10", "TK_RETURN", "r10", "TK_RPAREN", "r10", "TK_SEMI", "r10", "TK_SIZE", "r10", "TK_STRING", "r10", "TK_SUB", "r10", "TK_TRUE", "r10", "TK_WHILE", "r10"};
+
+static const string actTab_row_41[] = {"1","TK_EOI", "r2"};
+
+static const string actTab_row_42[] = {"31","TK_ADD", "r78", "TK_AS", "r78", "TK_ASSIGN", "r78", "TK_ASSIGN_DIFF", "r78", "TK_ASSIGN_SUM", "r78", "TK_COLON", "r78", "TK_COMMA", "r78", "TK_DECREMENT", "r78", "TK_DIV", "r78", "TK_EQU", "r78", "TK_GT", "r78", "TK_GTE", "r78", "TK_IF", "r78", "TK_INCREMENT", "r78", "TK_LB", "r78", "TK_LOGIC_AND", "r78", "TK_LOGIC_OR", "r78", "TK_LPAREN", "r78", "TK_LT", "r78", "TK_LTE", "r78", "TK_MATCHRE", "r78", "TK_MOD", "r78", "TK_MUL", "r78", "TK_NEQ", "r78", "TK_PERIOD", "r78", "TK_QM", "r78", "TK_RANGE", "r78", "TK_RB", "r78", "TK_RPAREN", "r78", "TK_SEMI", "r78", "TK_SUB", "r78"};
+
+static const string actTab_row_43[] = {"23","TK_ADD", "r62", "TK_ASSIGN", "r62", "TK_ASSIGN_DIFF", "r62", "TK_ASSIGN_SUM", "r62", "TK_COLON", "r62", "TK_COMMA", "r62", "TK_DIV", "r62", "TK_EQU", "r62", "TK_GT", "r62", "TK_GTE", "r62", "TK_LOGIC_AND", "r62", "TK_LOGIC_OR", "r62", "TK_LT", "r62", "TK_LTE", "r62", "TK_MATCHRE", "r62", "TK_MOD", "r62", "TK_MUL", "r62", "TK_NEQ", "r62", "TK_QM", "r62", "TK_RB", "r62", "TK_RPAREN", "r62", "TK_SEMI", "r62", "TK_SUB", "r62"};
+
+static const string actTab_row_44[] = {"31","TK_ADD", "r81", "TK_AS", "r81", "TK_ASSIGN", "r81", "TK_ASSIGN_DIFF", "r81", "TK_ASSIGN_SUM", "r81", "TK_COLON", "r81", "TK_COMMA", "r81", "TK_DECREMENT", "r81", "TK_DIV", "r81", "TK_EQU", "r81", "TK_GT", "r81", "TK_GTE", "r81", "TK_IF", "r81", "TK_INCREMENT", "r81", "TK_LB", "r81", "TK_LOGIC_AND", "r81", "TK_LOGIC_OR", "r81", "TK_LPAREN", "r81", "TK_LT", "r81", "TK_LTE", "r81", "TK_MATCHRE", "r81", "TK_MOD", "r81", "TK_MUL", "r81", "TK_NEQ", "r81", "TK_PERIOD", "r81", "TK_QM", "r81", "TK_RANGE", "r81", "TK_RB", "r81", "TK_RPAREN", "r81", "TK_SEMI", "r81", "TK_SUB", "r81"};
+
+static const string actTab_row_45[] = {"1","TK_LPAREN", "s89"};
+
+static const string actTab_row_46[] = {"57","TK_ADD", "r12", "TK_APPEND", "r12", "TK_AS", "r12", "TK_ASSIGN", "r12", "TK_ASSIGN_DIFF", "r12", "TK_ASSIGN_SUM", "r12", "TK_CLASS", "r12", "TK_COLON", "r12", "TK_COMMA", "r12", "TK_DECREMENT", "r12", "TK_DIV", "r12", "TK_EMPTY", "r12", "TK_EOI", "r12", "TK_EQU", "r12", "TK_FALSE", "r12", "TK_FLOOR", "r12", "TK_FN", "r12", "TK_FOR", "r12", "TK_GT", "r12", "TK_GTE", "r12", "TK_ID", "r12", "TK_IF", "r12", "TK_INCREMENT", "r12", "TK_LAMBDA", "r12", "TK_LB", "r12", "TK_LCURLY", "r12", "TK_LET", "r12", "TK_LOGIC_AND", "r12", "TK_LOGIC_OR", "r12", "TK_LPAREN", "r12", "TK_LT", "r12", "TK_LTE", "r12", "TK_MATCHRE", "r12", "TK_MOD", "r12", "TK_MUL", "r12", "TK_NEQ", "r12", "TK_NEW", "r12", "TK_NIL", "r12", "TK_NOT", "r12", "TK_NUM", "r12", "TK_PERIOD", "r12", "TK_PRINT", "r12", "TK_PRINTLN", "r12", "TK_PUSH", "r12", "TK_QM", "r12", "TK_RANDOM", "r12", "TK_RANGE", "r12", "TK_RB", "r12", "TK_RCURLY", "r12", "TK_RETURN", "r12", "TK_RPAREN", "r12", "TK_SEMI", "r12", "TK_SIZE", "r12", "TK_STRING", "r12", "TK_SUB", "r12", "TK_TRUE", "r12", "TK_WHILE", "r12"};
+
+static const string actTab_row_47[] = {"20","TK_ADD", "s91", "TK_ASSIGN", "r55", "TK_ASSIGN_DIFF", "r55", "TK_ASSIGN_SUM", "r55", "TK_COLON", "r55", "TK_COMMA", "r55", "TK_EQU", "r55", "TK_GT", "r55", "TK_GTE", "r55", "TK_LOGIC_AND", "r55", "TK_LOGIC_OR", "r55", "TK_LT", "r55", "TK_LTE", "r55", "TK_MATCHRE", "r55", "TK_NEQ", "r55", "TK_QM", "r55", "TK_RB", "r55", "TK_RPAREN", "r55", "TK_SEMI", "r55", "TK_SUB", "s90"};
+
+static const string actTab_row_48[] = {"26","TK_ADD", "r67", "TK_AS", "s93", "TK_ASSIGN", "r67", "TK_ASSIGN_DIFF", "r67", "TK_ASSIGN_SUM", "r67", "TK_COLON", "r67", "TK_COMMA", "r67", "TK_DIV", "r67", "TK_EQU", "r67", "TK_GT", "r67", "TK_GTE", "r67", "TK_IF", "s92", "TK_LOGIC_AND", "r67", "TK_LOGIC_OR", "r67", "TK_LT", "r67", "TK_LTE", "r67", "TK_MATCHRE", "r67", "TK_MOD", "r67", "TK_MUL", "r67", "TK_NEQ", "r67", "TK_PERIOD", "s94", "TK_QM", "r67", "TK_RB", "r67", "TK_RPAREN", "r67", "TK_SEMI", "r67", "TK_SUB", "r67"};
+
+static const string actTab_row_49[] = {"28","TK_APPEND", "s12", "TK_CLASS", "s63", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_FN", "s55", "TK_FOR", "s24", "TK_ID", "s50", "TK_IF", "s45", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LCURLY", "s49", "TK_LET", "s37", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PRINT", "s53", "TK_PRINTLN", "s60", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_RETURN", "s57", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19", "TK_WHILE", "s52"};
+
+static const string actTab_row_50[] = {"31","TK_ADD", "r79", "TK_AS", "r79", "TK_ASSIGN", "r79", "TK_ASSIGN_DIFF", "r79", "TK_ASSIGN_SUM", "r79", "TK_COLON", "r79", "TK_COMMA", "r79", "TK_DECREMENT", "r79", "TK_DIV", "r79", "TK_EQU", "r79", "TK_GT", "r79", "TK_GTE", "r79", "TK_IF", "r79", "TK_INCREMENT", "r79", "TK_LB", "r79", "TK_LOGIC_AND", "r79", "TK_LOGIC_OR", "r79", "TK_LPAREN", "r79", "TK_LT", "r79", "TK_LTE", "r79", "TK_MATCHRE", "r79", "TK_MOD", "r79", "TK_MUL", "r79", "TK_NEQ", "r79", "TK_PERIOD", "r79", "TK_QM", "r79", "TK_RANGE", "r79", "TK_RB", "r79", "TK_RPAREN", "r79", "TK_SEMI", "r79", "TK_SUB", "r79"};
+
+static const string actTab_row_51[] = {"16","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_TRUE", "s19"};
+
+static const string actTab_row_52[] = {"1","TK_LPAREN", "s97"};
+
+static const string actTab_row_53[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_54[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_55[] = {"1","TK_ID", "s100"};
+
+static const string actTab_row_56[] = {"1","TK_LPAREN", "s101"};
+
+static const string actTab_row_57[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_58[] = {"31","TK_ADD", "r88", "TK_AS", "r88", "TK_ASSIGN", "r88", "TK_ASSIGN_DIFF", "r88", "TK_ASSIGN_SUM", "r88", "TK_COLON", "r88", "TK_COMMA", "r88", "TK_DECREMENT", "r88", "TK_DIV", "r88", "TK_EQU", "r88", "TK_GT", "r88", "TK_GTE", "r88", "TK_IF", "r88", "TK_INCREMENT", "r88", "TK_LB", "r88", "TK_LOGIC_AND", "r88", "TK_LOGIC_OR", "r88", "TK_LPAREN", "r88", "TK_LT", "r88", "TK_LTE", "r88", "TK_MATCHRE", "r88", "TK_MOD", "r88", "TK_MUL", "r88", "TK_NEQ", "r88", "TK_PERIOD", "r88", "TK_QM", "r88", "TK_RANGE", "r88", "TK_RB", "r88", "TK_RPAREN", "r88", "TK_SEMI", "r88", "TK_SUB", "r88"};
+
+static const string actTab_row_59[] = {"23","TK_ADD", "r58", "TK_ASSIGN", "r58", "TK_ASSIGN_DIFF", "r58", "TK_ASSIGN_SUM", "r58", "TK_COLON", "r58", "TK_COMMA", "r58", "TK_DIV", "s104", "TK_EQU", "r58", "TK_GT", "r58", "TK_GTE", "r58", "TK_LOGIC_AND", "r58", "TK_LOGIC_OR", "r58", "TK_LT", "r58", "TK_LTE", "r58", "TK_MATCHRE", "r58", "TK_MOD", "s103", "TK_MUL", "s105", "TK_NEQ", "r58", "TK_QM", "r58", "TK_RB", "r58", "TK_RPAREN", "r58", "TK_SEMI", "r58", "TK_SUB", "r58"};
+
+static const string actTab_row_60[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_61[] = {"8","TK_ASSIGN", "s112", "TK_ASSIGN_DIFF", "s109", "TK_ASSIGN_SUM", "s110", "TK_LOGIC_AND", "s111", "TK_LOGIC_OR", "s108", "TK_QM", "s107", "TK_RPAREN", "r42", "TK_SEMI", "r42"};
+
+static const string actTab_row_62[] = {"12","TK_ASSIGN", "r46", "TK_ASSIGN_DIFF", "r46", "TK_ASSIGN_SUM", "r46", "TK_COLON", "r46", "TK_EQU", "s115", "TK_LOGIC_AND", "r46", "TK_LOGIC_OR", "r46", "TK_MATCHRE", "s113", "TK_NEQ", "s114", "TK_QM", "r46", "TK_RPAREN", "r46", "TK_SEMI", "r46"};
+
+static const string actTab_row_63[] = {"1","TK_ID", "s116"};
+
+static const string actTab_row_64[] = {"18","TK_ASSIGN", "r50", "TK_ASSIGN_DIFF", "r50", "TK_ASSIGN_SUM", "r50", "TK_COLON", "r50", "TK_COMMA", "r50", "TK_EQU", "r50", "TK_GT", "s119", "TK_GTE", "s118", "TK_LOGIC_AND", "r50", "TK_LOGIC_OR", "r50", "TK_LT", "s120", "TK_LTE", "s117", "TK_MATCHRE", "r50", "TK_NEQ", "r50", "TK_QM", "r50", "TK_RB", "r50", "TK_RPAREN", "r50", "TK_SEMI", "r50"};
+
+static const string actTab_row_65[] = {"29","TK_APPEND", "r7", "TK_CLASS", "r7", "TK_EMPTY", "r7", "TK_FALSE", "r7", "TK_FLOOR", "r7", "TK_FN", "r7", "TK_FOR", "r7", "TK_ID", "r7", "TK_IF", "r7", "TK_IMPORT", "r7", "TK_LAMBDA", "r7", "TK_LB", "r7", "TK_LCURLY", "r7", "TK_LET", "r7", "TK_LPAREN", "r7", "TK_NEW", "r7", "TK_NIL", "r7", "TK_NOT", "r7", "TK_NUM", "r7", "TK_PRINT", "r7", "TK_PRINTLN", "r7", "TK_PUSH", "r7", "TK_RANDOM", "r7", "TK_RETURN", "r7", "TK_SIZE", "r7", "TK_STRING", "r7", "TK_SUB", "r7", "TK_TRUE", "r7", "TK_WHILE", "r7"};
+
+static const string actTab_row_66[] = {"19","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_RPAREN", "r92", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_67[] = {"2","TK_COMMA", "s122", "TK_RPAREN", "r24"};
+
+static const string actTab_row_68[] = {"1","TK_RPAREN", "r20"};
+
+static const string actTab_row_69[] = {"1","TK_ID", "s123"};
+
+static const string actTab_row_70[] = {"1","TK_RPAREN", "s124"};
+
+static const string actTab_row_71[] = {"1","TK_LPAREN", "s125"};
+
+static const string actTab_row_72[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_73[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_74[] = {"6","TK_COMMA", "s128", "TK_EQU", "s115", "TK_MATCHRE", "s113", "TK_NEQ", "s114", "TK_RB", "r94", "TK_RPAREN", "r94"};
+
+static const string actTab_row_75[] = {"1","TK_RB", "s129"};
+
+static const string actTab_row_76[] = {"2","TK_RB", "r91", "TK_RPAREN", "r91"};
+
+static const string actTab_row_77[] = {"19","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_RPAREN", "r92", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_78[] = {"1","TK_ID", "s131"};
+
+static const string actTab_row_79[] = {"23","TK_ADD", "r63", "TK_ASSIGN", "r63", "TK_ASSIGN_DIFF", "r63", "TK_ASSIGN_SUM", "r63", "TK_COLON", "r63", "TK_COMMA", "r63", "TK_DIV", "r63", "TK_EQU", "r63", "TK_GT", "r63", "TK_GTE", "r63", "TK_LOGIC_AND", "r63", "TK_LOGIC_OR", "r63", "TK_LT", "r63", "TK_LTE", "r63", "TK_MATCHRE", "r63", "TK_MOD", "r63", "TK_MUL", "r63", "TK_NEQ", "r63", "TK_QM", "r63", "TK_RB", "r63", "TK_RPAREN", "r63", "TK_SEMI", "r63", "TK_SUB", "r63"};
+
+static const string actTab_row_80[] = {"2","TK_EOI", "r8", "TK_RCURLY", "r8"};
+
+static const string actTab_row_81[] = {"1","TK_RPAREN", "s133"};
+
+static const string actTab_row_82[] = {"57","TK_ADD", "r38", "TK_APPEND", "r38", "TK_AS", "r38", "TK_ASSIGN", "r38", "TK_ASSIGN_DIFF", "r38", "TK_ASSIGN_SUM", "r38", "TK_CLASS", "r38", "TK_COLON", "r38", "TK_COMMA", "r38", "TK_DECREMENT", "r38", "TK_DIV", "r38", "TK_EMPTY", "r38", "TK_EOI", "r38", "TK_EQU", "r38", "TK_FALSE", "r38", "TK_FLOOR", "r38", "TK_FN", "r38", "TK_FOR", "r38", "TK_GT", "r38", "TK_GTE", "r38", "TK_ID", "r38", "TK_IF", "r38", "TK_INCREMENT", "r38", "TK_LAMBDA", "r38", "TK_LB", "r38", "TK_LCURLY", "r38", "TK_LET", "r38", "TK_LOGIC_AND", "r38", "TK_LOGIC_OR", "r38", "TK_LPAREN", "r38", "TK_LT", "r38", "TK_LTE", "r38", "TK_MATCHRE", "r38", "TK_MOD", "r38", "TK_MUL", "r38", "TK_NEQ", "r38", "TK_NEW", "r38", "TK_NIL", "r38", "TK_NOT", "r38", "TK_NUM", "r38", "TK_PERIOD", "r38", "TK_PRINT", "r38", "TK_PRINTLN", "r38", "TK_PUSH", "r38", "TK_QM", "r38", "TK_RANDOM", "r38", "TK_RANGE", "r38", "TK_RB", "r38", "TK_RCURLY", "r38", "TK_RETURN", "r38", "TK_RPAREN", "r38", "TK_SEMI", "r38", "TK_SIZE", "r38", "TK_STRING", "r38", "TK_SUB", "r38", "TK_TRUE", "r38", "TK_WHILE", "r38"};
+
+static const string actTab_row_83[] = {"31","TK_ADD", "r75", "TK_AS", "r75", "TK_ASSIGN", "r75", "TK_ASSIGN_DIFF", "r75", "TK_ASSIGN_SUM", "r75", "TK_COLON", "r75", "TK_COMMA", "r75", "TK_DECREMENT", "r75", "TK_DIV", "r75", "TK_EQU", "r75", "TK_GT", "r75", "TK_GTE", "r75", "TK_IF", "r75", "TK_INCREMENT", "r75", "TK_LB", "r75", "TK_LOGIC_AND", "r75", "TK_LOGIC_OR", "r75", "TK_LPAREN", "r75", "TK_LT", "r75", "TK_LTE", "r75", "TK_MATCHRE", "r75", "TK_MOD", "r75", "TK_MUL", "r75", "TK_NEQ", "r75", "TK_PERIOD", "r75", "TK_QM", "r75", "TK_RANGE", "r75", "TK_RB", "r75", "TK_RPAREN", "r75", "TK_SEMI", "r75", "TK_SUB", "r75"};
+
+static const string actTab_row_84[] = {"19","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_RPAREN", "r92", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_85[] = {"16","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_TRUE", "s19"};
+
+static const string actTab_row_86[] = {"31","TK_ADD", "r74", "TK_AS", "r74", "TK_ASSIGN", "r74", "TK_ASSIGN_DIFF", "r74", "TK_ASSIGN_SUM", "r74", "TK_COLON", "r74", "TK_COMMA", "r74", "TK_DECREMENT", "r74", "TK_DIV", "r74", "TK_EQU", "r74", "TK_GT", "r74", "TK_GTE", "r74", "TK_IF", "r74", "TK_INCREMENT", "r74", "TK_LB", "r74", "TK_LOGIC_AND", "r74", "TK_LOGIC_OR", "r74", "TK_LPAREN", "r74", "TK_LT", "r74", "TK_LTE", "r74", "TK_MATCHRE", "r74", "TK_MOD", "r74", "TK_MUL", "r74", "TK_NEQ", "r74", "TK_PERIOD", "r74", "TK_QM", "r74", "TK_RANGE", "r74", "TK_RB", "r74", "TK_RPAREN", "r74", "TK_SEMI", "r74", "TK_SUB", "r74"};
+
+static const string actTab_row_87[] = {"16","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_TRUE", "s19"};
+
+static const string actTab_row_88[] = {"1","TK_SEMI", "s137"};
+
+static const string actTab_row_89[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_90[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_91[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_92[] = {"16","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_TRUE", "s19"};
+
+static const string actTab_row_93[] = {"16","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_TRUE", "s19"};
+
+static const string actTab_row_94[] = {"16","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_TRUE", "s19"};
+
+static const string actTab_row_95[] = {"1","TK_RCURLY", "s144"};
+
+static const string actTab_row_96[] = {"23","TK_ADD", "r64", "TK_ASSIGN", "r64", "TK_ASSIGN_DIFF", "r64", "TK_ASSIGN_SUM", "r64", "TK_COLON", "r64", "TK_COMMA", "r64", "TK_DIV", "r64", "TK_EQU", "r64", "TK_GT", "r64", "TK_GTE", "r64", "TK_LOGIC_AND", "r64", "TK_LOGIC_OR", "r64", "TK_LT", "r64", "TK_LTE", "r64", "TK_MATCHRE", "r64", "TK_MOD", "r64", "TK_MUL", "r64", "TK_NEQ", "r64", "TK_QM", "r64", "TK_RB", "r64", "TK_RPAREN", "r64", "TK_SEMI", "r64", "TK_SUB", "r64"};
+
+static const string actTab_row_97[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_98[] = {"1","TK_SEMI", "s146"};
+
+static const string actTab_row_99[] = {"1","TK_RPAREN", "s147"};
+
+static const string actTab_row_100[] = {"1","TK_LPAREN", "s148"};
+
+static const string actTab_row_101[] = {"1","TK_RPAREN", "s149"};
+
+static const string actTab_row_102[] = {"1","TK_SEMI", "s150"};
+
+static const string actTab_row_103[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_104[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_105[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_106[] = {"1","TK_SEMI", "s154"};
+
+static const string actTab_row_107[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_108[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_109[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_110[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_111[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_112[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_113[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_114[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_115[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_116[] = {"1","TK_LCURLY", "s49"};
+
+static const string actTab_row_117[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_118[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_119[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_120[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_121[] = {"1","TK_RPAREN", "s169"};
+
+static const string actTab_row_122[] = {"1","TK_LET", "s69"};
+
+static const string actTab_row_123[] = {"2","TK_COMMA", "r22", "TK_RPAREN", "r22"};
+
+static const string actTab_row_124[] = {"1","TK_PRODUCE", "s171"};
+
+static const string actTab_row_125[] = {"19","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_RPAREN", "r92", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_126[] = {"1","TK_RPAREN", "s173"};
+
+static const string actTab_row_127[] = {"1","TK_RPAREN", "s174"};
+
+static const string actTab_row_128[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_129[] = {"31","TK_ADD", "r95", "TK_AS", "r95", "TK_ASSIGN", "r95", "TK_ASSIGN_DIFF", "r95", "TK_ASSIGN_SUM", "r95", "TK_COLON", "r95", "TK_COMMA", "r95", "TK_DECREMENT", "r95", "TK_DIV", "r95", "TK_EQU", "r95", "TK_GT", "r95", "TK_GTE", "r95", "TK_IF", "r95", "TK_INCREMENT", "r95", "TK_LB", "r95", "TK_LOGIC_AND", "r95", "TK_LOGIC_OR", "r95", "TK_LPAREN", "r95", "TK_LT", "r95", "TK_LTE", "r95", "TK_MATCHRE", "r95", "TK_MOD", "r95", "TK_MUL", "r95", "TK_NEQ", "r95", "TK_PERIOD", "r95", "TK_QM", "r95", "TK_RANGE", "r95", "TK_RB", "r95", "TK_RPAREN", "r95", "TK_SEMI", "r95", "TK_SUB", "r95"};
+
+static const string actTab_row_130[] = {"1","TK_RPAREN", "s176"};
+
+static const string actTab_row_131[] = {"1","TK_OF", "s177"};
+
+static const string actTab_row_132[] = {"1","TK_RPAREN", "s178"};
+
+static const string actTab_row_133[] = {"31","TK_ADD", "r98", "TK_AS", "r98", "TK_ASSIGN", "r98", "TK_ASSIGN_DIFF", "r98", "TK_ASSIGN_SUM", "r98", "TK_COLON", "r98", "TK_COMMA", "r98", "TK_DECREMENT", "r98", "TK_DIV", "r98", "TK_EQU", "r98", "TK_GT", "r98", "TK_GTE", "r98", "TK_IF", "r98", "TK_INCREMENT", "r98", "TK_LB", "r98", "TK_LOGIC_AND", "r98", "TK_LOGIC_OR", "r98", "TK_LPAREN", "r98", "TK_LT", "r98", "TK_LTE", "r98", "TK_MATCHRE", "r98", "TK_MOD", "r98", "TK_MUL", "r98", "TK_NEQ", "r98", "TK_PERIOD", "r98", "TK_QM", "r98", "TK_RANGE", "r98", "TK_RB", "r98", "TK_RPAREN", "r98", "TK_SEMI", "r98", "TK_SUB", "r98"};
+
+static const string actTab_row_134[] = {"1","TK_RPAREN", "s179"};
+
+static const string actTab_row_135[] = {"1","TK_RB", "s180"};
+
+static const string actTab_row_136[] = {"31","TK_ADD", "r71", "TK_AS", "r71", "TK_ASSIGN", "r71", "TK_ASSIGN_DIFF", "r71", "TK_ASSIGN_SUM", "r71", "TK_COLON", "r71", "TK_COMMA", "r71", "TK_DECREMENT", "r71", "TK_DIV", "r71", "TK_EQU", "r71", "TK_GT", "r71", "TK_GTE", "r71", "TK_IF", "r71", "TK_INCREMENT", "r71", "TK_LB", "r71", "TK_LOGIC_AND", "r71", "TK_LOGIC_OR", "r71", "TK_LPAREN", "r71", "TK_LT", "r71", "TK_LTE", "r71", "TK_MATCHRE", "r71", "TK_MOD", "r71", "TK_MUL", "r71", "TK_NEQ", "r71", "TK_PERIOD", "r71", "TK_QM", "r71", "TK_RANGE", "r71", "TK_RB", "r71", "TK_RPAREN", "r71", "TK_SEMI", "r71", "TK_SUB", "r71"};
+
+static const string actTab_row_137[] = {"57","TK_ADD", "r25", "TK_APPEND", "r25", "TK_AS", "r25", "TK_ASSIGN", "r25", "TK_ASSIGN_DIFF", "r25", "TK_ASSIGN_SUM", "r25", "TK_CLASS", "r25", "TK_COLON", "r25", "TK_COMMA", "r25", "TK_DECREMENT", "r25", "TK_DIV", "r25", "TK_EMPTY", "r25", "TK_EOI", "r25", "TK_EQU", "r25", "TK_FALSE", "r25", "TK_FLOOR", "r25", "TK_FN", "r25", "TK_FOR", "r25", "TK_GT", "r25", "TK_GTE", "r25", "TK_ID", "r25", "TK_IF", "r25", "TK_INCREMENT", "r25", "TK_LAMBDA", "r25", "TK_LB", "r25", "TK_LCURLY", "r25", "TK_LET", "r25", "TK_LOGIC_AND", "r25", "TK_LOGIC_OR", "r25", "TK_LPAREN", "r25", "TK_LT", "r25", "TK_LTE", "r25", "TK_MATCHRE", "r25", "TK_MOD", "r25", "TK_MUL", "r25", "TK_NEQ", "r25", "TK_NEW", "r25", "TK_NIL", "r25", "TK_NOT", "r25", "TK_NUM", "r25", "TK_PERIOD", "r25", "TK_PRINT", "r25", "TK_PRINTLN", "r25", "TK_PUSH", "r25", "TK_QM", "r25", "TK_RANDOM", "r25", "TK_RANGE", "r25", "TK_RB", "r25", "TK_RCURLY", "r25", "TK_RETURN", "r25", "TK_RPAREN", "r25", "TK_SEMI", "r25", "TK_SIZE", "r25", "TK_STRING", "r25", "TK_SUB", "r25", "TK_TRUE", "r25", "TK_WHILE", "r25"};
+
+static const string actTab_row_138[] = {"1","TK_RPAREN", "s181"};
+
+static const string actTab_row_139[] = {"23","TK_ADD", "r57", "TK_ASSIGN", "r57", "TK_ASSIGN_DIFF", "r57", "TK_ASSIGN_SUM", "r57", "TK_COLON", "r57", "TK_COMMA", "r57", "TK_DIV", "s104", "TK_EQU", "r57", "TK_GT", "r57", "TK_GTE", "r57", "TK_LOGIC_AND", "r57", "TK_LOGIC_OR", "r57", "TK_LT", "r57", "TK_LTE", "r57", "TK_MATCHRE", "r57", "TK_MOD", "s103", "TK_MUL", "s105", "TK_NEQ", "r57", "TK_QM", "r57", "TK_RB", "r57", "TK_RPAREN", "r57", "TK_SEMI", "r57", "TK_SUB", "r57"};
+
+static const string actTab_row_140[] = {"23","TK_ADD", "r56", "TK_ASSIGN", "r56", "TK_ASSIGN_DIFF", "r56", "TK_ASSIGN_SUM", "r56", "TK_COLON", "r56", "TK_COMMA", "r56", "TK_DIV", "s104", "TK_EQU", "r56", "TK_GT", "r56", "TK_GTE", "r56", "TK_LOGIC_AND", "r56", "TK_LOGIC_OR", "r56", "TK_LT", "r56", "TK_LTE", "r56", "TK_MATCHRE", "r56", "TK_MOD", "s103", "TK_MUL", "s105", "TK_NEQ", "r56", "TK_QM", "r56", "TK_RB", "r56", "TK_RPAREN", "r56", "TK_SEMI", "r56", "TK_SUB", "r56"};
+
+static const string actTab_row_141[] = {"31","TK_ADD", "r69", "TK_AS", "r69", "TK_ASSIGN", "r69", "TK_ASSIGN_DIFF", "r69", "TK_ASSIGN_SUM", "r69", "TK_COLON", "r69", "TK_COMMA", "r69", "TK_DECREMENT", "s86", "TK_DIV", "r69", "TK_EQU", "r69", "TK_GT", "r69", "TK_GTE", "r69", "TK_IF", "r69", "TK_INCREMENT", "s83", "TK_LB", "s85", "TK_LOGIC_AND", "r69", "TK_LOGIC_OR", "r69", "TK_LPAREN", "s84", "TK_LT", "r69", "TK_LTE", "r69", "TK_MATCHRE", "r69", "TK_MOD", "r69", "TK_MUL", "r69", "TK_NEQ", "r69", "TK_PERIOD", "r69", "TK_QM", "r69", "TK_RANGE", "s87", "TK_RB", "r69", "TK_RPAREN", "r69", "TK_SEMI", "r69", "TK_SUB", "r69"};
+
+static const string actTab_row_142[] = {"31","TK_ADD", "r68", "TK_AS", "r68", "TK_ASSIGN", "r68", "TK_ASSIGN_DIFF", "r68", "TK_ASSIGN_SUM", "r68", "TK_COLON", "r68", "TK_COMMA", "r68", "TK_DECREMENT", "s86", "TK_DIV", "r68", "TK_EQU", "r68", "TK_GT", "r68", "TK_GTE", "r68", "TK_IF", "r68", "TK_INCREMENT", "s83", "TK_LB", "s85", "TK_LOGIC_AND", "r68", "TK_LOGIC_OR", "r68", "TK_LPAREN", "s84", "TK_LT", "r68", "TK_LTE", "r68", "TK_MATCHRE", "r68", "TK_MOD", "r68", "TK_MUL", "r68", "TK_NEQ", "r68", "TK_PERIOD", "r68", "TK_QM", "r68", "TK_RANGE", "s87", "TK_RB", "r68", "TK_RPAREN", "r68", "TK_SEMI", "r68", "TK_SUB", "r68"};
+
+static const string actTab_row_143[] = {"23","TK_ADD", "r66", "TK_ASSIGN", "r66", "TK_ASSIGN_DIFF", "r66", "TK_ASSIGN_SUM", "r66", "TK_COLON", "r66", "TK_COMMA", "r66", "TK_DIV", "r66", "TK_EQU", "r66", "TK_GT", "r66", "TK_GTE", "r66", "TK_LOGIC_AND", "r66", "TK_LOGIC_OR", "r66", "TK_LT", "r66", "TK_LTE", "r66", "TK_MATCHRE", "r66", "TK_MOD", "r66", "TK_MUL", "r66", "TK_NEQ", "r66", "TK_QM", "r66", "TK_RB", "r66", "TK_RPAREN", "r66", "TK_SEMI", "r66", "TK_SUB", "r66"};
+
+static const string actTab_row_144[] = {"58","TK_ADD", "r28", "TK_APPEND", "r28", "TK_AS", "r28", "TK_ASSIGN", "r28", "TK_ASSIGN_DIFF", "r28", "TK_ASSIGN_SUM", "r28", "TK_CLASS", "r28", "TK_COLON", "r28", "TK_COMMA", "r28", "TK_DECREMENT", "r28", "TK_DIV", "r28", "TK_ELSE", "r28", "TK_EMPTY", "r28", "TK_EOI", "r28", "TK_EQU", "r28", "TK_FALSE", "r28", "TK_FLOOR", "r28", "TK_FN", "r28", "TK_FOR", "r28", "TK_GT", "r28", "TK_GTE", "r28", "TK_ID", "r28", "TK_IF", "r28", "TK_INCREMENT", "r28", "TK_LAMBDA", "r28", "TK_LB", "r28", "TK_LCURLY", "r28", "TK_LET", "r28", "TK_LOGIC_AND", "r28", "TK_LOGIC_OR", "r28", "TK_LPAREN", "r28", "TK_LT", "r28", "TK_LTE", "r28", "TK_MATCHRE", "r28", "TK_MOD", "r28", "TK_MUL", "r28", "TK_NEQ", "r28", "TK_NEW", "r28", "TK_NIL", "r28", "TK_NOT", "r28", "TK_NUM", "r28", "TK_PERIOD", "r28", "TK_PRINT", "r28", "TK_PRINTLN", "r28", "TK_PUSH", "r28", "TK_QM", "r28", "TK_RANDOM", "r28", "TK_RANGE", "r28", "TK_RB", "r28", "TK_RCURLY", "r28", "TK_RETURN", "r28", "TK_RPAREN", "r28", "TK_SEMI", "r28", "TK_SIZE", "r28", "TK_STRING", "r28", "TK_SUB", "r28", "TK_TRUE", "r28", "TK_WHILE", "r28"};
+
+static const string actTab_row_145[] = {"1","TK_RPAREN", "s182"};
+
+static const string actTab_row_146[] = {"57","TK_ADD", "r26", "TK_APPEND", "r26", "TK_AS", "r26", "TK_ASSIGN", "r26", "TK_ASSIGN_DIFF", "r26", "TK_ASSIGN_SUM", "r26", "TK_CLASS", "r26", "TK_COLON", "r26", "TK_COMMA", "r26", "TK_DECREMENT", "r26", "TK_DIV", "r26", "TK_EMPTY", "r26", "TK_EOI", "r26", "TK_EQU", "r26", "TK_FALSE", "r26", "TK_FLOOR", "r26", "TK_FN", "r26", "TK_FOR", "r26", "TK_GT", "r26", "TK_GTE", "r26", "TK_ID", "r26", "TK_IF", "r26", "TK_INCREMENT", "r26", "TK_LAMBDA", "r26", "TK_LB", "r26", "TK_LCURLY", "r26", "TK_LET", "r26", "TK_LOGIC_AND", "r26", "TK_LOGIC_OR", "r26", "TK_LPAREN", "r26", "TK_LT", "r26", "TK_LTE", "r26", "TK_MATCHRE", "r26", "TK_MOD", "r26", "TK_MUL", "r26", "TK_NEQ", "r26", "TK_NEW", "r26", "TK_NIL", "r26", "TK_NOT", "r26", "TK_NUM", "r26", "TK_PERIOD", "r26", "TK_PRINT", "r26", "TK_PRINTLN", "r26", "TK_PUSH", "r26", "TK_QM", "r26", "TK_RANDOM", "r26", "TK_RANGE", "r26", "TK_RB", "r26", "TK_RCURLY", "r26", "TK_RETURN", "r26", "TK_RPAREN", "r26", "TK_SEMI", "r26", "TK_SIZE", "r26", "TK_STRING", "r26", "TK_SUB", "r26", "TK_TRUE", "r26", "TK_WHILE", "r26"};
+
+static const string actTab_row_147[] = {"31","TK_ADD", "r77", "TK_AS", "r77", "TK_ASSIGN", "r77", "TK_ASSIGN_DIFF", "r77", "TK_ASSIGN_SUM", "r77", "TK_COLON", "r77", "TK_COMMA", "r77", "TK_DECREMENT", "r77", "TK_DIV", "r77", "TK_EQU", "r77", "TK_GT", "r77", "TK_GTE", "r77", "TK_IF", "r77", "TK_INCREMENT", "r77", "TK_LB", "r77", "TK_LOGIC_AND", "r77", "TK_LOGIC_OR", "r77", "TK_LPAREN", "r77", "TK_LT", "r77", "TK_LTE", "r77", "TK_MATCHRE", "r77", "TK_MOD", "r77", "TK_MUL", "r77", "TK_NEQ", "r77", "TK_PERIOD", "r77", "TK_QM", "r77", "TK_RANGE", "r77", "TK_RB", "r77", "TK_RPAREN", "r77", "TK_SEMI", "r77", "TK_SUB", "r77"};
+
+static const string actTab_row_148[] = {"2","TK_LET", "s69", "TK_RPAREN", "r21"};
+
+static const string actTab_row_149[] = {"31","TK_ADD", "r99", "TK_AS", "r99", "TK_ASSIGN", "r99", "TK_ASSIGN_DIFF", "r99", "TK_ASSIGN_SUM", "r99", "TK_COLON", "r99", "TK_COMMA", "r99", "TK_DECREMENT", "r99", "TK_DIV", "r99", "TK_EQU", "r99", "TK_GT", "r99", "TK_GTE", "r99", "TK_IF", "r99", "TK_INCREMENT", "r99", "TK_LB", "r99", "TK_LOGIC_AND", "r99", "TK_LOGIC_OR", "r99", "TK_LPAREN", "r99", "TK_LT", "r99", "TK_LTE", "r99", "TK_MATCHRE", "r99", "TK_MOD", "r99", "TK_MUL", "r99", "TK_NEQ", "r99", "TK_PERIOD", "r99", "TK_QM", "r99", "TK_RANGE", "r99", "TK_RB", "r99", "TK_RPAREN", "r99", "TK_SEMI", "r99", "TK_SUB", "r99"};
+
+static const string actTab_row_150[] = {"57","TK_ADD", "r37", "TK_APPEND", "r37", "TK_AS", "r37", "TK_ASSIGN", "r37", "TK_ASSIGN_DIFF", "r37", "TK_ASSIGN_SUM", "r37", "TK_CLASS", "r37", "TK_COLON", "r37", "TK_COMMA", "r37", "TK_DECREMENT", "r37", "TK_DIV", "r37", "TK_EMPTY", "r37", "TK_EOI", "r37", "TK_EQU", "r37", "TK_FALSE", "r37", "TK_FLOOR", "r37", "TK_FN", "r37", "TK_FOR", "r37", "TK_GT", "r37", "TK_GTE", "r37", "TK_ID", "r37", "TK_IF", "r37", "TK_INCREMENT", "r37", "TK_LAMBDA", "r37", "TK_LB", "r37", "TK_LCURLY", "r37", "TK_LET", "r37", "TK_LOGIC_AND", "r37", "TK_LOGIC_OR", "r37", "TK_LPAREN", "r37", "TK_LT", "r37", "TK_LTE", "r37", "TK_MATCHRE", "r37", "TK_MOD", "r37", "TK_MUL", "r37", "TK_NEQ", "r37", "TK_NEW", "r37", "TK_NIL", "r37", "TK_NOT", "r37", "TK_NUM", "r37", "TK_PERIOD", "r37", "TK_PRINT", "r37", "TK_PRINTLN", "r37", "TK_PUSH", "r37", "TK_QM", "r37", "TK_RANDOM", "r37", "TK_RANGE", "r37", "TK_RB", "r37", "TK_RCURLY", "r37", "TK_RETURN", "r37", "TK_RPAREN", "r37", "TK_SEMI", "r37", "TK_SIZE", "r37", "TK_STRING", "r37", "TK_SUB", "r37", "TK_TRUE", "r37", "TK_WHILE", "r37"};
+
+static const string actTab_row_151[] = {"23","TK_ADD", "r61", "TK_ASSIGN", "r61", "TK_ASSIGN_DIFF", "r61", "TK_ASSIGN_SUM", "r61", "TK_COLON", "r61", "TK_COMMA", "r61", "TK_DIV", "r61", "TK_EQU", "r61", "TK_GT", "r61", "TK_GTE", "r61", "TK_LOGIC_AND", "r61", "TK_LOGIC_OR", "r61", "TK_LT", "r61", "TK_LTE", "r61", "TK_MATCHRE", "r61", "TK_MOD", "r61", "TK_MUL", "r61", "TK_NEQ", "r61", "TK_QM", "r61", "TK_RB", "r61", "TK_RPAREN", "r61", "TK_SEMI", "r61", "TK_SUB", "r61"};
+
+static const string actTab_row_152[] = {"23","TK_ADD", "r60", "TK_ASSIGN", "r60", "TK_ASSIGN_DIFF", "r60", "TK_ASSIGN_SUM", "r60", "TK_COLON", "r60", "TK_COMMA", "r60", "TK_DIV", "r60", "TK_EQU", "r60", "TK_GT", "r60", "TK_GTE", "r60", "TK_LOGIC_AND", "r60", "TK_LOGIC_OR", "r60", "TK_LT", "r60", "TK_LTE", "r60", "TK_MATCHRE", "r60", "TK_MOD", "r60", "TK_MUL", "r60", "TK_NEQ", "r60", "TK_QM", "r60", "TK_RB", "r60", "TK_RPAREN", "r60", "TK_SEMI", "r60", "TK_SUB", "r60"};
+
+static const string actTab_row_153[] = {"23","TK_ADD", "r59", "TK_ASSIGN", "r59", "TK_ASSIGN_DIFF", "r59", "TK_ASSIGN_SUM", "r59", "TK_COLON", "r59", "TK_COMMA", "r59", "TK_DIV", "r59", "TK_EQU", "r59", "TK_GT", "r59", "TK_GTE", "r59", "TK_LOGIC_AND", "r59", "TK_LOGIC_OR", "r59", "TK_LT", "r59", "TK_LTE", "r59", "TK_MATCHRE", "r59", "TK_MOD", "r59", "TK_MUL", "r59", "TK_NEQ", "r59", "TK_QM", "r59", "TK_RB", "r59", "TK_RPAREN", "r59", "TK_SEMI", "r59", "TK_SUB", "r59"};
+
+static const string actTab_row_154[] = {"57","TK_ADD", "r27", "TK_APPEND", "r27", "TK_AS", "r27", "TK_ASSIGN", "r27", "TK_ASSIGN_DIFF", "r27", "TK_ASSIGN_SUM", "r27", "TK_CLASS", "r27", "TK_COLON", "r27", "TK_COMMA", "r27", "TK_DECREMENT", "r27", "TK_DIV", "r27", "TK_EMPTY", "r27", "TK_EOI", "r27", "TK_EQU", "r27", "TK_FALSE", "r27", "TK_FLOOR", "r27", "TK_FN", "r27", "TK_FOR", "r27", "TK_GT", "r27", "TK_GTE", "r27", "TK_ID", "r27", "TK_IF", "r27", "TK_INCREMENT", "r27", "TK_LAMBDA", "r27", "TK_LB", "r27", "TK_LCURLY", "r27", "TK_LET", "r27", "TK_LOGIC_AND", "r27", "TK_LOGIC_OR", "r27", "TK_LPAREN", "r27", "TK_LT", "r27", "TK_LTE", "r27", "TK_MATCHRE", "r27", "TK_MOD", "r27", "TK_MUL", "r27", "TK_NEQ", "r27", "TK_NEW", "r27", "TK_NIL", "r27", "TK_NOT", "r27", "TK_NUM", "r27", "TK_PERIOD", "r27", "TK_PRINT", "r27", "TK_PRINTLN", "r27", "TK_PUSH", "r27", "TK_QM", "r27", "TK_RANDOM", "r27", "TK_RANGE", "r27", "TK_RB", "r27", "TK_RCURLY", "r27", "TK_RETURN", "r27", "TK_RPAREN", "r27", "TK_SEMI", "r27", "TK_SIZE", "r27", "TK_STRING", "r27", "TK_SUB", "r27", "TK_TRUE", "r27", "TK_WHILE", "r27"};
+
+static const string actTab_row_155[] = {"4","TK_COLON", "s184", "TK_LOGIC_AND", "s111", "TK_LOGIC_OR", "s108", "TK_QM", "s107"};
+
+static const string actTab_row_156[] = {"12","TK_ASSIGN", "r44", "TK_ASSIGN_DIFF", "r44", "TK_ASSIGN_SUM", "r44", "TK_COLON", "r44", "TK_EQU", "s115", "TK_LOGIC_AND", "r44", "TK_LOGIC_OR", "r44", "TK_MATCHRE", "s113", "TK_NEQ", "s114", "TK_QM", "r44", "TK_RPAREN", "r44", "TK_SEMI", "r44"};
+
+static const string actTab_row_157[] = {"2","TK_RPAREN", "r41", "TK_SEMI", "r41"};
+
+static const string actTab_row_158[] = {"2","TK_RPAREN", "r40", "TK_SEMI", "r40"};
+
+static const string actTab_row_159[] = {"12","TK_ASSIGN", "r43", "TK_ASSIGN_DIFF", "r43", "TK_ASSIGN_SUM", "r43", "TK_COLON", "r43", "TK_EQU", "s115", "TK_LOGIC_AND", "r43", "TK_LOGIC_OR", "r43", "TK_MATCHRE", "s113", "TK_NEQ", "s114", "TK_QM", "r43", "TK_RPAREN", "r43", "TK_SEMI", "r43"};
+
+static const string actTab_row_160[] = {"2","TK_RPAREN", "r39", "TK_SEMI", "r39"};
+
+static const string actTab_row_161[] = {"18","TK_ASSIGN", "r49", "TK_ASSIGN_DIFF", "r49", "TK_ASSIGN_SUM", "r49", "TK_COLON", "r49", "TK_COMMA", "r49", "TK_EQU", "r49", "TK_GT", "s119", "TK_GTE", "s118", "TK_LOGIC_AND", "r49", "TK_LOGIC_OR", "r49", "TK_LT", "s120", "TK_LTE", "s117", "TK_MATCHRE", "r49", "TK_NEQ", "r49", "TK_QM", "r49", "TK_RB", "r49", "TK_RPAREN", "r49", "TK_SEMI", "r49"};
+
+static const string actTab_row_162[] = {"18","TK_ASSIGN", "r48", "TK_ASSIGN_DIFF", "r48", "TK_ASSIGN_SUM", "r48", "TK_COLON", "r48", "TK_COMMA", "r48", "TK_EQU", "r48", "TK_GT", "s119", "TK_GTE", "s118", "TK_LOGIC_AND", "r48", "TK_LOGIC_OR", "r48", "TK_LT", "s120", "TK_LTE", "s117", "TK_MATCHRE", "r48", "TK_NEQ", "r48", "TK_QM", "r48", "TK_RB", "r48", "TK_RPAREN", "r48", "TK_SEMI", "r48"};
+
+static const string actTab_row_163[] = {"18","TK_ASSIGN", "r47", "TK_ASSIGN_DIFF", "r47", "TK_ASSIGN_SUM", "r47", "TK_COLON", "r47", "TK_COMMA", "r47", "TK_EQU", "r47", "TK_GT", "s119", "TK_GTE", "s118", "TK_LOGIC_AND", "r47", "TK_LOGIC_OR", "r47", "TK_LT", "s120", "TK_LTE", "s117", "TK_MATCHRE", "r47", "TK_NEQ", "r47", "TK_QM", "r47", "TK_RB", "r47", "TK_RPAREN", "r47", "TK_SEMI", "r47"};
+
+static const string actTab_row_164[] = {"1","TK_SEMI", "s185"};
+
+static const string actTab_row_165[] = {"20","TK_ADD", "s91", "TK_ASSIGN", "r54", "TK_ASSIGN_DIFF", "r54", "TK_ASSIGN_SUM", "r54", "TK_COLON", "r54", "TK_COMMA", "r54", "TK_EQU", "r54", "TK_GT", "r54", "TK_GTE", "r54", "TK_LOGIC_AND", "r54", "TK_LOGIC_OR", "r54", "TK_LT", "r54", "TK_LTE", "r54", "TK_MATCHRE", "r54", "TK_NEQ", "r54", "TK_QM", "r54", "TK_RB", "r54", "TK_RPAREN", "r54", "TK_SEMI", "r54", "TK_SUB", "s90"};
+
+static const string actTab_row_166[] = {"20","TK_ADD", "s91", "TK_ASSIGN", "r53", "TK_ASSIGN_DIFF", "r53", "TK_ASSIGN_SUM", "r53", "TK_COLON", "r53", "TK_COMMA", "r53", "TK_EQU", "r53", "TK_GT", "r53", "TK_GTE", "r53", "TK_LOGIC_AND", "r53", "TK_LOGIC_OR", "r53", "TK_LT", "r53", "TK_LTE", "r53", "TK_MATCHRE", "r53", "TK_NEQ", "r53", "TK_QM", "r53", "TK_RB", "r53", "TK_RPAREN", "r53", "TK_SEMI", "r53", "TK_SUB", "s90"};
+
+static const string actTab_row_167[] = {"20","TK_ADD", "s91", "TK_ASSIGN", "r52", "TK_ASSIGN_DIFF", "r52", "TK_ASSIGN_SUM", "r52", "TK_COLON", "r52", "TK_COMMA", "r52", "TK_EQU", "r52", "TK_GT", "r52", "TK_GTE", "r52", "TK_LOGIC_AND", "r52", "TK_LOGIC_OR", "r52", "TK_LT", "r52", "TK_LTE", "r52", "TK_MATCHRE", "r52", "TK_NEQ", "r52", "TK_QM", "r52", "TK_RB", "r52", "TK_RPAREN", "r52", "TK_SEMI", "r52", "TK_SUB", "s90"};
+
+static const string actTab_row_168[] = {"20","TK_ADD", "s91", "TK_ASSIGN", "r51", "TK_ASSIGN_DIFF", "r51", "TK_ASSIGN_SUM", "r51", "TK_COLON", "r51", "TK_COMMA", "r51", "TK_EQU", "r51", "TK_GT", "r51", "TK_GTE", "r51", "TK_LOGIC_AND", "r51", "TK_LOGIC_OR", "r51", "TK_LT", "r51", "TK_LTE", "r51", "TK_MATCHRE", "r51", "TK_NEQ", "r51", "TK_QM", "r51", "TK_RB", "r51", "TK_RPAREN", "r51", "TK_SEMI", "r51", "TK_SUB", "s90"};
+
+static const string actTab_row_169[] = {"31","TK_ADD", "r90", "TK_AS", "r90", "TK_ASSIGN", "r90", "TK_ASSIGN_DIFF", "r90", "TK_ASSIGN_SUM", "r90", "TK_COLON", "r90", "TK_COMMA", "r90", "TK_DECREMENT", "r90", "TK_DIV", "r90", "TK_EQU", "r90", "TK_GT", "r90", "TK_GTE", "r90", "TK_IF", "r90", "TK_INCREMENT", "r90", "TK_LB", "r90", "TK_LOGIC_AND", "r90", "TK_LOGIC_OR", "r90", "TK_LPAREN", "r90", "TK_LT", "r90", "TK_LTE", "r90", "TK_MATCHRE", "r90", "TK_MOD", "r90", "TK_MUL", "r90", "TK_NEQ", "r90", "TK_PERIOD", "r90", "TK_QM", "r90", "TK_RANGE", "r90", "TK_RB", "r90", "TK_RPAREN", "r90", "TK_SEMI", "r90", "TK_SUB", "r90"};
+
+static const string actTab_row_170[] = {"1","TK_RPAREN", "r23"};
+
+static const string actTab_row_171[] = {"28","TK_APPEND", "s12", "TK_CLASS", "s63", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_FN", "s55", "TK_FOR", "s24", "TK_ID", "s50", "TK_IF", "s45", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LCURLY", "s49", "TK_LET", "s37", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PRINT", "s53", "TK_PRINTLN", "s60", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_RETURN", "s57", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19", "TK_WHILE", "s52"};
+
+static const string actTab_row_172[] = {"1","TK_RPAREN", "s187"};
+
+static const string actTab_row_173[] = {"31","TK_ADD", "r101", "TK_AS", "r101", "TK_ASSIGN", "r101", "TK_ASSIGN_DIFF", "r101", "TK_ASSIGN_SUM", "r101", "TK_COLON", "r101", "TK_COMMA", "r101", "TK_DECREMENT", "r101", "TK_DIV", "r101", "TK_EQU", "r101", "TK_GT", "r101", "TK_GTE", "r101", "TK_IF", "r101", "TK_INCREMENT", "r101", "TK_LB", "r101", "TK_LOGIC_AND", "r101", "TK_LOGIC_OR", "r101", "TK_LPAREN", "r101", "TK_LT", "r101", "TK_LTE", "r101", "TK_MATCHRE", "r101", "TK_MOD", "r101", "TK_MUL", "r101", "TK_NEQ", "r101", "TK_PERIOD", "r101", "TK_QM", "r101", "TK_RANGE", "r101", "TK_RB", "r101", "TK_RPAREN", "r101", "TK_SEMI", "r101", "TK_SUB", "r101"};
+
+static const string actTab_row_174[] = {"31","TK_ADD", "r100", "TK_AS", "r100", "TK_ASSIGN", "r100", "TK_ASSIGN_DIFF", "r100", "TK_ASSIGN_SUM", "r100", "TK_COLON", "r100", "TK_COMMA", "r100", "TK_DECREMENT", "r100", "TK_DIV", "r100", "TK_EQU", "r100", "TK_GT", "r100", "TK_GTE", "r100", "TK_IF", "r100", "TK_INCREMENT", "r100", "TK_LB", "r100", "TK_LOGIC_AND", "r100", "TK_LOGIC_OR", "r100", "TK_LPAREN", "r100", "TK_LT", "r100", "TK_LTE", "r100", "TK_MATCHRE", "r100", "TK_MOD", "r100", "TK_MUL", "r100", "TK_NEQ", "r100", "TK_PERIOD", "r100", "TK_QM", "r100", "TK_RANGE", "r100", "TK_RB", "r100", "TK_RPAREN", "r100", "TK_SEMI", "r100", "TK_SUB", "r100"};
+
+static const string actTab_row_175[] = {"2","TK_RB", "r93", "TK_RPAREN", "r93"};
+
+static const string actTab_row_176[] = {"31","TK_ADD", "r102", "TK_AS", "r102", "TK_ASSIGN", "r102", "TK_ASSIGN_DIFF", "r102", "TK_ASSIGN_SUM", "r102", "TK_COLON", "r102", "TK_COMMA", "r102", "TK_DECREMENT", "r102", "TK_DIV", "r102", "TK_EQU", "r102", "TK_GT", "r102", "TK_GTE", "r102", "TK_IF", "r102", "TK_INCREMENT", "r102", "TK_LB", "r102", "TK_LOGIC_AND", "r102", "TK_LOGIC_OR", "r102", "TK_LPAREN", "r102", "TK_LT", "r102", "TK_LTE", "r102", "TK_MATCHRE", "r102", "TK_MOD", "r102", "TK_MUL", "r102", "TK_NEQ", "r102", "TK_PERIOD", "r102", "TK_QM", "r102", "TK_RANGE", "r102", "TK_RB", "r102", "TK_RPAREN", "r102", "TK_SEMI", "r102", "TK_SUB", "r102"};
+
+static const string actTab_row_177[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_178[] = {"1","TK_LCURLY", "s49"};
+
+static const string actTab_row_179[] = {"31","TK_ADD", "r73", "TK_AS", "r73", "TK_ASSIGN", "r73", "TK_ASSIGN_DIFF", "r73", "TK_ASSIGN_SUM", "r73", "TK_COLON", "r73", "TK_COMMA", "r73", "TK_DECREMENT", "r73", "TK_DIV", "r73", "TK_EQU", "r73", "TK_GT", "r73", "TK_GTE", "r73", "TK_IF", "r73", "TK_INCREMENT", "r73", "TK_LB", "r73", "TK_LOGIC_AND", "r73", "TK_LOGIC_OR", "r73", "TK_LPAREN", "r73", "TK_LT", "r73", "TK_LTE", "r73", "TK_MATCHRE", "r73", "TK_MOD", "r73", "TK_MUL", "r73", "TK_NEQ", "r73", "TK_PERIOD", "r73", "TK_QM", "r73", "TK_RANGE", "r73", "TK_RB", "r73", "TK_RPAREN", "r73", "TK_SEMI", "r73", "TK_SUB", "r73"};
+
+static const string actTab_row_180[] = {"31","TK_ADD", "r72", "TK_AS", "r72", "TK_ASSIGN", "r72", "TK_ASSIGN_DIFF", "r72", "TK_ASSIGN_SUM", "r72", "TK_COLON", "r72", "TK_COMMA", "r72", "TK_DECREMENT", "r72", "TK_DIV", "r72", "TK_EQU", "r72", "TK_GT", "r72", "TK_GTE", "r72", "TK_IF", "r72", "TK_INCREMENT", "r72", "TK_LB", "r72", "TK_LOGIC_AND", "r72", "TK_LOGIC_OR", "r72", "TK_LPAREN", "r72", "TK_LT", "r72", "TK_LTE", "r72", "TK_MATCHRE", "r72", "TK_MOD", "r72", "TK_MUL", "r72", "TK_NEQ", "r72", "TK_PERIOD", "r72", "TK_QM", "r72", "TK_RANGE", "r72", "TK_RB", "r72", "TK_RPAREN", "r72", "TK_SEMI", "r72", "TK_SUB", "r72"};
+
+static const string actTab_row_181[] = {"1","TK_LCURLY", "s49"};
+
+static const string actTab_row_182[] = {"1","TK_LCURLY", "s49"};
+
+static const string actTab_row_183[] = {"1","TK_RPAREN", "s192"};
+
+static const string actTab_row_184[] = {"18","TK_APPEND", "s12", "TK_EMPTY", "s56", "TK_FALSE", "s33", "TK_FLOOR", "s21", "TK_ID", "s50", "TK_LAMBDA", "s9", "TK_LB", "s13", "TK_LPAREN", "s54", "TK_NEW", "s10", "TK_NIL", "s44", "TK_NOT", "s51", "TK_NUM", "s42", "TK_PUSH", "s11", "TK_RANDOM", "s8", "TK_SIZE", "s32", "TK_STRING", "s20", "TK_SUB", "s28", "TK_TRUE", "s19"};
+
+static const string actTab_row_185[] = {"57","TK_ADD", "r36", "TK_APPEND", "r36", "TK_AS", "r36", "TK_ASSIGN", "r36", "TK_ASSIGN_DIFF", "r36", "TK_ASSIGN_SUM", "r36", "TK_CLASS", "r36", "TK_COLON", "r36", "TK_COMMA", "r36", "TK_DECREMENT", "r36", "TK_DIV", "r36", "TK_EMPTY", "r36", "TK_EOI", "r36", "TK_EQU", "r36", "TK_FALSE", "r36", "TK_FLOOR", "r36", "TK_FN", "r36", "TK_FOR", "r36", "TK_GT", "r36", "TK_GTE", "r36", "TK_ID", "r36", "TK_IF", "r36", "TK_INCREMENT", "r36", "TK_LAMBDA", "r36", "TK_LB", "r36", "TK_LCURLY", "r36", "TK_LET", "r36", "TK_LOGIC_AND", "r36", "TK_LOGIC_OR", "r36", "TK_LPAREN", "r36", "TK_LT", "r36", "TK_LTE", "r36", "TK_MATCHRE", "r36", "TK_MOD", "r36", "TK_MUL", "r36", "TK_NEQ", "r36", "TK_NEW", "r36", "TK_NIL", "r36", "TK_NOT", "r36", "TK_NUM", "r36", "TK_PERIOD", "r36", "TK_PRINT", "r36", "TK_PRINTLN", "r36", "TK_PUSH", "r36", "TK_QM", "r36", "TK_RANDOM", "r36", "TK_RANGE", "r36", "TK_RB", "r36", "TK_RCURLY", "r36", "TK_RETURN", "r36", "TK_RPAREN", "r36", "TK_SEMI", "r36", "TK_SIZE", "r36", "TK_STRING", "r36", "TK_SUB", "r36", "TK_TRUE", "r36", "TK_WHILE", "r36"};
+
+static const string actTab_row_186[] = {"31","TK_ADD", "r97", "TK_AS", "r97", "TK_ASSIGN", "r97", "TK_ASSIGN_DIFF", "r97", "TK_ASSIGN_SUM", "r97", "TK_COLON", "r97", "TK_COMMA", "r97", "TK_DECREMENT", "r97", "TK_DIV", "r97", "TK_EQU", "r97", "TK_GT", "r97", "TK_GTE", "r97", "TK_IF", "r97", "TK_INCREMENT", "r97", "TK_LB", "r97", "TK_LOGIC_AND", "r97", "TK_LOGIC_OR", "r97", "TK_LPAREN", "r97", "TK_LT", "r97", "TK_LTE", "r97", "TK_MATCHRE", "r97", "TK_MOD", "r97", "TK_MUL", "r97", "TK_NEQ", "r97", "TK_PERIOD", "r97", "TK_QM", "r97", "TK_RANGE", "r97", "TK_RB", "r97", "TK_RPAREN", "r97", "TK_SEMI", "r97", "TK_SUB", "r97"};
+
+static const string actTab_row_187[] = {"31","TK_ADD", "r96", "TK_AS", "r96", "TK_ASSIGN", "r96", "TK_ASSIGN_DIFF", "r96", "TK_ASSIGN_SUM", "r96", "TK_COLON", "r96", "TK_COMMA", "r96", "TK_DECREMENT", "r96", "TK_DIV", "r96", "TK_EQU", "r96", "TK_GT", "r96", "TK_GTE", "r96", "TK_IF", "r96", "TK_INCREMENT", "r96", "TK_LB", "r96", "TK_LOGIC_AND", "r96", "TK_LOGIC_OR", "r96", "TK_LPAREN", "r96", "TK_LT", "r96", "TK_LTE", "r96", "TK_MATCHRE", "r96", "TK_MOD", "r96", "TK_MUL", "r96", "TK_NEQ", "r96", "TK_PERIOD", "r96", "TK_QM", "r96", "TK_RANGE", "r96", "TK_RB", "r96", "TK_RPAREN", "r96", "TK_SEMI", "r96", "TK_SUB", "r96"};
+
+static const string actTab_row_188[] = {"1","TK_RPAREN", "r34"};
+
+static const string actTab_row_189[] = {"57","TK_ADD", "r33", "TK_APPEND", "r33", "TK_AS", "r33", "TK_ASSIGN", "r33", "TK_ASSIGN_DIFF", "r33", "TK_ASSIGN_SUM", "r33", "TK_CLASS", "r33", "TK_COLON", "r33", "TK_COMMA", "r33", "TK_DECREMENT", "r33", "TK_DIV", "r33", "TK_EMPTY", "r33", "TK_EOI", "r33", "TK_EQU", "r33", "TK_FALSE", "r33", "TK_FLOOR", "r33", "TK_FN", "r33", "TK_FOR", "r33", "TK_GT", "r33", "TK_GTE", "r33", "TK_ID", "r33", "TK_IF", "r33", "TK_INCREMENT", "r33", "TK_LAMBDA", "r33", "TK_LB", "r33", "TK_LCURLY", "r33", "TK_LET", "r33", "TK_LOGIC_AND", "r33", "TK_LOGIC_OR", "r33", "TK_LPAREN", "r33", "TK_LT", "r33", "TK_LTE", "r33", "TK_MATCHRE", "r33", "TK_MOD", "r33", "TK_MUL", "r33", "TK_NEQ", "r33", "TK_NEW", "r33", "TK_NIL", "r33", "TK_NOT", "r33", "TK_NUM", "r33", "TK_PERIOD", "r33", "TK_PRINT", "r33", "TK_PRINTLN", "r33", "TK_PUSH", "r33", "TK_QM", "r33", "TK_RANDOM", "r33", "TK_RANGE", "r33", "TK_RB", "r33", "TK_RCURLY", "r33", "TK_RETURN", "r33", "TK_RPAREN", "r33", "TK_SEMI", "r33", "TK_SIZE", "r33", "TK_STRING", "r33", "TK_SUB", "r33", "TK_TRUE", "r33", "TK_WHILE", "r33"};
+
+static const string actTab_row_190[] = {"58","TK_ADD", "r31", "TK_APPEND", "r31", "TK_AS", "r31", "TK_ASSIGN", "r31", "TK_ASSIGN_DIFF", "r31", "TK_ASSIGN_SUM", "r31", "TK_CLASS", "r31", "TK_COLON", "r31", "TK_COMMA", "r31", "TK_DECREMENT", "r31", "TK_DIV", "r31", "TK_ELSE", "s194", "TK_EMPTY", "r31", "TK_EOI", "r31", "TK_EQU", "r31", "TK_FALSE", "r31", "TK_FLOOR", "r31", "TK_FN", "r31", "TK_FOR", "r31", "TK_GT", "r31", "TK_GTE", "r31", "TK_ID", "r31", "TK_IF", "r31", "TK_INCREMENT", "r31", "TK_LAMBDA", "r31", "TK_LB", "r31", "TK_LCURLY", "r31", "TK_LET", "r31", "TK_LOGIC_AND", "r31", "TK_LOGIC_OR", "r31", "TK_LPAREN", "r31", "TK_LT", "r31", "TK_LTE", "r31", "TK_MATCHRE", "r31", "TK_MOD", "r31", "TK_MUL", "r31", "TK_NEQ", "r31", "TK_NEW", "r31", "TK_NIL", "r31", "TK_NOT", "r31", "TK_NUM", "r31", "TK_PERIOD", "r31", "TK_PRINT", "r31", "TK_PRINTLN", "r31", "TK_PUSH", "r31", "TK_QM", "r31", "TK_RANDOM", "r31", "TK_RANGE", "r31", "TK_RB", "r31", "TK_RCURLY", "r31", "TK_RETURN", "r31", "TK_RPAREN", "r31", "TK_SEMI", "r31", "TK_SIZE", "r31", "TK_STRING", "r31", "TK_SUB", "r31", "TK_TRUE", "r31", "TK_WHILE", "r31"};
+
+static const string actTab_row_191[] = {"57","TK_ADD", "r32", "TK_APPEND", "r32", "TK_AS", "r32", "TK_ASSIGN", "r32", "TK_ASSIGN_DIFF", "r32", "TK_ASSIGN_SUM", "r32", "TK_CLASS", "r32", "TK_COLON", "r32", "TK_COMMA", "r32", "TK_DECREMENT", "r32", "TK_DIV", "r32", "TK_EMPTY", "r32", "TK_EOI", "r32", "TK_EQU", "r32", "TK_FALSE", "r32", "TK_FLOOR", "r32", "TK_FN", "r32", "TK_FOR", "r32", "TK_GT", "r32", "TK_GTE", "r32", "TK_ID", "r32", "TK_IF", "r32", "TK_INCREMENT", "r32", "TK_LAMBDA", "r32", "TK_LB", "r32", "TK_LCURLY", "r32", "TK_LET", "r32", "TK_LOGIC_AND", "r32", "TK_LOGIC_OR", "r32", "TK_LPAREN", "r32", "TK_LT", "r32", "TK_LTE", "r32", "TK_MATCHRE", "r32", "TK_MOD", "r32", "TK_MUL", "r32", "TK_NEQ", "r32", "TK_NEW", "r32", "TK_NIL", "r32", "TK_NOT", "r32", "TK_NUM", "r32", "TK_PERIOD", "r32", "TK_PRINT", "r32", "TK_PRINTLN", "r32", "TK_PUSH", "r32", "TK_QM", "r32", "TK_RANDOM", "r32", "TK_RANGE", "r32", "TK_RB", "r32", "TK_RCURLY", "r32", "TK_RETURN", "r32", "TK_RPAREN", "r32", "TK_SEMI", "r32", "TK_SIZE", "r32", "TK_STRING", "r32", "TK_SUB", "r32", "TK_TRUE", "r32", "TK_WHILE", "r32"};
+
+static const string actTab_row_192[] = {"1","TK_LCURLY", "s49"};
+
+static const string actTab_row_193[] = {"12","TK_ASSIGN", "r45", "TK_ASSIGN_DIFF", "r45", "TK_ASSIGN_SUM", "r45", "TK_COLON", "r45", "TK_EQU", "s115", "TK_LOGIC_AND", "r45", "TK_LOGIC_OR", "r45", "TK_MATCHRE", "s113", "TK_NEQ", "s114", "TK_QM", "r45", "TK_RPAREN", "r45", "TK_SEMI", "r45"};
+
+static const string actTab_row_194[] = {"1","TK_LCURLY", "s49"};
+
+static const string actTab_row_195[] = {"57","TK_ADD", "r29", "TK_APPEND", "r29", "TK_AS", "r29", "TK_ASSIGN", "r29", "TK_ASSIGN_DIFF", "r29", "TK_ASSIGN_SUM", "r29", "TK_CLASS", "r29", "TK_COLON", "r29", "TK_COMMA", "r29", "TK_DECREMENT", "r29", "TK_DIV", "r29", "TK_EMPTY", "r29", "TK_EOI", "r29", "TK_EQU", "r29", "TK_FALSE", "r29", "TK_FLOOR", "r29", "TK_FN", "r29", "TK_FOR", "r29", "TK_GT", "r29", "TK_GTE", "r29", "TK_ID", "r29", "TK_IF", "r29", "TK_INCREMENT", "r29", "TK_LAMBDA", "r29", "TK_LB", "r29", "TK_LCURLY", "r29", "TK_LET", "r29", "TK_LOGIC_AND", "r29", "TK_LOGIC_OR", "r29", "TK_LPAREN", "r29", "TK_LT", "r29", "TK_LTE", "r29", "TK_MATCHRE", "r29", "TK_MOD", "r29", "TK_MUL", "r29", "TK_NEQ", "r29", "TK_NEW", "r29", "TK_NIL", "r29", "TK_NOT", "r29", "TK_NUM", "r29", "TK_PERIOD", "r29", "TK_PRINT", "r29", "TK_PRINTLN", "r29", "TK_PUSH", "r29", "TK_QM", "r29", "TK_RANDOM", "r29", "TK_RANGE", "r29", "TK_RB", "r29", "TK_RCURLY", "r29", "TK_RETURN", "r29", "TK_RPAREN", "r29", "TK_SEMI", "r29", "TK_SIZE", "r29", "TK_STRING", "r29", "TK_SUB", "r29", "TK_TRUE", "r29", "TK_WHILE", "r29"};
+
+static const string actTab_row_196[] = {"57","TK_ADD", "r35", "TK_APPEND", "r35", "TK_AS", "r35", "TK_ASSIGN", "r35", "TK_ASSIGN_DIFF", "r35", "TK_ASSIGN_SUM", "r35", "TK_CLASS", "r35", "TK_COLON", "r35", "TK_COMMA", "r35", "TK_DECREMENT", "r35", "TK_DIV", "r35", "TK_EMPTY", "r35", "TK_EOI", "r35", "TK_EQU", "r35", "TK_FALSE", "r35", "TK_FLOOR", "r35", "TK_FN", "r35", "TK_FOR", "r35", "TK_GT", "r35", "TK_GTE", "r35", "TK_ID", "r35", "TK_IF", "r35", "TK_INCREMENT", "r35", "TK_LAMBDA", "r35", "TK_LB", "r35", "TK_LCURLY", "r35", "TK_LET", "r35", "TK_LOGIC_AND", "r35", "TK_LOGIC_OR", "r35", "TK_LPAREN", "r35", "TK_LT", "r35", "TK_LTE", "r35", "TK_MATCHRE", "r35", "TK_MOD", "r35", "TK_MUL", "r35", "TK_NEQ", "r35", "TK_NEW", "r35", "TK_NIL", "r35", "TK_NOT", "r35", "TK_NUM", "r35", "TK_PERIOD", "r35", "TK_PRINT", "r35", "TK_PRINTLN", "r35", "TK_PUSH", "r35", "TK_QM", "r35", "TK_RANDOM", "r35", "TK_RANGE", "r35", "TK_RB", "r35", "TK_RCURLY", "r35", "TK_RETURN", "r35", "TK_RPAREN", "r35", "TK_SEMI", "r35", "TK_SIZE", "r35", "TK_STRING", "r35", "TK_SUB", "r35", "TK_TRUE", "r35", "TK_WHILE", "r35"};
+
+static const string actTab_row_197[] = {"57","TK_ADD", "r30", "TK_APPEND", "r30", "TK_AS", "r30", "TK_ASSIGN", "r30", "TK_ASSIGN_DIFF", "r30", "TK_ASSIGN_SUM", "r30", "TK_CLASS", "r30", "TK_COLON", "r30", "TK_COMMA", "r30", "TK_DECREMENT", "r30", "TK_DIV", "r30", "TK_EMPTY", "r30", "TK_EOI", "r30", "TK_EQU", "r30", "TK_FALSE", "r30", "TK_FLOOR", "r30", "TK_FN", "r30", "TK_FOR", "r30", "TK_GT", "r30", "TK_GTE", "r30", "TK_ID", "r30", "TK_IF", "r30", "TK_INCREMENT", "r30", "TK_LAMBDA", "r30", "TK_LB", "r30", "TK_LCURLY", "r30", "TK_LET", "r30", "TK_LOGIC_AND", "r30", "TK_LOGIC_OR", "r30", "TK_LPAREN", "r30", "TK_LT", "r30", "TK_LTE", "r30", "TK_MATCHRE", "r30", "TK_MOD", "r30", "TK_MUL", "r30", "TK_NEQ", "r30", "TK_NEW", "r30", "TK_NIL", "r30", "TK_NOT", "r30", "TK_NUM", "r30", "TK_PERIOD", "r30", "TK_PRINT", "r30", "TK_PRINTLN", "r30", "TK_PUSH", "r30", "TK_QM", "r30", "TK_RANDOM", "r30", "TK_RANGE", "r30", "TK_RB", "r30", "TK_RCURLY", "r30", "TK_RETURN", "r30", "TK_RPAREN", "r30", "TK_SEMI", "r30", "TK_SIZE", "r30", "TK_STRING", "r30", "TK_SUB", "r30", "TK_TRUE", "r30", "TK_WHILE", "r30"};
+
+static const string *actTab[] = {
+	 actTab_row_0, 
+	 actTab_row_1, 
+	 actTab_row_2, 
+	 actTab_row_3, 
+	 actTab_row_4, 
+	 actTab_row_5, 
+	 actTab_row_6, 
+	 actTab_row_7, 
+	 actTab_row_8, 
+	 actTab_row_9, 
+	 actTab_row_10, 
+	 actTab_row_11, 
+	 actTab_row_12, 
+	 actTab_row_13, 
+	 actTab_row_14, 
+	 actTab_row_15, 
+	 actTab_row_16, 
+	 actTab_row_17, 
+	 actTab_row_18, 
+	 actTab_row_19, 
+	 actTab_row_20, 
+	 actTab_row_21, 
+	 actTab_row_22, 
+	 actTab_row_23, 
+	 actTab_row_24, 
+	 actTab_row_25, 
+	 actTab_row_26, 
+	 actTab_row_27, 
+	 actTab_row_28, 
+	 actTab_row_29, 
+	 actTab_row_30, 
+	 actTab_row_31, 
+	 actTab_row_32, 
+	 actTab_row_33, 
+	 actTab_row_34, 
+	 actTab_row_35, 
+	 actTab_row_36, 
+	 actTab_row_37, 
+	 actTab_row_38, 
+	 actTab_row_39, 
+	 actTab_row_40, 
+	 actTab_row_41, 
+	 actTab_row_42, 
+	 actTab_row_43, 
+	 actTab_row_44, 
+	 actTab_row_45, 
+	 actTab_row_46, 
+	 actTab_row_47, 
+	 actTab_row_48, 
+	 actTab_row_49, 
+	 actTab_row_50, 
+	 actTab_row_51, 
+	 actTab_row_52, 
+	 actTab_row_53, 
+	 actTab_row_54, 
+	 actTab_row_55, 
+	 actTab_row_56, 
+	 actTab_row_57, 
+	 actTab_row_58, 
+	 actTab_row_59, 
+	 actTab_row_60, 
+	 actTab_row_61, 
+	 actTab_row_62, 
+	 actTab_row_63, 
+	 actTab_row_64, 
+	 actTab_row_65, 
+	 actTab_row_66, 
+	 actTab_row_67, 
+	 actTab_row_68, 
+	 actTab_row_69, 
+	 actTab_row_70, 
+	 actTab_row_71, 
+	 actTab_row_72, 
+	 actTab_row_73, 
+	 actTab_row_74, 
+	 actTab_row_75, 
+	 actTab_row_76, 
+	 actTab_row_77, 
+	 actTab_row_78, 
+	 actTab_row_79, 
+	 actTab_row_80, 
+	 actTab_row_81, 
+	 actTab_row_82, 
+	 actTab_row_83, 
+	 actTab_row_84, 
+	 actTab_row_85, 
+	 actTab_row_86, 
+	 actTab_row_87, 
+	 actTab_row_88, 
+	 actTab_row_89, 
+	 actTab_row_90, 
+	 actTab_row_91, 
+	 actTab_row_92, 
+	 actTab_row_93, 
+	 actTab_row_94, 
+	 actTab_row_95, 
+	 actTab_row_96, 
+	 actTab_row_97, 
+	 actTab_row_98, 
+	 actTab_row_99, 
+	 actTab_row_100, 
+	 actTab_row_101, 
+	 actTab_row_102, 
+	 actTab_row_103, 
+	 actTab_row_104, 
+	 actTab_row_105, 
+	 actTab_row_106, 
+	 actTab_row_107, 
+	 actTab_row_108, 
+	 actTab_row_109, 
+	 actTab_row_110, 
+	 actTab_row_111, 
+	 actTab_row_112, 
+	 actTab_row_113, 
+	 actTab_row_114, 
+	 actTab_row_115, 
+	 actTab_row_116, 
+	 actTab_row_117, 
+	 actTab_row_118, 
+	 actTab_row_119, 
+	 actTab_row_120, 
+	 actTab_row_121, 
+	 actTab_row_122, 
+	 actTab_row_123, 
+	 actTab_row_124, 
+	 actTab_row_125, 
+	 actTab_row_126, 
+	 actTab_row_127, 
+	 actTab_row_128, 
+	 actTab_row_129, 
+	 actTab_row_130, 
+	 actTab_row_131, 
+	 actTab_row_132, 
+	 actTab_row_133, 
+	 actTab_row_134, 
+	 actTab_row_135, 
+	 actTab_row_136, 
+	 actTab_row_137, 
+	 actTab_row_138, 
+	 actTab_row_139, 
+	 actTab_row_140, 
+	 actTab_row_141, 
+	 actTab_row_142, 
+	 actTab_row_143, 
+	 actTab_row_144, 
+	 actTab_row_145, 
+	 actTab_row_146, 
+	 actTab_row_147, 
+	 actTab_row_148, 
+	 actTab_row_149, 
+	 actTab_row_150, 
+	 actTab_row_151, 
+	 actTab_row_152, 
+	 actTab_row_153, 
+	 actTab_row_154, 
+	 actTab_row_155, 
+	 actTab_row_156, 
+	 actTab_row_157, 
+	 actTab_row_158, 
+	 actTab_row_159, 
+	 actTab_row_160, 
+	 actTab_row_161, 
+	 actTab_row_162, 
+	 actTab_row_163, 
+	 actTab_row_164, 
+	 actTab_row_165, 
+	 actTab_row_166, 
+	 actTab_row_167, 
+	 actTab_row_168, 
+	 actTab_row_169, 
+	 actTab_row_170, 
+	 actTab_row_171, 
+	 actTab_row_172, 
+	 actTab_row_173, 
+	 actTab_row_174, 
+	 actTab_row_175, 
+	 actTab_row_176, 
+	 actTab_row_177, 
+	 actTab_row_178, 
+	 actTab_row_179, 
+	 actTab_row_180, 
+	 actTab_row_181, 
+	 actTab_row_182, 
+	 actTab_row_183, 
+	 actTab_row_184, 
+	 actTab_row_185, 
+	 actTab_row_186, 
+	 actTab_row_187, 
+	 actTab_row_188, 
+	 actTab_row_189, 
+	 actTab_row_190, 
+	 actTab_row_191, 
+	 actTab_row_192, 
+	 actTab_row_193, 
+	 actTab_row_194,
+	 actTab_row_195, 
+	 actTab_row_196, 
+	 actTab_row_197
+};
+static const map<string, function<astnode*(vector<astnode*>&)>> actions = {
+	 {"mkBlock",mkBlock}, 
+	 {"mkBuiltin",mkBuiltin}, 
+	 {"mkCall",mkCall}, 
+	 {"mkConst",mkConst}, 
+	 {"mkDotted",mkDotted}, 
+	 {"mkElse",mkElse}, 
+	 {"mkExprStmt",mkExprStmt}, 
+	 {"mkFor",mkFor}, 
+	 {"mkFunc",mkFunc}, 
+	 {"mkId",mkId}, 
+	 {"mkIf",mkIf}, 
+	 {"mkImport",mkImport}, 
+	 {"mkInstance",mkInstance}, 
+	 {"mkLambda",mkLambda}, 
+	 {"mkLet",mkLet}, 
+	 {"mkList",mkList}, 
+	 {"mkListCon",mkListCon}, 
+	 {"mkListOp",mkListOp}, 
+	 {"mkNum",mkNum}, 
+	 {"mkOf",mkOf}, 
+	 {"mkPrint",mkPrint}, 
+	 {"mkProg",mkProg}, 
+	 {"mkRandom",mkRandom}, 
+	 {"mkRet",mkRet}, 
+	 {"mkSetComp",mkSetComp}, 
+	 {"mkString",mkString}, 
+	 {"mkStruct",mkStruct}, 
+	 {"mkSubscript",mkSubscript}, 
+	 {"mkTern",mkTern}, 
+	 {"mkWhile",mkWhile}, 
+	 {"mkbinop",mkbinop}, 
+	 {"pass",pass}, 
+	 {"unary",unary}
+};

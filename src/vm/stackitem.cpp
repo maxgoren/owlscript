@@ -3,10 +3,6 @@
 StackItem::StackItem(int value) { intval = value; type = INTEGER; }
 StackItem::StackItem(double value) { numval = value; type = NUMBER; }
 StackItem::StackItem(bool balue) { boolval = balue; type = BOOLEAN; }
-StackItem::StackItem(string value) { objval = alloc.alloc(new string(value)); type = OBJECT; }
-StackItem::StackItem(Closure* c) { objval = alloc.alloc(c); type = OBJECT; }
-StackItem::StackItem(deque<StackItem>* l) { objval = alloc.alloc(l); type = OBJECT; }
-StackItem::StackItem(ClassObject* o) { objval = alloc.alloc(o); type = OBJECT; }
 StackItem::StackItem(GCItem* i) { objval = i; type = OBJECT; }
 StackItem::StackItem() { type = NIL; intval = -66; }
 StackItem::StackItem(const StackItem& si) {
@@ -44,7 +40,6 @@ string StackItem::toString() {
         case OBJECT: return objval->toString();
         case BOOLEAN: return boolval ? "true":"false";
         case NIL: return "(nil)";
-        
     }
     return "(nil)";
 }
@@ -102,29 +97,17 @@ bool StackItem::equals(StackItem& rhs) {
     return false;
 }
 StackItem& StackItem::add(StackItem& rhs) {
-    if ((type == OBJECT && objval->type == STRING) || (rhs.type == OBJECT && rhs.objval->type == STRING)) {
-        string str;
-        for (char c : toString()) {
-            str.push_back(c);
-        }
-        for (char c : rhs.toString()) {
-            str.push_back(c);
-        }
-        objval = alloc.alloc(new string(str));
-        type = OBJECT;
-    } else {
-        double v = rhs.type == INTEGER ? rhs.intval:rhs.numval;
-        switch (type) {
-            case INTEGER: {
-                intval += v;
-            } break;
-            case NUMBER: {
-                numval += v;
-            } break;
-            case BOOLEAN: {
-                boolval += v;
-            } break;
-        }
+    double v = rhs.type == INTEGER ? rhs.intval:rhs.numval;
+    switch (type) {
+        case INTEGER: {
+            intval += v;
+        } break;
+        case NUMBER: {
+            numval += v;
+        } break;
+        case BOOLEAN: {
+            boolval += v;
+        } break;
     }
     return *this;
 }

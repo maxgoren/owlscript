@@ -2,7 +2,7 @@ let x := "global";
 fn out() {
     let x := "inz";
     fn inn(let y) {
-        return &() { print y+x; return x; };
+        return &() -> { print y+x; return x; };
     }
     let t := inn(x);
     println t();

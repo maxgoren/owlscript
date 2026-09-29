@@ -7,7 +7,7 @@ using namespace std;
 
 
 enum NodeType {
-    EXPRNODE, STMTNODE
+    EXPRNODE, STMTNODE, TEMP_NODE
 };
 
 enum ExprType {
@@ -34,6 +34,7 @@ const static string stmtTypeStr[] = {
     
 };
 
+
 struct astnode {
     NodeType kind;
     union {
@@ -46,15 +47,23 @@ struct astnode {
     astnode* next;
     astnode(ExprType et, Token tk) : expr(et), kind(EXPRNODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
     astnode(StmtType st, Token tk) : stmt(st), kind(STMTNODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
+    astnode(Token tk) : kind(TEMP_NODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
     astnode() : token(Token(TK_EOI, "fin")), left(nullptr), right(nullptr), next(nullptr) { }
+    ~astnode() {
+        if (next != nullptr)
+            delete next;
+        if (right != nullptr)
+            delete right;
+        if (left != nullptr)
+            delete left;
+    }
 };
 
 void preorder(astnode* node, int d);
-
 bool isStmtNode(astnode* ast);
-
 bool isExprNode(astnode* ast);
-
 bool isExprType(astnode* ast, ExprType type);
 bool isStmtType(astnode* ast, StmtType type);
+void cleanUpAST(astnode* node);
+
 #endif

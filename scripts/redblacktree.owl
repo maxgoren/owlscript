@@ -6,7 +6,7 @@ class TreeNode {
     let color;
     let left;
     let right;
-}
+};
 
 fn _isRed(let tree) {
     if (tree == nil) {

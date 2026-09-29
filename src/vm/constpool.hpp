@@ -15,7 +15,7 @@ class ConstPool {
     friend class GarbageCollector;
         unordered_map<string, int> stringPool;
         StackItem* data;
-        queue<int> freeList;
+        //queue<int> freeList;
         int n;
         int maxN;
         void grow();
@@ -25,7 +25,9 @@ class ConstPool {
         ~ConstPool();
         ConstPool(const ConstPool& cp);
         ConstPool& operator=(const ConstPool& cp) ;
+        bool checkStringPool(string str);
         int insert(StackItem item) ;
+        int getStringIndex(string str);
         StackItem& get(int indx);
         int size();
 };

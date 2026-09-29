@@ -14,9 +14,6 @@ SymbolTableEntry& BlockScopeIterator::get() {
 void BlockScopeIterator::next() {
     ipos++;
 }
-BlockScope::~BlockScope() {
-
-}
 BlockScope::BlockScope(BlockScope* parent = nullptr) {
     n = 0;
     enclosingScope = parent;
@@ -55,34 +52,47 @@ BlockScope* BlockScope::getEnclosing() {
 
 ScopingST::ScopingST() {
     currentScope = new BlockScope();
-    nfSentinel = SymbolTableEntry("not found", -1, -1);
+    nfSentinel = currentScope->end();
+}
+
+
+void freeBlockScope(BlockScope* scope) {
+    if (scope == nullptr)
+        return;
+    for (auto it = scope->iter(); !it.done(); it.next()) {
+        if (it.get().scope != nullptr) {
+            freeBlockScope(it.get().scope);
+        }
+    }
+    delete scope;
 }
 
 ScopingST::~ScopingST() {
-    
+    freeBlockScope(currentScope);
 }
-ConstPool& ScopingST::getConstPool() {
-    return constPool;
+void ScopingST::setConstPool(ConstPool* pool) {
+    constPool = pool;
 }
 
 
 void ScopingST::openObjectScope(string name) {
     if (currentScope->find(name) != currentScope->end()) {
-            if (currentScope->find(name).type == CLASSVAR) {
-            BlockScope* ns = constPool.get(currentScope->find(name).constPoolIndex).objval->object->scope;
+        if (currentScope->find(name).type == CLASSVAR) {
+            BlockScope* ns = currentScope->find(name).scope;//constPool->get(currentScope->find(name).constPoolIndex).objval->object->scope;
             currentScope = ns;
-            } else {
+        } else {
             BlockScope* ns = new BlockScope(currentScope);
             currentScope = ns;
-            }
+        }
     } else {
         BlockScope* ns = new BlockScope(currentScope);
         ClassObject* obj = new ClassObject(name, ns);
         objectDefs.insert(make_pair(name, obj));
-        int constIdx = constPool.insert(alloc.alloc(obj));
+        int constIdx = constPool->insert(alloc.alloc(obj));
         int envAddr = nextAddr();
         objectDefs[name]->cpIdx = constIdx;
         currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, CLASSVAR, depth(currentScope)+1));
+        currentScope->find(name).scope = ns;
         currentScope = ns;
     }
 }
@@ -95,17 +105,18 @@ void ScopingST::copyObjectScope(string instanceName, string objName) {
 }
 void ScopingST::openFunctionScope(string name, int L1) {
     if (currentScope->find(name) != currentScope->end()) {
-        BlockScope* ns = constPool.get(currentScope->find(name).constPoolIndex).objval->closure->func.scope; 
-        constPool.get(currentScope->find(name).constPoolIndex).objval->closure->func.start_ip = L1;
+        BlockScope* ns = currentScope->find(name).scope; //constPool->get(currentScope->find(name).constPoolIndex).objval->closure->func.scope; 
+        constPool->get(currentScope->find(name).constPoolIndex).objval->closure->func.start_ip = L1;
         currentScope = ns;
     } else {
         BlockScope*  ns = new BlockScope(currentScope);
-        int constIdx = constPool.insert(alloc.alloc(new Closure(Function(name, L1, ns), nullptr)));
+        int constIdx = constPool->insert(alloc.alloc(new Closure(Function(name, L1), nullptr)));
         int envAddr = nextAddr();
         int d = depth(currentScope)+1;
         d = (d == 0) ? 1:d;
         currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, FUNCVAR, d));
         currentScope->find(name).isReady = true;
+        currentScope->find(name).scope = ns;
         currentScope = ns;
     }
 }
@@ -118,6 +129,8 @@ void ScopingST::insert(string name) {
     currentScope->insert(name, SymbolTableEntry(name, nextAddr(), depth(currentScope)));
 }
 bool ScopingST::existsInScope(string name) {
+    if (currentScope == nullptr)
+        return false;
     return currentScope->find(name) != currentScope->end();
 }
 
@@ -158,6 +171,10 @@ SymbolTableEntry ScopingST::findReady(string name) {
     return nfSentinel;
 }
 
+SymbolTableEntry ScopingST::end() {
+    return nfSentinel;
+}
+
 BlockScope* ScopingST::scope() {
     return currentScope;
 }
@@ -192,6 +209,8 @@ int ScopingST::depth(BlockScope* s) {
     return d-1;
 }
 void ScopingST::printST(BlockScope* s, int d) {
+    if (s == nullptr)
+        return;
     auto x = s;
     for (int i = 0; i < MAX_LOCALS; i++) {
         auto m = x->data[i];
@@ -199,9 +218,9 @@ void ScopingST::printST(BlockScope* s, int d) {
             for (int i = 0; i < d; i++) cout<<"  ";
             cout<<m.name<<": "<<m.addr<<", "<<m.depth<<"("<<m.lineNum<<")"<<endl;
             if (m.type == 2) {
-                printST(constPool.get(m.constPoolIndex).objval->closure->func.scope,d + 1);
+                printST(m.scope, d+1); //constPool->get(m.constPoolIndex).objval->closure->func.scope,d + 1);
             } else if (m.type == 3) {
-                printST(constPool.get(m.constPoolIndex).objval->object->scope, d+1);
+                printST(m.scope, d+1); //constPool->get(m.constPoolIndex).objval->object->scope, d+1);
             }
         }
     }

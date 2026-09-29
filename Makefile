@@ -1,10 +1,9 @@
 owlscript:
+	g++ --std=c++17 -c src/parse/actions.cpp
 	g++ --std=c++17 -c src/parse/ast.cpp
-	g++ --std=c++17 -c src/vm/alloc.cpp
 	g++ --std=c++17 -c src/parse/lexer.cpp
 	g++ --std=c++17 -c src/parse/parser.cpp
-	g++ --std=c++17 -c src/parse/parse_expr.cpp
-	g++ --std=c++17 -c src/parse/parse_stmt.cpp
+	g++ --std=c++17 -c src/vm/alloc.cpp
 	g++ --std=c++17 -c src/compile/bcgen.cpp
 	g++ --std=c++17 -c src/compile/compile_expr.cpp
 	g++ --std=c++17 -c src/compile/compile_stmt.cpp
@@ -20,6 +19,28 @@ owlscript:
 	g++ --std=c++17 -c src/vm/regex/regex.cpp
 	g++ --std=c++17 -c src/owlscript.cpp
 	g++ *.o -o owlscript
+
+debug:
+	g++ -fsanitize=address -g --std=c++17 -c src/parse/actions.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/parse/ast.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/parse/lexer.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/parse/parser.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/vm/alloc.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/compile/bcgen.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/compile/compile_expr.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/compile/compile_stmt.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/compile/compile_load_store.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/compile/scopingst.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/vm/callframe.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/vm/closure.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/vm/constpool.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/vm/gc.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/vm/heapitem.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/vm/stackitem.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/vm/vm.cpp
+	g++ -fsanitize=address -g --std=c++17 -c src/vm/regex/regex.cpp
+	g++ -fsanitize=address -g -std=c++17 -c src/owlscript.cpp
+	g++ -fsanitize=address -g *.o -o owlscript
 
 install:
 	mv owlscript /usr/local/bin

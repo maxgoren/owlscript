@@ -1,6 +1,6 @@
 fn makeCounter() {
     let x := 0;
-    let counter := &() { x := x + 1; return x; };
+    let counter := &() -> { x := x + 1; return x; };
     return counter;
 }
 let t := makeCounter();

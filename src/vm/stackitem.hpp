@@ -26,10 +26,6 @@ struct StackItem {
     StackItem(int value);
     StackItem(double value);
     StackItem(bool balue);
-    StackItem(string value);
-    StackItem(Closure* c);
-    StackItem(deque<StackItem>* l);
-    StackItem(ClassObject* o);
     StackItem(GCItem* i);
     StackItem();
     StackItem(const StackItem& si);
