@@ -106,14 +106,7 @@ astnode* Parser::parse(vector<Token>& tok) {
                 semStack.pop();
                 delete t;
             }
-            if (tmp->token.getString() == "Epsilon") {
-                auto ret = tmp->next;
-                tmp->next = nullptr;
-                delete tmp;
-                return ret;
-            } else {
-                return tmp;
-            }
+            return tmp;
         }
         int ns = nextState(actTab, curr_state, tokenStr[curr_token.getSymbol()]);
         if (ns == -1) {

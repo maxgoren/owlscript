@@ -372,7 +372,9 @@ astnode* mkSetComp(vector<astnode*>& reducing) {
     nn->kind = EXPRNODE;
     nn->expr = SETCOMP_EXPR;
     if (nn->token.getSymbol() == TK_IF && reducing[0]->token.getSymbol() == TK_AS) {
-        reducing[0]->right->next = reducing[2];
+        auto it = reducing[0]->right;
+        while (it->next != nullptr) it = it->next;
+        it->next = reducing[2];
         nn = reducing[0];
         delete reducing[1];
     } else {
