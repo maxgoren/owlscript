@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <stack>
 #include "actions.hpp"
-#include "mgcpgen_out.hpp"
+#include "parser_tables.hpp"
 #include "ast.hpp"
 using namespace std;
 

@@ -1,7 +1,7 @@
 owlscript:
+	g++ --std=c++17 -c src/lex/lexer.cpp
 	g++ --std=c++17 -c src/parse/actions.cpp
 	g++ --std=c++17 -c src/parse/ast.cpp
-	g++ --std=c++17 -c src/parse/lexer.cpp
 	g++ --std=c++17 -c src/parse/parser.cpp
 	g++ --std=c++17 -c src/vm/alloc.cpp
 	g++ --std=c++17 -c src/compile/bcgen.cpp
@@ -21,9 +21,9 @@ owlscript:
 	g++ *.o -o owlscript
 
 debug:
+	g++ -fsanitize=address -g --std=c++17 -c src/lex/lexer.cpp
 	g++ -fsanitize=address -g --std=c++17 -c src/parse/actions.cpp
 	g++ -fsanitize=address -g --std=c++17 -c src/parse/ast.cpp
-	g++ -fsanitize=address -g --std=c++17 -c src/parse/lexer.cpp
 	g++ -fsanitize=address -g --std=c++17 -c src/parse/parser.cpp
 	g++ -fsanitize=address -g --std=c++17 -c src/vm/alloc.cpp
 	g++ -fsanitize=address -g --std=c++17 -c src/compile/bcgen.cpp

@@ -2,7 +2,7 @@
 #define compiler_hpp
 #include <iostream>
 #include <vector>
-#include "../parse/lexer.hpp"
+#include "../lex/lexer.hpp"
 #include "../parse/parser.hpp"
 #include "bcgen.hpp"
 #include "compiler_state.hpp"

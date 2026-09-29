@@ -1,6 +1,6 @@
 #ifndef ast_hpp
 #define ast_hpp
-#include "token.hpp"
+#include "../lex/token.hpp"
 #include <iostream>
 #include <set>
 using namespace std;
