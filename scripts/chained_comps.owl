@@ -1,0 +1,4 @@
+def twice(let q) { return q*q; }
+def isEven(let j) { return j % 2 == 0; }
+def isGreaterThanFive(let j) { return j > 5; }
+println [ 1 .. 10 as twice if isEven if isGreaterThanFive ];
