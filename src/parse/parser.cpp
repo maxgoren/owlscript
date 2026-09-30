@@ -15,15 +15,15 @@ void Parser::advance() {
         tpos++;
     }
 }
-int Parser::nextState(const string *table[], int state, Symbol sym) {
-    int N = stoi(table[state][0]);
-    for (int i = 1; i < 2*N+1; i+=2) {
-        if (table[state][i] == sym) {
-            return i+1;
+int Parser::nextState(const int *table[], int state, int sym) {
+            int N = table[state][0];
+            for (int i = 1; i < 2*N+1; i+=2) {
+                if (table[state][i] == sym) {
+                    return i+1;
+                }
+            }
+            return -1;
         }
-    }
-    return -1;
-}
 
 Parser::Parser(bool loud) {
     debug_noise = loud;
@@ -38,8 +38,8 @@ void Parser::doShift(int next) {
 }
 
 void Parser::doReduce(Production& X) {
-    if (debug_noise)
-        cout<<"REDUCE on '"<<X.toString()<<"'"<<endl;
+   if (debug_noise)
+        cout<<"REDUCE "<<endl;
     vector<astnode*> tmp;
     for (int i = 0; i < X.rhs.size(); i++) {
         st.pop();
@@ -56,9 +56,9 @@ void Parser::doReduce(Production& X) {
         }
     }
     reverse(tmp.begin(), tmp.end());
-    if (X.action.empty() == false) {
-        if (debug_noise) cout<<"And do: "<<X.action<<endl;
-        string f = X.action.substr(1);
+    if (X.actsym.empty() == false) {
+        if (debug_noise) cout<<"And do: "<<X.actsym<<endl;
+        string f = X.actsym.substr(1);
         semStack.push(actions.at(f)(tmp));
         if (debug_noise)
             preorder(semStack.top(), 1);
@@ -71,21 +71,22 @@ void Parser::doReduce(Production& X) {
     }
     int ns = nextState(goTab, st.top(), X.lhs);
     if (ns != -1) {
-        st.push(stoi(goTab[st.top()][ns]));
+        st.push(goTab[st.top()][ns]);
     }
 }
 void Parser::printCurrent(int state_num, Token& T) {
-    cout<<"[ state: "<<state_num<<"][ token: "<<tokenStr[T.getSymbol()]<<"]"<<actTab[state_num][nextState(actTab, state_num, tokenStr[T.getSymbol()])]<<endl<<"Action: ";
+    cout<<"[ state: "<<state_num<<"][ token: "<<tokenStr[T.getSymbol()]<<"]"<<actTab[state_num][nextState(actTab, state_num,T.getSymbol())]<<endl<<"Action: ";
 }
 bool Parser::checkAccept(int state_num, Token& T) {
     if (actTab[state_num] == NULL) {
         return false;
     }
-    int N = stoi(actTab[state_num][0]);
+    int N = actTab[state_num][0];
     for (int i = 1; i < 2*N+1; i+=2) {
-        if (actTab[state_num][i] == "$") {
+        if (actTab[state_num][i] == DOLLARACCEPT && actTab[state_num][i+1] == 0) {
             if (debug_noise)
                 cout<<"ACCEPT"<<endl;
+            preorder(semStack.top(), 1);
             return true;
         }
     }
@@ -100,18 +101,18 @@ astnode* Parser::parse(vector<Token>& tok) {
         int curr_state = st.top();
         if (checkAccept(curr_state, curr_token)) {
             astnode* tmp = semStack.top();
-            semStack.pop();
-            while (!semStack.empty()) {
-                auto t = semStack.top();
-                semStack.pop();
+            if (tmp->token.getString() == "Epsilon") {
+                auto t = tmp;
+                tmp = tmp->next;
+                t->next = nullptr;
                 delete t;
             }
             return tmp;
         }
-        int ns = nextState(actTab, curr_state, tokenStr[curr_token.getSymbol()]);
+        int ns = nextState(actTab, curr_state, curr_token.getSymbol());
         if (ns == -1) {
             cout<<"Hmm, no actions on '"<<tokenStr[curr_token.getSymbol()]<<"' from state "<<curr_state<<"?"<<endl;
-            int nument = 2*stoi(actTab[curr_state][0])+1;
+            int nument = 2*actTab[curr_state][0]+1;
             for (int i = 1; i < nument; i+=2) {
                 cout<<actTab[curr_state][i]<<endl;
             }
@@ -120,19 +121,23 @@ astnode* Parser::parse(vector<Token>& tok) {
         } else {
             if (debug_noise)
                 printCurrent(curr_state, curr_token);
-            string act = actTab[curr_state][ns];
-            int next = stoi(act.substr(1));
-            switch (act[0]) {
-                case 's': {
+            int next = actTab[curr_state][ns];
+            if (next > 0) {
                     doShift(next);
-                } break;
-                case 'r': {
-                    Production p = prod[next];
+            } else if (next < 0) {
+                    Production p = prod[abs(next)];
                     doReduce(p);
-                } break;
-                default:
-                    cout<<"Syntax Error: "<<tokenStr[curr_token.getSymbol()]<<endl;
-                    return nullptr;
+            } else {
+                if (checkAccept(curr_state, curr_token)) {
+                    astnode* tmp = semStack.top();
+                    if (tmp->token.getString() == "Epsilon") {
+                        auto t = tmp;
+                        tmp = tmp->next;
+                        t->next = nullptr;
+                        delete t;
+                    }
+                    return tmp;
+                }
             }
         }
     }

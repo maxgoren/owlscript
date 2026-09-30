@@ -18,7 +18,7 @@ class Parser {
         bool debug_noise;
         Token& current();
         void advance();
-        int nextState(const string *table[], int state, Symbol sym);
+        int nextState(const int *table[], int state, int sym);
     public:
         Parser(bool loud = false) ;
         void doShift(int next);
