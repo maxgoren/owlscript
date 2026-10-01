@@ -18,13 +18,15 @@ class Parser {
         bool debug_noise;
         Token& current();
         void advance();
+        void doShift(int next);
+        void doReduce(int next);
+        void printCurrent(int state_num, Token& T);
+        bool checkAccept(int state_num, Token& T);
         int nextState(const int *table[], int state, int sym);
+        astnode* cleanUp();
+        astnode* syntaxError(int curr_state, Token curr_token);
     public:
         Parser(bool loud = false) ;
-        void doShift(int next);
-        void doReduce(Production& X);
-        void printCurrent(int state_num, Token& T);
-        bool checkAccept(int state_num, Token& T) ;
         astnode* parse(vector<Token>& tok);
     };
 
