@@ -141,10 +141,6 @@ astnode* Parser::parse(vector<Token>& tok) {
                 doShift(rule);
             } else if (rule < 0) {
                 doReduce(rule);
-            } else {
-                if (checkAccept(curr_state, curr_token)) {
-                    return cleanUp();
-                }
             }
         }
     }
