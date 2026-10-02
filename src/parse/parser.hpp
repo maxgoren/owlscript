@@ -4,11 +4,12 @@
 #include <functional>
 #include <algorithm>
 #include <stack>
+#include <climits>
 #include "actions.hpp"
 #include "parser_tables.hpp"
 #include "ast.hpp"
 using namespace std;
-
+const static int PARSE_ERR = INT_MIN;
 class Parser {
     private:
         stack<astnode*> semStack;
@@ -21,9 +22,9 @@ class Parser {
         void doShift(int next);
         void doReduce(int next);
         void printCurrent(int state_num, Token& T);
-        bool checkAccept(int state_num, Token& T);
-        int nextState(const int *table[], int state, int sym);
-        astnode* cleanUp();
+        int getNext(const int *table[], int state, int sym);
+        vector<astnode*> removeFromStack(int numSym);
+        astnode* cleanUpAndAccept();
         astnode* syntaxError(int curr_state, Token curr_token);
     public:
         Parser(bool loud = false) ;
