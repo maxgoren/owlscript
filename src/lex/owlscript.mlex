@@ -68,7 +68,7 @@
 {"[.]",TK_PERIOD}
 {"[.][.]",TK_RANGE};
 {"[A-Za-z_][A-Za-z0-9_]*",TK_ID}
-{"\"(.+)\"",TK_STRING}
+{"\"([^"]*)\"",TK_STRING}
 {"[0-9]+([.][0-9]+)*",TK_NUM}
 {"\{\*",TK_OPEN_COMMENT}
 {"\*\}",TK_CLOSE_COMMENT}
