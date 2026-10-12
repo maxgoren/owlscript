@@ -16,6 +16,7 @@ void Parser::advance() {
         tpos++;
     }
 }
+
 int Parser::getNext(const int *table[], int state, int sym) {
     int N = table[state][0];
     for (int i = 1; i < 2*N+1; i+=2) {
@@ -80,6 +81,7 @@ void Parser::doReduce(int next) {
         st.push(goTab[st.top()][ns]);
     }
 }
+
 void Parser::printCurrent(int state_num, Token& T) {
     cout<<"[ state: "<<state_num<<"][ token: "<<tokenStr[T.getSymbol()]<<"]"<<endl<<"Action: ";
 }
@@ -110,16 +112,47 @@ astnode* Parser::syntaxError(int curr_state, Token curr_token) {
     return nullptr;
 }
 
-astnode* Parser::parse(vector<Token>& tok) {
+bool Parser::panicRecovery(int curr_state, int action, Token& curr_token) {
+    stack<int> backup;
+    stack<astnode*> semback;
+    while (action == PARSE_ERR && !st.empty()) {
+        backup.push(st.top());
+        semback.push(semStack.top());
+        st.pop();
+        semStack.pop();
+        if (st.empty())
+            break;
+        curr_state = st.top();
+        action = getNext(actTab, curr_state, curr_token.getSymbol());
+    }
+    if (st.empty()) {
+        while (!backup.empty()) {
+            semStack.push(semback.top()); semback.pop();
+            st.push(backup.top());
+            backup.pop();
+        }
+        advance();
+        curr_token = current();
+        if (curr_token.getSymbol() != TK_EOI) {
+            return panicRecovery(curr_state, action, curr_token);
+        }
+    }
+    return action != PARSE_ERR;
+}
+
+astnode* Parser::parse(vector<Token>& tok, CharBuffer* buff) {
     tokens = tok;
     tpos = 0;
     st.push(0);
+    bool did_panic = false;
     for (;;) {
         Token curr_token = current();
         int curr_state = st.top();
         int action = getNext(actTab, curr_state, curr_token.getSymbol());
         if (action == PARSE_ERR) {
-           return syntaxError(curr_state, curr_token);
+            cout<<"Syntax error at line "<<curr_token.line()<<":"<<curr_token.column()<<" - "<<curr_token.getString()<<endl;
+            cout<<"\t '"<<((FileStringBuffer*)buff)->getLine(curr_token.line())<<"'"<<endl;
+            did_panic = panicRecovery(curr_state, action, curr_token);
         } else {
             if (debug_noise) {
                 printCurrent(curr_state, curr_token);
@@ -130,6 +163,9 @@ astnode* Parser::parse(vector<Token>& tok) {
             } else if (rule < 0) {
                 doReduce(rule);
             } else {
+                if (did_panic) {
+                    return nullptr;
+                }
                 return cleanUpAndAccept();
             }
         }

@@ -42,7 +42,7 @@ class StringBuffer : public CharBuffer {
         }
         string sliceFromStart(int matchlen) {
             string slice;
-            for (int i = start, k = 0; k < matchlen; k++, i++) {
+            for (int i = start, k = 0; k <= matchlen; k++, i++) {
                 if (buff[i] == '"') continue;
                 slice.push_back(buff[i]);
             }
@@ -149,6 +149,9 @@ class FileStringBuffer : public CharBuffer {
         }
         bool readFile(string fname) {
             return read(fname);
+        }
+        string getLine(int lno) {
+            return lines[lno];
         }
         int lineNo() {
             return line_pos;

@@ -3,6 +3,7 @@
 #include <set>
 #include <functional>
 using namespace std; 
+
 enum NTSYMBOL {
 	 DOLLARACCEPT,
 AEXPR, ARGSLIST, BLESSEXPR, BLOCKSTMT, BUILTINEXPR, COMPEXPR, 
@@ -15,6 +16,7 @@ PROG, RANDEXPR, RELEXPR, RETSTMT, STMT,
 STMTLIST, STRUCTSTMT, TERM, WHILESTMT, sp
 
 };
+
 struct Production {
 	 int id;
 	 int lhs;

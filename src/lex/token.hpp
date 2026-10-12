@@ -10,8 +10,9 @@ class Token {
         string strval;
         int depth;
         int lineNum;
+        int colNum;
     public:
-        Token(TKSymbol sym = TK_EOI, string st = "<nil>", int ln = 0) : symbol(sym), strval(st), depth(-1), lineNum(ln) { }
+        Token(TKSymbol sym = TK_EOI, string st = "<nil>", int ln = 0, int cn = 0) : symbol(sym), strval(st), depth(-1), lineNum(ln), colNum(cn) { }
         TKSymbol getSymbol() { return symbol; }
         string getString() { return strval; }
         void setString(string s) { strval = s; }
@@ -19,7 +20,9 @@ class Token {
         int scopeLevel() { return depth; }
         void setScopeLevel(int level) { depth = level; }
         void setLineNum(int ln) { lineNum = ln; }
-        int lineNumber() { return lineNum; }
+        void setColNum(int cn) { colNum = cn;}
+        int line() { return lineNum; }
+        int column() { return colNum; }
 };
 
 #endif

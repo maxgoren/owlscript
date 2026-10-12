@@ -40,7 +40,7 @@ class Compiler {
             vector<Token> tokens = lexer.lex(buff);
             if (tokens.size() > 1) {
                 state = PARSE;
-                astnode* ast = parser.parse(tokens);
+                astnode* ast = parser.parse(tokens, buff);
                 if (ast) {
                     while (isImportStatement(ast)) {
                         if (isIDExpr(ast->left)) {

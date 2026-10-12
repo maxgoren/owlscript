@@ -8,8 +8,11 @@
 #include "actions.hpp"
 #include "parser_tables.hpp"
 #include "ast.hpp"
+#include "../util/buffer.hpp"
 using namespace std;
+
 const static int PARSE_ERR = INT_MIN;
+
 class Parser {
     private:
         stack<astnode*> semStack;
@@ -26,9 +29,10 @@ class Parser {
         vector<astnode*> removeFromStack(int numSym);
         astnode* cleanUpAndAccept();
         astnode* syntaxError(int curr_state, Token curr_token);
+        bool panicRecovery(int curr_state, int action, Token& curr_token);
     public:
         Parser(bool loud = false) ;
-        astnode* parse(vector<Token>& tok);
+        astnode* parse(vector<Token>& tokm, CharBuffer* buff);
     };
 
 #endif

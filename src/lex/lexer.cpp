@@ -40,6 +40,7 @@ Token Lexer::nextToken() {
     int last_match = 0;
     bool in_quote = false;
     int start = buffer->markStart();
+    int line_start = buffer->lineNo();
     string match;
     int len = 0;
      while (!buffer->done()) {
@@ -58,7 +59,7 @@ Token Lexer::nextToken() {
     if (last_match == 0) {
         return {TK_EOI, "error"};
     }
-    return Token((TKSymbol)mgc_lex_accept[last_match], match, buffer->lineNo());
+    return Token((TKSymbol)mgc_lex_accept[last_match], match, line_start, start);
 }
 
 bool Lexer::shouldSkip(char c) {
@@ -81,7 +82,7 @@ vector<Token> Lexer::lex(CharBuffer* buff) {
         next = nextToken();
         if (next.getSymbol() != TK_EOI) {
             tokens.push_back(next);
-            //cout<<"Recognized: {'"<<tokenStr[next.getSymbol()]<<","<<tokens.back().getString()<<"'}"<<endl;
+            //cout<<"Recognized: {"<<tokens.back().line()<<":"<<tokens.back().column() <<"'"<<tokenStr[next.getSymbol()]<<","<<tokens.back().getString()<<"'}"<<endl;
         } else {
             if (!in_comment)
                 cout<<buffer->get()<<"?"<<endl;
