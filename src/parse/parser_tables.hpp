@@ -3,9 +3,8 @@
 #include <set>
 #include <functional>
 using namespace std; 
-
 enum NTSYMBOL {
-	 DOLLARACCEPT,
+	 DOLLARACCEPT = 75,
 AEXPR, ARGSLIST, BLESSEXPR, BLOCKSTMT, BUILTINEXPR, COMPEXPR, 
 DECLLIST, DECLSTMT, DEFSTMT, EXPLIST, EXPR, 
 EXPSTMT, FACT, FEXPR, FORSTMT, IFSTMT, 
@@ -16,7 +15,6 @@ PROG, RANDEXPR, RELEXPR, RETSTMT, STMT,
 STMTLIST, STRUCTSTMT, TERM, WHILESTMT, sp
 
 };
-
 struct Production {
 	 int id;
 	 int lhs;
@@ -232,6 +230,7 @@ static const int *goTab[] = {
 	 goTab_row_190, 	 NULL, 	 goTab_row_192, 	 NULL, 	 goTab_row_194
 
 };
+
 static const int actTab_row_0[] = {29,TK_APPEND, -4, TK_CLASS, -4, TK_EMPTY, -4, TK_FALSE, -4, TK_FLOOR, -4, TK_FN, -4, TK_FOR, -4, TK_ID, -4, TK_IF, -4, TK_IMPORT, 1, TK_LAMBDA, -4, TK_LB, -4, TK_LCURLY, -4, TK_LET, -4, TK_LPAREN, -4, TK_NEW, -4, TK_NIL, -4, TK_NOT, -4, TK_NUM, -4, TK_PRINT, -4, TK_PRINTLN, -4, TK_PUSH, -4, TK_RANDOM, -4, TK_RETURN, -4, TK_SIZE, -4, TK_STRING, -4, TK_SUB, -4, TK_TRUE, -4, TK_WHILE, -4};
 static const int actTab_row_1[] = {1,TK_ID, 6};
 static const int actTab_row_2[] = {29,TK_APPEND, -6, TK_CLASS, -6, TK_EMPTY, -6, TK_FALSE, -6, TK_FLOOR, -6, TK_FN, -6, TK_FOR, -6, TK_ID, -6, TK_IF, -6, TK_IMPORT, -6, TK_LAMBDA, -6, TK_LB, -6, TK_LCURLY, -6, TK_LET, -6, TK_LPAREN, -6, TK_NEW, -6, TK_NIL, -6, TK_NOT, -6, TK_NUM, -6, TK_PRINT, -6, TK_PRINTLN, -6, TK_PUSH, -6, TK_RANDOM, -6, TK_RETURN, -6, TK_SIZE, -6, TK_STRING, -6, TK_SUB, -6, TK_TRUE, -6, TK_WHILE, -6};
@@ -427,7 +426,7 @@ static const int *actTab[] = {
 	 actTab_row_190, 	 actTab_row_191, 	 actTab_row_116, 	 actTab_row_193, 	 actTab_row_116, 
 	 actTab_row_195, 	 actTab_row_196, 	 actTab_row_197
 };
-struct astnode;
+
 
 static const map<string, function<astnode*(vector<astnode*>&)>> actions = {
 	 {"mkBlock",mkBlock}, 
