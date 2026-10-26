@@ -83,7 +83,7 @@ void Parser::doReduce(int next) {
 }
 
 void Parser::printCurrent(int state_num, Token& T) {
-    cout<<"[ state: "<<state_num<<"][ token: "<<tokenStr[T.getSymbol()]<<"]"<<endl<<"Action: ";
+    cout<<"[ state: "<<state_num<<"][ token: "<<tokenStr[T.getSymbol()]<<"]"<<endl;
 }
 
 astnode* Parser::cleanUpAndAccept() {

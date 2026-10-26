@@ -86,6 +86,7 @@ class BlockScope {
         int n;
         BlockScope* enclosingScope;
         SymbolTableEntry nfSentinel;
+        bool is_class;
     public:
         BlockScope(BlockScope* parent);
         int size();
@@ -106,6 +107,7 @@ class ScopingST {
         int nextAddr() ;
         int depth(BlockScope* s);
         void printST(BlockScope* s, int d) ;
+        bool inClass;
     public:
         ScopingST();
         ~ScopingST();
@@ -127,6 +129,7 @@ class ScopingST {
         BlockScope* scope();
         int depth();
         void print();
+        bool currentScopeIsClass();
 };
 
 #endif

@@ -59,6 +59,7 @@ class  ByteCodeGenerator {
         void printConstPool() ;
     public:
         ByteCodeGenerator(bool debug = false, ConstPool* constPool = nullptr);
+        void setDebug(bool debug);
         void setConstPool(ConstPool* pool);
         vector<Instruction> compile(astnode* n, CompilerState& cs);
 };

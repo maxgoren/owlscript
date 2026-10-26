@@ -68,6 +68,7 @@ POST ::= PRI
 PRI ::= TK_LPAREN AEXPR TK_RPAREN                               @pass
 PRI ::= TK_NUM                                                  @mkNum
 PRI ::= TK_ID                                                   @mkId
+PRI ::= TK_THIS                                                 @mkId
 PRI ::= TK_STRING                                               @mkString
 PRI ::= TK_NIL                                              @mkConst
 PRI ::= TK_TRUE                                             @mkConst

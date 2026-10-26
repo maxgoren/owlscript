@@ -13,7 +13,7 @@ enum VMInstruction {
     call, retfun, 
     entblk, retblk,
     jump, brf, incr, decr, floorval, toint,
-    binop, unop, defun, mkclosure, 
+    binop, unop, defun, mkclosure, invoke,
     defstruct, mkstruct, popstack, mkrange,
     mklist, list_append, list_push, list_len,
     list_pop, mkset, print, newline, halt
@@ -21,7 +21,7 @@ enum VMInstruction {
 
 static const string instrStr[] = { "ldrand", "ldconst", "ldfield", "ldidx", "ldglobal", "ldlocal", "ldupval", "ldaddr", 
                      "stglobal", "stlocal", "stupval", "stfield", "stidx", "dup",  "call", "retfun", "entblk", "retblk", 
-                     "jump", "brf", "incr", "decr","floorval","toint", "binop", "unop","defun", "mkclosure", "defstruct", "mkstruct", 
+                     "jump", "brf", "incr", "decr","floorval","toint", "binop", "unop","defun", "mkclosure", "invoke", "defstruct", "mkstruct", 
                      "popstack","mkrange", "mklist", "list_append", "list_push", "list_len", "list_pop", "mkset", "print", "newline", "halt"};
 
 enum VMOperators {

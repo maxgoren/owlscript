@@ -13,6 +13,10 @@ void ByteCodeGenerator::setConstPool(ConstPool* pool) {
     symTable.setConstPool(pool);
 }
 
+void ByteCodeGenerator::setDebug(bool dbg) {
+    noisey = dbg;
+}
+
 vector<Instruction> ByteCodeGenerator::compile(astnode* n, CompilerState& cs) {
     cs = BUILD_ST;
     sr.buildSymbolTable(n, &symTable);

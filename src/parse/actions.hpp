@@ -4,13 +4,14 @@
 #include <vector>
 using namespace std;
 
-astnode* mkBlock(vector<astnode*>& reducing);
-astnode* mkBuiltin(vector<astnode*>& reducing);
-astnode* mkCall(vector<astnode*>& reducing);
-astnode* mkConst(vector<astnode*>& reducing);
-astnode* mkDotted(vector<astnode*>& reducing);
-astnode* mkElse(vector<astnode*>& reducing);
-astnode* mkExprStmt(vector<astnode*>& reducing);
+astnode*    mkBlock(vector<astnode*>& reducing);
+astnode*    mkBuiltin(vector<astnode*>& reducing);
+astnode*    mkCall(vector<astnode*>& reducing);
+astnode*    mkConst(vector<astnode*>& reducing);
+astnode*    mkDotted(vector<astnode*>& reducing);
+astnode*    mkElse(vector<astnode*>& reducing);
+astnode*    mkObjMethod(vector<astnode*>& reducing);
+astnode*     mkExprStmt(vector<astnode*>& reducing);
 astnode* 	 mkFor(vector<astnode*>& reducing);
 astnode* 	 mkFunc(vector<astnode*>& reducing);
 astnode* 	 mkId(vector<astnode*>& reducing);
