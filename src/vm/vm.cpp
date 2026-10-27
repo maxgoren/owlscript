@@ -1,5 +1,5 @@
 #include "vm.hpp"
-#include "../compile/scopingst.hpp"
+
 void VM::init(vector<Instruction>& cp, int verbosity) {
     codePage = cp;
     if (ip > 0) ip -= 1;
@@ -132,18 +132,16 @@ void VM::retProcedure() {
     ip = callstk->ret_addr;
     closeBlock();
 }
-
 void VM::instantiate(Instruction& inst) {
     ClassObject* master = constPool.get(inst.operand[0].intval).objval->object;
     ClassObject* clone = new ClassObject(master->name, master->scope);
     clone->instantiated = true;
     for (auto m : master->fields) {
-            clone->fields[m.first] = StackItem();
+        clone->fields[m.first] = StackItem();
     }
     int idx = constPool.insert(alloc.alloc(clone));
     opstk[++sp] = constPool.get(idx);
 }
-
 void VM::storeGlobal() {
     StackItem t = opstk[sp--];
     StackItem val = opstk[sp--];
@@ -234,44 +232,9 @@ void VM::loadField(Instruction& inst) {
         auto object = top(0).objval->object;
         auto item = object->fields[fieldName];
         top(0) = item;
+        return;
     }
 }
-
-void VM::invokeMethod(Instruction& inst) {
-    int numArgs = inst.operand[1].intval-1;
-    if (numArgs < 0) numArgs = 0;
-    if (top(numArgs).type == OBJECT && top(numArgs).objval->type == CLASS) {
-        int idx = inst.operand[0].intval;  
-        string fieldName = *(constPool.get(idx).objval->strval);
-        cout<<"Fieldname? "<<fieldName<<endl;
-        auto object = top(numArgs).objval->object;
-        SymbolTableEntry ent = ((BlockScope*)object->scope)->find(fieldName);
-        cout<<"Address: "<<ent.addr<<endl;
-        if (ent.addr != -1) {
-            auto item = constPool.get(ent.addr);
-            opstk[++sp] = item;
-            if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
-                cout<<" And was indeed a closure."<<endl;
-                Closure* close = opstk[sp].objval->closure;
-                callstk = new ActivationRecord(10, inst.operand[0].intval, ip, callstk, close->env);
-                alloc.registerObject(callstk);
-                callstk->locals[0] = opstk[sp--];
-                ip = close->func.start_ip;
-                cout<<"First we muist deal with ze argumentats";
-                for (int i = numArgs; i > 0; i--) {
-                        callstk->locals[i] = opstk[sp--];
-                        cout<<".";
-                }
-                return;
-            }
-        } else {
-            cout<<"Could'nt find a method named "<<fieldName<<endl;
-        }   
-    } else {
-        cout<<"Expect Object, but didnt get one."<<endl;
-    }
-}
-
 void VM::storeField(Instruction& inst) {
     if (top(0).type == OBJECT && top(0).objval->type == CLASS) {
         int idx = inst.operand[0].intval;    
@@ -449,7 +412,6 @@ void VM::execute(Instruction& inst) {
         case list_push:   { pushList(); } break;
         case list_pop: { popList(); } break;
         case list_len: { listLength(); } break;
-        case invoke:   { invokeMethod(inst); } break;
         case call:     { callProcedure(inst); } break;
         case retfun:   { retProcedure(); } break;
         case entblk:   { openBlock(inst); } break;

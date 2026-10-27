@@ -8,9 +8,8 @@ int runtimeDepth(int currDepth, int itemDepth) {
 
 void ByteCodeGenerator::emitLoadAddress(SymbolTableEntry& item, astnode* n) {
     emit(Instruction(ldaddr, item.addr));
-    if (noisey) cout << "LDADDR: " << n->token.getString()<<", scopelevel="<<n->token.scopeLevel() << ", depth="<<(symTable.depth() - item.depth)<<" (raw): " << item.depth<< endl;
+    if (noisey) cout << "LDADDR: " << n->token.getString()<<"scopelevel="<<n->token.scopeLevel() << " depth="<<(symTable.depth() - item.depth)<<" (raw): " << item.depth<< endl;
 }
-
 void ByteCodeGenerator::emitLoad(astnode* n, bool needLvalue) {
     if (noisey) cout<<"Compiling ID expression: ";
     SymbolTableEntry item = symTable.findReady(n->token.getString());
@@ -20,7 +19,7 @@ void ByteCodeGenerator::emitLoad(astnode* n, bool needLvalue) {
     } else {
         if (depth == GLOBAL_SCOPE) {
             emit(Instruction(ldglobal, item.addr));
-            if (noisey) cout << "LDGLOBAL: " << n->token.getString()<<", scopelevel="<<n->token.scopeLevel() << " depth=" << item.depth<<" addr="<<item.addr<<endl;
+            if (noisey) cout << "LDGLOBAL: " << n->token.getString()<<"scopelevel="<<n->token.scopeLevel() << " depth=" << item.depth<<" addr="<<item.addr<<endl;
         } else if (depth == 0) {
             emit(Instruction(ldlocal, item.addr));
             if (noisey) cout << "LDLOCAL: " << n->token.getString()<<", scopelevel= "<<n->token.scopeLevel() << " depth= " <<(symTable.depth() - item.depth)<<" (raw): "<<item.depth<<"addr="<<item.addr<< endl;
@@ -46,42 +45,17 @@ void ByteCodeGenerator::emitStore(astnode* n) {
     }
 
 }
-
 void ByteCodeGenerator::emitListAccess(astnode* n, bool isLvalue) {
     genExpression(n->left, false);
     genExpression(n->right, false);
     emit(Instruction(isLvalue ? stidx:ldidx));
 }
-
 void ByteCodeGenerator::emitFieldAccess(astnode* n, bool isLvalue) {
-    if (noisey) {
-        cout<<"Emitting Field access for "<<n->left->token.getString()<<".";
-        if (n->right->expr == FUNC_EXPR) {
-            cout<<n->right->left->token.getString()<<endl;
-        } else {
-            cout<<n->right->token.getString()<<endl;
-        }
-    }
-    if (noisey) {
-        cout<<"Emitting Object Load..."<<endl;
-    }
+    if (noisey) cout<<"Emitting Field access for "<<n->left->token.getString()<<"."<<n->right->token.getString()<<endl;
     emitLoad(n->left, false);
-    if (noisey) {
-        cout<<"And now for the Field Part."<<endl;
-    }
-    if (n->right->expr == ID_EXPR) {   
+    if (n->right->expr == ID_EXPR) {
         int fieldname = symTable.getConstPool()->insert(alloc.alloc(n->right->token.getString()));
         emit(Instruction(isLvalue ? stfield:ldfield, fieldname));
-    } else if (n->right->expr == FUNC_EXPR) {
-        cout<<"Field is method call"<<endl;
-        int fieldname = symTable.getConstPool()->insert(alloc.alloc(n->right->left->token.getString()));
-        if (n->right->right != nullptr) {
-            cout<<"Compilng parameta"<<endl;
-            genCode(n->right->right, false);
-        }
-        int numArgs = 1;
-        for (auto x = n->right->right; x != nullptr; x = x->next) numArgs++;
-        emit(Instruction(invoke, fieldname, numArgs));
     } else {
         auto t = n->right;
         while (t->expr == FIELD_EXPR) {
@@ -101,21 +75,14 @@ void ByteCodeGenerator::emitFieldAccess(astnode* n, bool isLvalue) {
 void ByteCodeGenerator::emitStoreFuncInEnvironment(astnode* n, bool isLambda) {
     string name = n->token.getString();
     SymbolTableEntry fn_info = symTable.lookup(name);
-    bool inClass = symTable.currentScopeIsClass();
     emit(Instruction(mkclosure, fn_info.constPoolIndex, fn_info.depth));
-    if (isLambda && !inClass)
+    if (isLambda)
         return;
-    if (inClass) {
+    if (fn_info.depth == GLOBAL_SCOPE) {
         emit(Instruction(ldaddr, fn_info.addr));
-        emit(Instruction(stfield, fn_info.addr));
+        emit(Instruction(stglobal, fn_info.addr));
     } else {
-        int depth = runtimeDepth(symTable.depth(), fn_info.depth);
-        if (fn_info.depth == GLOBAL_SCOPE) {
-            emit(Instruction(ldaddr, fn_info.addr));
-            emit(Instruction(stglobal, fn_info.addr));
-        } else {
-            emit(Instruction(ldaddr, fn_info.addr));
-            emit(Instruction(stlocal, fn_info.addr));
-        }
+        emit(Instruction(ldaddr, fn_info.addr));
+        emit(Instruction(stlocal, fn_info.addr));
     }
 }

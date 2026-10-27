@@ -28,7 +28,6 @@ void ByteCodeGenerator::emitClassDef(astnode* n) {
     string name = n->left->token.getString();
     ClassObject* ent = symTable.lookupClass(name);
     emit(Instruction(defstruct, ent->cpIdx, L1+1));
-    genCode(n->right, false);
     int cpos = skipEmit(0);
     skipTo(L1);
     emit(Instruction(jump, cpos));

@@ -17,7 +17,6 @@
 {"push",TK_PUSH}
 {"size",TK_SIZE}
 {"true",TK_TRUE}
-{"this", TK_THIS}
 {"first",TK_FIRST}
 {"rest",TK_REST}
 {"empty",TK_EMPTY}

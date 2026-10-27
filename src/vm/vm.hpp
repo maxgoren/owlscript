@@ -31,7 +31,6 @@ class VM {
         void closeOver(Instruction& inst);
         void openBlock(Instruction& inst);
         void closeBlock();
-        void invokeMethod(Instruction& inst);
         void callProcedure(Instruction& inst) ;
         void retProcedure() ;
         void instantiate(Instruction& inst);

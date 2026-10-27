@@ -32,7 +32,6 @@ class Compiler {
                 lexer = Lexer(false);
                 parser = Parser(false);
             }
-            codeGen.setDebug(verbosity > 0);
             codeGen.setConstPool(pool);
             state = READY;
         }

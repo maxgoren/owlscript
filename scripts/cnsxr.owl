@@ -1,13 +1,8 @@
 class Samp {
     let bell;
     let bang;
-    def doit(let q) {
-        return "lo"+q;
-    }
-    def soy(let j) {
-        return "hi"+j;
-    }
 };
-let xs := new Samp("Hello", "world");
-println xs.soy();
-println xs.doit(5);
+
+let xs := new Samp("hello", "world");
+
+println xs;
