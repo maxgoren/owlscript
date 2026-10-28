@@ -269,11 +269,16 @@ void ByteCodeGenerator::emitBlessExpr(astnode* n) {
 
     it = klass->scope->iter();
     vector<int> idxs;
-    for (auto x = n->right; x != nullptr && !it.done(); x = x->next) {
+    for (auto x = n->right; x != nullptr && !it.done(); ) {
         if (it.get().constPoolIndex == -1)
             it.get().constPoolIndex = symTable.getConstPool()->insert(alloc.alloc(it.get().name));
-        idxs.push_back(it.get().constPoolIndex);
-        it.next();
+        if (it.get().name == "this") {
+            it.next();
+        } else {
+            idxs.push_back(it.get().constPoolIndex);
+            it.next();
+            x = x->next;
+        }
     }
     while (!idxs.empty()) {
         emit(Instruction(stfield, idxs.back()));

@@ -259,6 +259,7 @@ astnode* mkFunc(vector<astnode*>& reducing) {
         res->left = reducing[1];
         res->left->kind = EXPRNODE;
         res->left->expr = ID_EXPR;
+        nn->token.setString(reducing[1]->token.getString());
         res->right = nn;
         ls->left = res;
         nn = ls;

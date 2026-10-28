@@ -2,10 +2,10 @@ fn delay(let i) {
     return &() -> { i; }; 
 } 
 fn A(var k, var x1, var x2, var x3, var x4, var x5) { 
-    fn B() { 
+    let B := &() -> { 
         k--; 
         return A(k, B, x1, x2, x3, x4); 
-    } 
+    };
     if (k <= 0) {
         return (x4()+x5());
     }

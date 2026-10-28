@@ -3,7 +3,7 @@
 int runtimeDepth(int currDepth, int itemDepth) {
     if (itemDepth == -1 || currDepth - itemDepth < 0)
         return -1;
-    return currDepth - itemDepth;
+    return (currDepth - itemDepth);
 }
 
 void ByteCodeGenerator::emitLoadAddress(SymbolTableEntry& item, astnode* n) {
@@ -73,10 +73,11 @@ void ByteCodeGenerator::emitFieldAccess(astnode* n, bool isLvalue) {
         int fieldname = symTable.getConstPool()->insert(alloc.alloc(n->right->token.getString()));
         emit(Instruction(isLvalue ? stfield:ldfield, fieldname));
     } else if (n->right->expr == FUNC_EXPR) {
-        cout<<"Field is method call"<<endl;
+        if (noisey) {
+            cout<<"Field is method call"<<endl;
+        }
         int fieldname = symTable.getConstPool()->insert(alloc.alloc(n->right->left->token.getString()));
         if (n->right->right != nullptr) {
-            cout<<"Compilng parameta"<<endl;
             genCode(n->right->right, false);
         }
         int numArgs = 1;

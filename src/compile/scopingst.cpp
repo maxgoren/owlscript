@@ -81,8 +81,10 @@ void ScopingST::openObjectScope(string name) {
         if (currentScope->find(name).type == CLASSVAR) {
             BlockScope* ns = currentScope->find(name).scope;
             currentScope = ns;
+            //cout<<"Rentered Object scope for "<<name<<endl;
         }
     } else {
+        //cout<<"Created object scope for "<<name<<endl;
         BlockScope* ns = new BlockScope(currentScope);
         ClassObject* obj = new ClassObject(name, ns);
         ns->is_class = true;
@@ -93,9 +95,9 @@ void ScopingST::openObjectScope(string name) {
         currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, CLASSVAR, depth(currentScope)+1));
         currentScope->find(name).scope = ns;
         currentScope = ns;
-        //ns->insert("this", SymbolTableEntry("this", 0, depth(currentScope)));
     }
 }
+
 void ScopingST::copyObjectScope(string instanceName, string objName) {
     if (objectDefs.find(objName) == objectDefs.end()) {
         cout<<"Attempted to instantiate Unknown class '"<<objName<<"'"<<endl;
@@ -103,12 +105,15 @@ void ScopingST::copyObjectScope(string instanceName, string objName) {
         currentScope->insert(instanceName, SymbolTableEntry(instanceName, nextAddr(), objectDefs[objName]->cpIdx, CLASSVAR, depth(currentScope)+1));
     }
 }
+
 void ScopingST::openFunctionScope(string name, int L1) {
     if (currentScope->find(name) != currentScope->end()) {
+       // cout<<"Ropened function scope for "<<name<<endl;
         BlockScope* ns = currentScope->find(name).scope;
         constPool->get(currentScope->find(name).constPoolIndex).objval->closure->func.start_ip = L1;
         currentScope = ns;
     } else {
+        //cout<<"Created Function Scope for "<<name<<endl;
         BlockScope*  ns = new BlockScope(currentScope);
         ns->is_class = false;
         int constIdx = constPool->insert(alloc.alloc(new Closure(Function(name, L1), nullptr)));
@@ -118,16 +123,28 @@ void ScopingST::openFunctionScope(string name, int L1) {
         currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, FUNCVAR, d));
         currentScope->find(name).isReady = true;
         currentScope->find(name).scope = ns;
+        bool in_class = currentScope->is_class;
         currentScope = ns;
+        if (in_class) {
+            currentScope->insert("this", SymbolTableEntry("this", 0, depth(currentScope), true));
+            
+        }
     }
 }
+
 void ScopingST::closeScope() {
     if (currentScope != nullptr && currentScope->getEnclosing() != nullptr) {
+        //cout<<"Closed scope."<<endl;
         currentScope = currentScope->getEnclosing();
     }
 }
 void ScopingST::insert(string name) {
-    currentScope->insert(name, SymbolTableEntry(name, nextAddr(), depth(currentScope)));
+    if (currentScope->find(name) == currentScope->end()) {
+        currentScope->insert(name, SymbolTableEntry(name, nextAddr(), depth(currentScope)));
+        //cout<<"Inserted: "<<name<<endl;
+    } else {
+        cout<<"Nah do dat."<<endl;
+    }
 }
 bool ScopingST::existsInScope(string name) {
     if (currentScope == nullptr)
@@ -194,7 +211,7 @@ void ScopingST::print() {
 }
 
 int ScopingST::nextAddr() {
-    int na = currentScope->size()+1;
+    int na = currentScope->find("this") == currentScope->end() ? currentScope->size()+1:currentScope->size();
     return na;
 }
 int ScopingST::depth(BlockScope* s) {
@@ -207,7 +224,7 @@ int ScopingST::depth(BlockScope* s) {
         d++;
         x = x->getEnclosing();
     }
-    return d-1;
+    return d;
 }
 void ScopingST::printST(BlockScope* s, int d) {
     if (s == nullptr)

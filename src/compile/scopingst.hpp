@@ -31,6 +31,7 @@ struct SymbolTableEntry {
     BlockScope* scope;
     SymbolTableEntry(string n, int adr, int cpi, SymTableType t, int d) : type(t), addr(adr), name(n), depth(d), constPoolIndex(cpi), lineNum(0), isReady(false), scope(nullptr) { }
     SymbolTableEntry(string n, int adr, int d) : type(LOCALVAR), name(n), addr(adr), depth(d), constPoolIndex(-1), lineNum(0), isReady(false), scope(nullptr) { }
+    SymbolTableEntry(string n, int adr, int d, bool ready) : type(LOCALVAR), name(n), addr(adr), depth(d), constPoolIndex(-1), lineNum(0), isReady(ready), scope(nullptr) { }
     SymbolTableEntry() : type(NONE), addr(-1), constPoolIndex(-1), lineNum(0), isReady(false), scope(nullptr) { }
     SymbolTableEntry(const SymbolTableEntry& e) {
         name = e.name;

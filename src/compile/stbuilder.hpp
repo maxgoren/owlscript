@@ -46,8 +46,8 @@ class STBuilder {
                             if (binexpr->right->expr == BLESS_EXPR) {
                                 symTable->copyObjectScope(binexpr->left->token.getString(), binexpr->right->left->token.getString());
                             } else {
-                                buildExpressionST(binexpr->left, true);
                                 buildExpressionST(binexpr->right, false);
+                                buildExpressionST(binexpr->left, true);
                             }
                         } break;          
                     }
@@ -107,8 +107,10 @@ class STBuilder {
                     buildSymbolTable(t->right);
                 } break;
                 case LAMBDA_EXPR: {
-                    string name = nameLambda();
-                    t->token.setString(name);
+                    if (t->token.getString() == "lambda") {
+                        string name = nameLambda();
+                        t->token.setString(name);
+                    }
                     symTable->openFunctionScope(t->token.getString(), -1);
                     buildSymbolTable(t->left);
                     buildSymbolTable(t->right);
@@ -123,7 +125,7 @@ class STBuilder {
                     buildSymbolTable(t->right);
                 } break;
                 case FIELD_EXPR: {
-                    //rright hand side resolved dynamically at run time.
+                    //buildSymbolTable(t->right);
                     buildSymbolTable(t->left);
                 } break;
                 case RANGE_EXPR: {

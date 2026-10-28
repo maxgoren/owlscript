@@ -2,12 +2,12 @@ class Samp {
     let bell;
     let bang;
     def doit(let q) {
-        return "lo"+q;
+        return "lo"+q+this.bang;
     }
     def soy(let j) {
-        return "hi"+j;
+        return "hi"+j+this.bell;
     }
 };
 let xs := new Samp("Hello", "world");
-println xs.soy();
+println xs.soy(3);
 println xs.doit(5);

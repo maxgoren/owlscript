@@ -121,6 +121,7 @@ void VM::callProcedure(Instruction& inst) {
             for (int i = numArgs; i > 0; i--) {
                 callstk->locals[i] = opstk[sp--];
             }
+            callstk->locals[0] = close;
             ip = close->func.start_ip;
             return;
         }
@@ -243,24 +244,23 @@ void VM::invokeMethod(Instruction& inst) {
     if (top(numArgs).type == OBJECT && top(numArgs).objval->type == CLASS) {
         int idx = inst.operand[0].intval;  
         string fieldName = *(constPool.get(idx).objval->strval);
-        cout<<"Fieldname? "<<fieldName<<endl;
-        auto object = top(numArgs).objval->object;
+        auto as_this = top(numArgs).objval;
+        auto object = as_this->object;
         SymbolTableEntry ent = ((BlockScope*)object->scope)->find(fieldName);
-        cout<<"Address: "<<ent.addr<<endl;
+        //cout<<"Fieldname? "<<fieldName<<endl;
+        //cout<<"Address: "<<ent.addr-1<<endl;
         if (ent.addr != -1) {
-            auto item = constPool.get(ent.addr);
+            auto item = constPool.get(ent.addr-1);
             opstk[++sp] = item;
             if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
-                cout<<" And was indeed a closure."<<endl;
-                Closure* close = opstk[sp].objval->closure;
+                //cout<<" And was indeed a closure."<<endl;
+                Closure* close = opstk[sp--].objval->closure;
                 callstk = new ActivationRecord(10, inst.operand[0].intval, ip, callstk, close->env);
                 alloc.registerObject(callstk);
-                callstk->locals[0] = opstk[sp--];
+                callstk->locals[0] = as_this;
                 ip = close->func.start_ip;
-                cout<<"First we muist deal with ze argumentats";
                 for (int i = numArgs; i > 0; i--) {
-                        callstk->locals[i] = opstk[sp--];
-                        cout<<".";
+                    callstk->locals[i] = opstk[sp--];
                 }
                 return;
             }
