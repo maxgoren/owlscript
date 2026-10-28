@@ -15,6 +15,7 @@ void ByteCodeGenerator::setConstPool(ConstPool* pool) {
 
 void ByteCodeGenerator::setDebug(bool dbg) {
     noisey = dbg;
+    symTable.setDebug(dbg);
 }
 
 vector<Instruction> ByteCodeGenerator::compile(astnode* n, CompilerState& cs) {

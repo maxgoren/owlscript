@@ -5,9 +5,13 @@ class Samp {
         return "lo"+q+this.bang;
     }
     def soy(let j) {
-        return "hi"+j+this.bell;
+        return "hi"+j+this.bang;
     }
 };
 let xs := new Samp("Hello", "world");
-println xs.soy(3);
-println xs.doit(5);
+let xz := new Samp("murlo", "lorum");
+println xs.doit(" cruel ");
+println xz.soy(13);
+println xs.soy(xz.bang);
+println xz.soy(true);
+println xz.doit(xz.bell);

@@ -109,8 +109,9 @@ class ScopingST {
         int depth(BlockScope* s);
         void printST(BlockScope* s, int d) ;
         bool inClass;
+        bool noisey;
     public:
-        ScopingST();
+        ScopingST(bool noisey = false);
         ~ScopingST();
         ConstPool* getConstPool() {
             return constPool;
@@ -131,6 +132,7 @@ class ScopingST {
         int depth();
         void print();
         bool currentScopeIsClass();
+        void setDebug(bool dbg);
 };
 
 #endif
