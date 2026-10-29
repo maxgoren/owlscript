@@ -116,24 +116,29 @@ void ByteCodeGenerator::emitListOperation(astnode* listExpr) {
         return;
     switch (operation->token.getSymbol()) {
         case TK_APPEND: {
+            cout<<"Emit List Append"<<endl;
             genExpression(listname, false);
             genExpression(operation->left, false);
             emit(Instruction(list_append));
         } break;
         case TK_PUSH: {
+            cout<<"Emit List Push"<<endl;
             genExpression(listname, false);
             genExpression(operation->left, false);
             emit(Instruction(list_push));
         } break;
         case TK_POP: {
+            cout<<"Emit List Pop"<<endl;
             genExpression(listname, false);
             emit(Instruction(list_pop));
         } break;
         case TK_SIZE: {
+            cout<<"Emit List Size"<<endl;  
             genExpression(listname, false);
             emit(Instruction(list_len));  
         } break;
         case TK_EMPTY: {
+            cout<<"Emit List Empty"<<endl;
             genExpression(listname, false);
             emit(Instruction(list_len));  
             emit(Instruction(ldconst, symTable.getConstPool()->insert(0.0)));

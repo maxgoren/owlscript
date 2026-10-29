@@ -1,0 +1,18 @@
+class Queue {
+    let data;
+    def put(let q) {
+        this.data.append(q);
+    }
+    def remove() {
+        return this.data.pop();
+    }
+    def isEmpty() {
+        return this.data.empty();
+    }
+};
+let fq := new Queue([]);
+fq.put(13);
+fq.put(24);
+while (!fq.isEmpty()) {
+    println fq.remove();
+}

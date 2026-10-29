@@ -84,19 +84,36 @@ void ByteCodeGenerator::emitFieldAccess(astnode* n, bool isLvalue) {
         for (auto x = n->right->right; x != nullptr; x = x->next) numArgs++;
         emit(Instruction(invoke, fieldname, numArgs));
     } else if (n->right->expr == LIST_EXPR) {
-        cout<<"List expression? "<<endl;
-        genCode(n->left, false);
-        if (n->right->token.getString() == "push") {
-            emit(Instruction(list_push));
-        } else if (n->right->token.getString() == "pop") {
-            emit(Instruction(list_pop));
-        } else if (n->right->token.getString() == "append") {
-            emit(Instruction(list_append));
-        } else if (n->right->token.getString() == "size") {
-            emit(Instruction(list_len));
-        } else if (n->right->token.getString() == "empty") {
-            emit(Instruction(list_len));
-        } 
+        if (noisey) {
+            cout<<"Field is List expression "<<endl;
+        }
+        auto listname_node = n->right->left;
+        auto operation = n->right->right;
+        if (operation == nullptr)
+            return;
+        int listname = symTable.getConstPool()->insert(alloc.alloc(listname_node->token.getString()));
+        emit(Instruction(isLvalue ? stfield:ldfield, listname));
+        switch (operation->token.getSymbol()) {
+            case TK_APPEND: {
+                genExpression(operation->left, false);
+                emit(Instruction(list_append));
+            } break;
+            case TK_PUSH: {
+                genExpression(operation->left, false);
+                emit(Instruction(list_push));
+            } break;
+            case TK_POP: {
+                emit(Instruction(list_pop));
+            } break;
+            case TK_SIZE: {
+                emit(Instruction(list_len));  
+            } break;
+            case TK_EMPTY: {
+                emit(Instruction(list_len));  
+                emit(Instruction(ldconst, symTable.getConstPool()->insert(0.0)));
+                emit(Instruction(binop, VM_EQU));
+            } break;
+        }
     } else {
         auto t = n->right;
         while (t->expr == FIELD_EXPR) {
