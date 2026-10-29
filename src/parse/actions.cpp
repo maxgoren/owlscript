@@ -329,15 +329,25 @@ astnode* mkSubscript(vector<astnode*>& reducing) {
     return nn;
 }
 
+bool isListOp(astnode* rr) {
+    if (rr->token.getString() == "pop" || 
+        rr->token.getString() == "push" || 
+        rr->token.getString() == "append" || 
+        rr->token.getString() == "size" || 
+        rr->token.getString() == "empty")
+        return true;
+    return false;
+}
+
 astnode* mkDotted(vector<astnode*>& reducing) {
     astnode* nn = reducing[1];
     nn->kind = EXPRNODE;
     nn->expr = FIELD_EXPR;
     astnode* ll = reducing[0];
     astnode* rr = reducing[2]; 
-        nn->left = ll;
-        nn->right = rr;
-    if (rr->expr == LIST_EXPR) nn->expr = LIST_EXPR;
+    nn->left = ll;
+    nn->right = rr;
+    if (isListOp(rr)) nn->expr = LIST_EXPR;
     return nn;
 }
 

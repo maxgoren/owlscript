@@ -28,6 +28,7 @@ class VM {
         StackItem& getUpValue(int d, int i);
         StackItem& top(int depth = 0);
         ActivationRecord* mostRecentAR(int func_id);
+        void dispatchNativeMethod(string fname);
         void closeOver(Instruction& inst);
         void openBlock(Instruction& inst);
         void closeBlock();

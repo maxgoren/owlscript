@@ -11,3 +11,5 @@ x.append(42);
 x.push(13);
 println x;
 println x.size();
+println x.pop();
+println x;

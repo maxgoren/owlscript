@@ -83,6 +83,20 @@ void ByteCodeGenerator::emitFieldAccess(astnode* n, bool isLvalue) {
         int numArgs = 1;
         for (auto x = n->right->right; x != nullptr; x = x->next) numArgs++;
         emit(Instruction(invoke, fieldname, numArgs));
+    } else if (n->right->expr == LIST_EXPR) {
+        cout<<"List expression? "<<endl;
+        genCode(n->left, false);
+        if (n->right->token.getString() == "push") {
+            emit(Instruction(list_push));
+        } else if (n->right->token.getString() == "pop") {
+            emit(Instruction(list_pop));
+        } else if (n->right->token.getString() == "append") {
+            emit(Instruction(list_append));
+        } else if (n->right->token.getString() == "size") {
+            emit(Instruction(list_len));
+        } else if (n->right->token.getString() == "empty") {
+            emit(Instruction(list_len));
+        } 
     } else {
         auto t = n->right;
         while (t->expr == FIELD_EXPR) {

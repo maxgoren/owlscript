@@ -1,0 +1,29 @@
+class Node {
+    let info;
+    let next;
+};
+
+class lifo {
+    let head;
+    let tail;
+    def put(let q) { 
+        this.head := new Node(q, this.head);
+        return q;
+    }
+    def remove() {
+        let t := this.head;
+        this.head := this.head.next;
+        return t.info;
+    }
+    def isEmpty() {
+        return this.head == nil;
+    }
+};
+let fq := new lifo(nil,nil);
+fq.put("Yes");
+fq.put("Lets");
+fq.put("Do");
+fq.put("This"); 
+while (!fq.isEmpty()) {
+    println fq.remove();
+}

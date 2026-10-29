@@ -1,6 +1,10 @@
 class Samp {
     let bell;
     let bang;
+    let duchess;
+    def expel() {
+        return "yes, and" + this.duchess;
+    }
     def doit(let q) {
         return "lo"+q+this.bang;
     }
@@ -8,10 +12,12 @@ class Samp {
         return "hi"+j+this.bang;
     }
 };
-let xs := new Samp("Hello", "world");
-let xz := new Samp("murlo", "lorum");
+let xs := new Samp("Hello", "world", "voosh");
+let xz := new Samp("murlo", "lorum", "shwam");
 println xs.doit(" cruel ");
 println xz.soy(13);
 println xs.soy(xz.bang);
-println xz.soy(true);
+println xz.soy(xz.duchess);
 println xz.doit(xz.bell);
+println xz.expel();
+println xs.expel();

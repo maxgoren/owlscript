@@ -78,6 +78,19 @@ int ConstPool::insert(StackItem item) {
     return addr;
 }
 
+StackItem& ConstPool::fetchMethod(int indx) {
+    if (data[indx].type == OBJECT && data[indx].objval->type == STRING) {
+        string name = *(data[indx].objval->strval);
+        for (int i = 0; i < n; i++) {
+            if (data[i].type == OBJECT && data[i].objval->type == CLOSURE && data[i].objval->closure->func.name == name) {
+                    return data[i];
+            }
+        }
+    }
+    return data[n];
+}
+
+
 StackItem& ConstPool::get(int indx) {
     return data[indx];
 }

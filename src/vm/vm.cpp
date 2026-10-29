@@ -238,31 +238,49 @@ void VM::loadField(Instruction& inst) {
     }
 }
 
+bool isListOp(string fname) {
+    if (fname == "pop") return true;
+    if (fname == "push") return true;
+    if (fname == "append") return true;
+    if (fname == "size") return true;
+    if (fname == "empty") return true;
+    return false;
+}
+
+
+void VM::dispatchNativeMethod(string fname) {
+    cout<<"Dispatching Native Method."<<endl;
+    if (fname == "pop") popList();
+    if (fname == "push") pushList();
+    if (fname == "append") appendList();
+    if (fname == "size") listLength();
+    if (fname == "empty") {
+        listLength();
+        opstk[++sp] = top().objval->list->empty();
+    }
+}
+
 void VM::invokeMethod(Instruction& inst) {
     int numArgs = inst.operand[1].intval-1;
+    int idx = inst.operand[0].intval;  
     if (numArgs < 0) numArgs = 0;
     if (top(numArgs).type == OBJECT && top(numArgs).objval->type == CLASS) {
-        int idx = inst.operand[0].intval;  
         string fieldName = *(constPool.get(idx).objval->strval);
-        auto as_this = top(numArgs).objval;
-        auto object = as_this->object;
-        SymbolTableEntry ent = ((BlockScope*)object->scope)->find(fieldName);
-        //cout<<"Fieldname? "<<fieldName<<endl;
-        //cout<<"Address: "<<ent.addr-1<<endl;
-        if (ent.addr != -1) {
-            auto item = constPool.get(ent.addr-1);
-            opstk[++sp] = item;
-            if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
-                //cout<<" And was indeed a closure."<<endl;
-                Closure* close = opstk[sp--].objval->closure;
-                callstk = new ActivationRecord(10, inst.operand[0].intval, ip, callstk, close->env);
-                alloc.registerObject(callstk);
-                callstk->locals[0] = as_this;
-                ip = close->func.start_ip;
-                for (int i = numArgs; i > 0; i--) {
-                    callstk->locals[i] = opstk[sp--];
-                }
-                return;
+        if (isListOp(fieldName)) {
+            dispatchNativeMethod(fieldName);
+            return;
+        }
+        auto as_this = top(numArgs);
+        auto item = constPool.fetchMethod(idx);
+        opstk[++sp] = item;
+        if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
+            Closure* close = opstk[sp--].objval->closure;
+            callstk = new ActivationRecord(10, inst.operand[0].intval, ip, callstk, close->env);
+            alloc.registerObject(callstk);
+            callstk->locals[0] = as_this;
+            ip = close->func.start_ip;
+            for (int i = numArgs; i > 0; i--) {
+                callstk->locals[i] = opstk[sp--];
             }
         } else {
             cout<<"Could'nt find a method named "<<fieldName<<endl;
