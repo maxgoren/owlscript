@@ -32,6 +32,8 @@ class  ByteCodeGenerator {
         void emitListAccess(astnode* n, bool isLvalue) ;
         void emitFieldAccess(astnode* n, bool isLvalue) ;
         void emitListOperation(astnode* listExpr) ;
+        void emitListMethod(astnode* n);
+        void emitMethodCall(astnode* n);
         void emitComprehension(astnode* n);
         void emitReturn(astnode* n) ;
         void emitPrint(astnode* n) ;

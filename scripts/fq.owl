@@ -10,9 +10,29 @@ class Queue {
         return this.data.empty();
     }
 };
+class Stack {
+    let data;
+    def put(let t) {
+        this.data.push(t);
+    }
+    def remove() {
+        return this.data.pop();
+    }
+    def isEmpty() {
+        return this.data.empty();
+    }
+};
 let fq := new Queue([]);
+let st := new Stack([]);
 fq.put(13);
 fq.put(24);
+fq.put(86);
+st.put(13);
+st.put(24);
+st.put(86);
 while (!fq.isEmpty()) {
     println fq.remove();
+}
+while (!st.isEmpty()) {
+    println st.remove();
 }

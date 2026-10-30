@@ -53,68 +53,77 @@ void ByteCodeGenerator::emitListAccess(astnode* n, bool isLvalue) {
     emit(Instruction(isLvalue ? stidx:ldidx));
 }
 
+
+void ByteCodeGenerator::emitMethodCall(astnode* n) {
+    int fieldname = symTable.getConstPool()->insert(alloc.alloc(n->right->left->token.getString()));
+    if (n->right->right != nullptr) {
+        genCode(n->right->right, false);
+    }
+    int numArgs = 1;
+    for (auto x = n->right->right; x != nullptr; x = x->next) numArgs++;
+    emit(Instruction(invoke, fieldname, numArgs));
+}
+
+void ByteCodeGenerator::emitListMethod(astnode* n) {
+    auto listname_node = n->right->left;
+    auto operation = n->right->right;
+    if (operation == nullptr)
+        return;
+    int listname = symTable.getConstPool()->insert(alloc.alloc(listname_node->token.getString()));
+    emit(Instruction(ldfield, listname));
+    switch (operation->token.getSymbol()) {
+        case TK_APPEND: {
+            genExpression(operation->left, false);
+            emit(Instruction(list_append));
+        } break;
+        case TK_PUSH: {
+            genExpression(operation->left, false);
+            emit(Instruction(list_push));
+        } break;
+        case TK_POP: {
+            emit(Instruction(list_pop));
+        } break;
+        case TK_SIZE: {
+            emit(Instruction(list_len));  
+        } break;
+        case TK_EMPTY: {
+            emit(Instruction(list_len));  
+            emit(Instruction(ldconst, symTable.getConstPool()->insert(0.0)));
+            emit(Instruction(binop, VM_EQU));
+        } break;
+    }
+}
+
 void ByteCodeGenerator::emitFieldAccess(astnode* n, bool isLvalue) {
     if (noisey) {
-        cout<<"Emitting Field access for "<<n->left->token.getString()<<".";
+        cout<<"Emitting Field access on "<<n->left->token.getString()<<".";
         if (n->right->expr == FUNC_EXPR) {
             cout<<n->right->left->token.getString()<<endl;
         } else {
             cout<<n->right->token.getString()<<endl;
         }
     }
-    if (noisey) {
-        cout<<"Emitting Object Load..."<<endl;
-    }
     emitLoad(n->left, false);
     if (noisey) {
         cout<<"And now for the Field Part."<<endl;
     }
     if (n->right->expr == ID_EXPR) {   
+        if (noisey) {
+            cout<<"Regular Field Access."<<endl;
+        }
         int fieldname = symTable.getConstPool()->insert(alloc.alloc(n->right->token.getString()));
         emit(Instruction(isLvalue ? stfield:ldfield, fieldname));
     } else if (n->right->expr == FUNC_EXPR) {
         if (noisey) {
             cout<<"Field is method call"<<endl;
         }
-        int fieldname = symTable.getConstPool()->insert(alloc.alloc(n->right->left->token.getString()));
-        if (n->right->right != nullptr) {
-            genCode(n->right->right, false);
-        }
-        int numArgs = 1;
-        for (auto x = n->right->right; x != nullptr; x = x->next) numArgs++;
-        emit(Instruction(invoke, fieldname, numArgs));
+        emitMethodCall(n);
     } else if (n->right->expr == LIST_EXPR) {
         if (noisey) {
             cout<<"Field is List expression "<<endl;
         }
-        auto listname_node = n->right->left;
-        auto operation = n->right->right;
-        if (operation == nullptr)
-            return;
-        int listname = symTable.getConstPool()->insert(alloc.alloc(listname_node->token.getString()));
-        emit(Instruction(isLvalue ? stfield:ldfield, listname));
-        switch (operation->token.getSymbol()) {
-            case TK_APPEND: {
-                genExpression(operation->left, false);
-                emit(Instruction(list_append));
-            } break;
-            case TK_PUSH: {
-                genExpression(operation->left, false);
-                emit(Instruction(list_push));
-            } break;
-            case TK_POP: {
-                emit(Instruction(list_pop));
-            } break;
-            case TK_SIZE: {
-                emit(Instruction(list_len));  
-            } break;
-            case TK_EMPTY: {
-                emit(Instruction(list_len));  
-                emit(Instruction(ldconst, symTable.getConstPool()->insert(0.0)));
-                emit(Instruction(binop, VM_EQU));
-            } break;
-        }
-    } else {
+        emitListMethod(n);
+    } else if (n->right->expr == FIELD_EXPR) {
         auto t = n->right;
         while (t->expr == FIELD_EXPR) {
             int fieldname = symTable.getConstPool()->insert(alloc.alloc(t->left->token.getString()));

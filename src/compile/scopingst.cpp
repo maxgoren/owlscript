@@ -14,11 +14,12 @@ SymbolTableEntry& BlockScopeIterator::get() {
 void BlockScopeIterator::next() {
     ipos++;
 }
-BlockScope::BlockScope(BlockScope* parent = nullptr) {
+BlockScope::BlockScope(BlockScope* parent = nullptr, string scopeName = "") {
     n = 0;
     enclosingScope = parent;
     nfSentinel = SymbolTableEntry("not found", -1, -1);
     is_class = false;
+    scope_name = scopeName;
 }
 int BlockScope::size() {
     return n;
@@ -86,7 +87,7 @@ void ScopingST::openObjectScope(string name) {
         }
     } else {
         if (noisey) cout<<"Created object scope for "<<name<<endl;
-        BlockScope* ns = new BlockScope(currentScope);
+        BlockScope* ns = new BlockScope(currentScope, name);
         ClassObject* obj = new ClassObject(name, ns);
         ns->is_class = true;
         objectDefs.insert(make_pair(name, obj));
@@ -115,8 +116,9 @@ void ScopingST::openFunctionScope(string name, int L1) {
         currentScope = ns;
     } else {
         if (noisey) cout<<"Created Function Scope for "<<name<<endl;
-        BlockScope*  ns = new BlockScope(currentScope);
+        BlockScope*  ns = new BlockScope(currentScope, name);
         ns->is_class = false;
+        bool in_class = currentScope->is_class;
         int constIdx = constPool->insert(alloc.alloc(new Closure(Function(name, L1), nullptr)));
         int envAddr = nextAddr();
         int d = depth(currentScope)+1;
@@ -124,11 +126,9 @@ void ScopingST::openFunctionScope(string name, int L1) {
         currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, FUNCVAR, d));
         currentScope->find(name).isReady = true;
         currentScope->find(name).scope = ns;
-        bool in_class = currentScope->is_class;
         currentScope = ns;
         if (in_class) {
             currentScope->insert("this", SymbolTableEntry("this", 0, depth(currentScope), true));
-            
         }
     }
 }
@@ -164,7 +164,6 @@ void ScopingST::makeReady(string name) {
         }
         x = x->getEnclosing();
     }
-    if (noisey) cout<<"Couldn't locate "<<name<<endl;
 }
 
 SymbolTableEntry ScopingST::lookup(string name) {
@@ -248,6 +247,10 @@ void ScopingST::printST(BlockScope* s, int d) {
 
 bool ScopingST::currentScopeIsClass() {
     return currentScope->is_class;
+}
+
+string ScopingST::scopeName() {
+    return currentScope->scope_name;
 }
 
 void ScopingST::setDebug(bool dbg) {

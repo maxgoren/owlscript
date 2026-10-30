@@ -265,13 +265,14 @@ void VM::invokeMethod(Instruction& inst) {
     int idx = inst.operand[0].intval;  
     if (numArgs < 0) numArgs = 0;
     if (top(numArgs).type == OBJECT && top(numArgs).objval->type == CLASS) {
-        string fieldName = *(constPool.get(idx).objval->strval);
-        if (isListOp(fieldName)) {
-            dispatchNativeMethod(fieldName);
+        string fieldPart = *(constPool.get(idx).objval->strval);
+        if (isListOp(fieldPart)) {
+            dispatchNativeMethod(fieldPart);
             return;
         }
+        string objName = top(numArgs).objval->object->name;
         auto as_this = top(numArgs);
-        auto item = constPool.fetchMethod(idx);
+        auto item = constPool.fetchMethod(idx, objName);
         opstk[++sp] = item;
         if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
             Closure* close = opstk[sp--].objval->closure;
@@ -283,7 +284,7 @@ void VM::invokeMethod(Instruction& inst) {
                 callstk->locals[i] = opstk[sp--];
             }
         } else {
-            cout<<"Could'nt find a method named "<<fieldName<<endl;
+            cout<<"Could'nt find a method named "<<fieldPart<<endl;
         }   
     } else {
         cout<<"Expect Object, but didnt get one."<<endl;

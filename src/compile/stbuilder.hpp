@@ -107,10 +107,19 @@ class STBuilder {
                     buildSymbolTable(t->right);
                 } break;
                 case LAMBDA_EXPR: {
-                    if (t->token.getString() == "lambda") {
-                        string name = nameLambda();
-                        t->token.setString(name);
+                    string scopename, funcname;
+                    if (symTable->currentScopeIsClass()) {
+                        scopename = symTable->scopeName();
                     }
+                    if (t->token.getString() == "lambda") {
+                        funcname = nameLambda();
+                    } else {
+                        funcname = t->token.getString();
+                    } 
+                    if (!scopename.empty()) {
+                        funcname = scopename+"_"+funcname;
+                    }
+                    t->token.setString(funcname);
                     symTable->openFunctionScope(t->token.getString(), -1);
                     buildSymbolTable(t->left);
                     buildSymbolTable(t->right);

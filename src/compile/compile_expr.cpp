@@ -289,6 +289,11 @@ void ByteCodeGenerator::emitBlessExpr(astnode* n) {
         emit(Instruction(stfield, idxs.back()));
         idxs.pop_back();
     }
+    /*
+        todo: replace implicit constructor expressions
+        with explicit constructor methods for better state
+        management. will get rid of ugly things like 'let stack := new Stack([])'
+    */
 }
 
 void ByteCodeGenerator::emitFunctionCall(astnode* n) {

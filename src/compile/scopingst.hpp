@@ -88,8 +88,9 @@ class BlockScope {
         BlockScope* enclosingScope;
         SymbolTableEntry nfSentinel;
         bool is_class;
+        string scope_name;
     public:
-        BlockScope(BlockScope* parent);
+        BlockScope(BlockScope* parent, string name);
         int size();
         void insert(string name, SymbolTableEntry st);
         SymbolTableEntry& find(string name);
@@ -132,6 +133,7 @@ class ScopingST {
         int depth();
         void print();
         bool currentScopeIsClass();
+        string scopeName();
         void setDebug(bool dbg);
 };
 

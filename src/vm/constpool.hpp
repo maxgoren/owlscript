@@ -28,7 +28,7 @@ class ConstPool {
         int insert(StackItem item) ;
         int getStringIndex(string str);
         StackItem& get(int indx);
-        StackItem& fetchMethod(int indx);
+        StackItem& fetchMethod(int indx, string objName);
         int size();
 };
 
