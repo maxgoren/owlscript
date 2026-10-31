@@ -32,9 +32,10 @@ class GCAllocator {
 
         }
         ~GCAllocator() {
-            for (auto & m : live_items) {
+            for (auto* m : live_items) {
                 if (m != nullptr) {
                     delete m;
+                    m = nullptr;
                 }
             }
         }

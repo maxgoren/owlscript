@@ -27,6 +27,8 @@ class VM {
         ActivationRecord* walkChain(int d);
         StackItem& getUpValue(int d, int i);
         StackItem& top(int depth = 0);
+        void push(const StackItem& item);
+        StackItem pop();
         ActivationRecord* mostRecentAR(int func_id);
         void dispatchNativeMethod(string fname);
         void closeOver(Instruction& inst);
@@ -59,6 +61,9 @@ class VM {
         void makeRange();
         void makeSet(Instruction& inst); 
         void duplicateTop();
+        void increment();
+        void decrement();
+        void floorvalue();
         void haltvm();
         void printTopOfStack();
         void unaryOperation(Instruction& inst);

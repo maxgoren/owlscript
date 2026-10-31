@@ -76,6 +76,16 @@ ActivationRecord* VM::walkChain(int d) {
 StackItem& VM::top(int depth) {
     return opstk[sp-depth];
 }
+
+void VM::push(const StackItem& item) {
+    opstk[++sp] = item;
+}
+
+StackItem VM::pop() {
+    return opstk[sp--];
+} 
+
+
 ActivationRecord* VM::mostRecentAR(int func_id) {
     auto x = callstk;
     while (x != nullptr) {
@@ -94,32 +104,35 @@ void VM::closeOver(Instruction& inst) {
         auto env = mostRecentAR(func_id);
         Closure* cl = new Closure(func, env);
         func_id = constPool.insert((alloc.alloc(cl)));
-        opstk[++sp] = constPool.get(func_id);
+        push(constPool.get(func_id));
     } else {
         cout<<"Fatal Error: Invalid Environment."<<endl;
         running = false;
     }
 }
+
 void VM::openBlock(Instruction& inst) {
     callstk = new ActivationRecord(25, BLOCK_CPIDX, ip, callstk, callstk);
     alloc.registerObject(callstk);
 }
+
 void VM::closeBlock() {
     if (callstk != nullptr && callstk->control != nullptr) {
         callstk = callstk->control;
     }
     if (verbLev > 1) cout<<"Leaving scope."<<endl;
 }
+
 void VM::callProcedure(Instruction& inst) {
     int numArgs = inst.operand[1].intval;
     int cpIdx = inst.operand[0].intval;
     if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
-        Closure* close = opstk[sp--].objval->closure;
+        Closure* close = pop().objval->closure;
         if (close != nullptr) {
             callstk = new ActivationRecord(numArgs+15, close->func.start_ip, ip, callstk, close->env);
             alloc.registerObject(callstk);
             for (int i = numArgs; i > 0; i--) {
-                callstk->locals[i] = opstk[sp--];
+                callstk->locals[i] = pop();
             }
             callstk->locals[0] = close;
             ip = close->func.start_ip;
@@ -129,9 +142,38 @@ void VM::callProcedure(Instruction& inst) {
     cout <<"Fatal error: attempted function application without a function. ("<<cpIdx<<")"<<endl;
     running = false;
 }
+
 void VM::retProcedure() {
     ip = callstk->ret_addr;
     closeBlock();
+}
+
+void VM::invokeMethod(Instruction& inst) {
+    int numArgs = inst.operand[1].intval-1;
+    int idx = inst.operand[0].intval;  
+    if (numArgs < 0) numArgs = 0;
+    if (top(numArgs).type == OBJECT && top(numArgs).objval->type == CLASS) {
+        string fieldPart = *(constPool.get(idx).objval->strval);
+        string objName = top(numArgs).objval->object->name;
+        auto as_this = top(numArgs);
+        auto item = constPool.fetchMethod(idx, objName);
+        push(item);
+        if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
+            Closure* close = pop().objval->closure;
+            callstk = new ActivationRecord(10, inst.operand[0].intval, ip, callstk, close->env);
+            alloc.registerObject(callstk);
+            callstk->locals[0] = as_this;
+            for (int i = numArgs; i > 0; i--) {
+                callstk->locals[i] = pop();
+            }
+            pop();
+            ip = close->func.start_ip;
+        } else {
+            cout<<"Could'nt find a method named "<<fieldPart<<endl;
+        }   
+    } else {
+        cout<<"Expected Object, but didnt get one."<<endl;
+    }
 }
 
 void VM::instantiate(Instruction& inst) {
@@ -142,52 +184,56 @@ void VM::instantiate(Instruction& inst) {
             clone->fields[m.first] = StackItem();
     }
     int idx = constPool.insert(alloc.alloc(clone));
-    opstk[++sp] = constPool.get(idx);
+    push(constPool.get(idx));
 }
 
 void VM::storeGlobal() {
-    StackItem t = opstk[sp--];
-    StackItem val = opstk[sp--];
+    StackItem t = pop();
+    StackItem val = pop();
     globals->locals[t.intval] =  val;
 }
+
 void VM::loadGlobal(Instruction& inst) {
     if (verbLev > 1)
         cout<<"Load "<<globals->locals[inst.operand[0].intval].toString()<<" from "<<(inst.operand[0].intval)<<endl;
-    opstk[++sp] = globals->locals[inst.operand[0].intval];
+    push(globals->locals[inst.operand[0].intval]);
 }
+
 void VM::loadLocal(Instruction& inst) {
-    opstk[++sp] = callstk->locals[inst.operand[0].intval];
+    push(callstk->locals[inst.operand[0].intval]);
     if (verbLev > 1)
         cout<<"loaded local: "<<opstk[sp].toString()<<endl;
 } 
+
 StackItem& VM::getUpValue(int depth, int addr) {
     auto env = walkChain(depth);
     return env == nullptr ? nilSent:env->locals[addr];
 }
 
 void VM::loadUpval(Instruction& inst) {
-    opstk[++sp] = getUpValue(inst.operand[1].intval, inst.operand[0].intval);
+    push(getUpValue(inst.operand[1].intval, inst.operand[0].intval));
     if (verbLev > 1)
         cout<<"loaded Upval: "<<opstk[sp].toString()<<"from "<<inst.operand[0].intval<<" of scope "<<(inst.operand[1].intval)<<endl;
 } 
+
 void VM::storeLocal(Instruction& inst) {
-    int addr = opstk[sp--].intval;
-    StackItem val = opstk[sp--];
+    int addr = pop().intval;
+    StackItem val = pop();
     callstk->locals[addr] = val;
     if (verbLev > 1)
         cout<<"Stored local at "<<addr<<endl;
 }
+
 void VM::storeUpval(Instruction& inst) {
-    int addr = opstk[sp--].intval;
-    StackItem val = opstk[sp--];
-    walkChain(inst.operand[0].intval)->locals[addr] = val;
+    int addr = pop().intval;
+    walkChain(inst.operand[0].intval)->locals[addr] = pop();
     if (verbLev > 1)
         cout<<"Stored upval at "<<addr<<" in scope "<<(inst.operand[0].intval)<<endl;
 }
 
 void VM::makeList(Instruction& inst) {
     int idx = constPool.insert(alloc.alloc(new deque<StackItem>()));
-    opstk[++sp] = constPool.get(idx);
+    push(constPool.get(idx));
 }
 
 void VM::makeSet(Instruction& inst) {
@@ -205,7 +251,7 @@ void VM::loadIndexed(Instruction& inst) {
     if (top(1).type == OBJECT && top(0).type == NUMBER) {
         switch (top(1).objval->type) {
             case LIST:
-                top(1) = (top(1).objval->list->at(top(0).numval)); sp--; 
+                top(1) = (top(1).objval->list->at(top(0).numval)); pop(); 
                 return;
             case STRING: 
                 char c = top(1).objval->strval->at(top(0).numval);
@@ -217,7 +263,7 @@ void VM::loadIndexed(Instruction& inst) {
                 } else {
                     idx = constPool.insert(alloc.alloc(new string(str)));
                 }
-                top(1) = (constPool.get(idx)); sp--; 
+                top(1) = (constPool.get(idx)); pop(); 
                 return;
         }
     }
@@ -225,9 +271,12 @@ void VM::loadIndexed(Instruction& inst) {
 void VM::storeIndexed(Instruction& inst) {
     if (top(1).type == OBJECT && top(1).objval->type == LIST) {
         top(1).objval->list->at(top(0).numval) = top(2); 
-        sp--;
+        pop();
+        top(1) = top();
+        pop();
     }
 }
+
 void VM::loadField(Instruction& inst) {
     if (top(0).type == OBJECT && top(0).objval->type == CLASS) {
         int idx = inst.operand[0].intval;    
@@ -247,77 +296,33 @@ bool isListOp(string fname) {
     return false;
 }
 
-
-void VM::dispatchNativeMethod(string fname) {
-    cout<<"Dispatching Native Method."<<endl;
-    if (fname == "pop") popList();
-    if (fname == "push") pushList();
-    if (fname == "append") appendList();
-    if (fname == "size") listLength();
-    if (fname == "empty") {
-        listLength();
-        opstk[++sp] = top().objval->list->empty();
-    }
-}
-
-void VM::invokeMethod(Instruction& inst) {
-    int numArgs = inst.operand[1].intval-1;
-    int idx = inst.operand[0].intval;  
-    if (numArgs < 0) numArgs = 0;
-    if (top(numArgs).type == OBJECT && top(numArgs).objval->type == CLASS) {
-        string fieldPart = *(constPool.get(idx).objval->strval);
-        if (isListOp(fieldPart)) {
-            dispatchNativeMethod(fieldPart);
-            return;
-        }
-        string objName = top(numArgs).objval->object->name;
-        auto as_this = top(numArgs);
-        auto item = constPool.fetchMethod(idx, objName);
-        opstk[++sp] = item;
-        if (opstk[sp].type == OBJECT && opstk[sp].objval->type == CLOSURE) {
-            Closure* close = opstk[sp--].objval->closure;
-            callstk = new ActivationRecord(10, inst.operand[0].intval, ip, callstk, close->env);
-            alloc.registerObject(callstk);
-            callstk->locals[0] = as_this;
-            ip = close->func.start_ip;
-            for (int i = numArgs; i > 0; i--) {
-                callstk->locals[i] = opstk[sp--];
-            }
-        } else {
-            cout<<"Could'nt find a method named "<<fieldPart<<endl;
-        }   
-    } else {
-        cout<<"Expect Object, but didnt get one."<<endl;
-    }
-}
-
 void VM::storeField(Instruction& inst) {
     if (top(0).type == OBJECT && top(0).objval->type == CLASS) {
         int idx = inst.operand[0].intval;    
         string fieldName = *(constPool.get(idx).objval->strval);
         top(0).objval->object->fields[fieldName] = top(1);
         top(1) = top(0);
-        --sp;
+        pop();
     }
 }
 void VM::loadConst(Instruction& inst) {
     if (inst.operand[0].type == INTEGER) {
-        opstk[++sp] = (constPool.get(inst.operand[0].intval));
+        push((constPool.get(inst.operand[0].intval)));
     } else {
-        opstk[++sp] = (inst.operand[0]);
+        push((inst.operand[0]));
     }
 }
 
 void VM::loadAddress(Instruction& inst) {
-    opstk[++sp] = (inst.operand[0]); 
+    push((inst.operand[0])); 
 }
 
 void VM::randNumber(Instruction& inst) {
-    opstk[++sp] = fmod(rand(), inst.operand[0].numval); 
+    push(fmod(rand(), inst.operand[0].numval)); 
 }
 
 void VM::branchOnFalse(Instruction& inst) {
-    bool tmp = opstk[sp--].boolval;
+    bool tmp = pop().boolval;
     if (tmp == false) {
         ip = inst.operand[0].intval;
     }
@@ -330,7 +335,7 @@ void VM::uncondBranch(Instruction& inst) {
 void VM::appendList() {
     if (top(1).type == OBJECT && top(1).objval->type == LIST)
         top(1).objval->list->push_back(top(0));
-    sp--;
+    pop();
 }
 
 void VM::pushList() {
@@ -342,7 +347,8 @@ void VM::popList() {
     if (top().type == OBJECT && top().objval->type == LIST) {
         StackItem t = top().objval->list->front();
         top().objval->list->pop_front();
-        opstk[++sp] = t;
+        pop();
+        push(t);
     }
 }
 void VM::listLength() {
@@ -352,8 +358,8 @@ void VM::listLength() {
         top() = ((double)top().objval->strval->size());
 }
 void VM::makeRange() {
-    double hi = opstk[sp--].numval;
-    double lo = opstk[sp--].numval;
+    double hi = pop().numval;
+    double lo = pop().numval;
     if (top(0).type != OBJECT && (top(0).objval->type != LIST)) {
         cout<<"Error: ranges require a list context."<<endl;
         return;
@@ -370,13 +376,13 @@ void VM::makeRange() {
 }
 void VM::duplicateTop() {
     auto item = top(0);
-    opstk[++sp] = item;
+    push(item);
 }
 void VM::haltvm() {
     running = false;
 }
 void VM::printTopOfStack() {
-    cout<<opstk[sp--].toString()<<std::flush;
+    cout<<pop().toString()<<std::flush;
 }
 void VM::unaryOperation(Instruction& inst) {
     switch (inst.operand[0].intval) {
@@ -433,35 +439,44 @@ void VM::arithmeticOperation(Instruction& inst) {
     switch (inst.operand[0].intval) {
         case VM_ADD:  {
             if ((top(1).type == OBJECT && top(1).objval->type == STRING) || (top(0).type == OBJECT && top(0).objval->type == STRING)) {
-                string lhs = top(1).toString();
-                string rhs = top(0).toString();
-                string result;
-                for (char c : lhs) result.push_back(c);
-                for (char c : rhs) result.push_back(c);
+                string rhs = pop().toString();
+                string lhs = pop().toString();
+                string result = lhs+rhs;
                 int idx = constPool.insert(alloc.alloc(result));
-                opstk[++sp] = constPool.get(idx);
+                push(constPool.get(idx));
             } else {
-                top(1).add(top());
-                sp--;
+                top(1).add(top()); pop();
             }
         } break;
         case VM_SUB:  {
-            top(1).sub(top());     sp--;
+            top(1).sub(top()); pop();
         } break;
         case VM_MUL:  {
-            top(1).mul(top());     sp--;
+            top(1).mul(top()); pop();
         } break;
         case VM_DIV:  {
-            top(1).div(top());    sp--;
+            top(1).div(top()); pop();
         } break;
         case VM_MOD:  {
-            top(1).mod(top());
-            sp--;
+            top(1).mod(top()); pop();
         } break;
         default:
             break;
     }
 }
+
+void VM::increment() {
+    if (top(0).type == NUMBER) top(0).numval += 1;
+}
+
+void VM::decrement() {
+    if (top(0).type == NUMBER) top(0).numval -= 1;
+}
+
+void VM::floorvalue() {
+    if (top(0).type == NUMBER) top(0).numval = floor(top(0).numval);
+}
+
 void VM::execute(Instruction& inst) {
     switch (inst.op) {
         case list_append: { appendList(); } break;
@@ -498,10 +513,10 @@ void VM::execute(Instruction& inst) {
         case mkset:     { makeSet(inst); } break;
         case mkrange:   { makeRange(); } break;
         case ldrand:    { randNumber(inst); } break;
-        case popstack:  { sp--; } break; 
-        case incr:     { if (top(0).type == NUMBER) top(0).numval += 1; } break;
-        case decr:     { if (top(0).type == NUMBER) top(0).numval -= 1; } break;
-        case floorval: { if (top(0).type == NUMBER) top(0).numval = floor(top(0).numval); } break;
+        case popstack:  { pop(); } break; 
+        case incr:     { increment(); } break;
+        case decr:     { decrement(); } break;
+        case floorval: { floorvalue(); } break;
         default:
             break;
     }

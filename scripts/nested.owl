@@ -1,0 +1,57 @@
+def chest() {
+    let y := "slurp";
+    def flu() {
+        return y + "egg roll";
+    }
+    return flu() + " soup";
+}
+def sorter(let xs) {
+    def sort() {
+        let n := xs.size();
+        let i := 0;
+        let did := true;
+        let iters := 0;
+        while (did) {
+            println " ";
+            println "le start.";
+            println " ";
+            did := false;
+            i := 1;
+            while (i < n && !did) {
+                if (xs[i] < xs[(i-1)]) {
+                    did := true;
+                    let tmp := xs[(i-1)];
+                    xs[(i-1)] := xs[i];
+                    xs[i] := tmp;
+                    println "swap " + i + " and " + (i-1);
+                }
+                i := i + 1;
+                iters++;
+                println i + "/" + n + " " + did;
+            }
+        }
+        println "done in " + iters;
+    }
+    sort();
+    return xs;
+}
+def merge(let lhs, let rhs) {
+    let result := [];
+    let i := 0;
+    let j := 0;
+    while (i < lhs.size() && j < rhs.size()) {
+        if (lhs[i] < rhs[j]) {
+            result.append(lhs[i]);
+            i++;
+        } else {
+            result.append(rhs[j]);
+            j++;
+        }
+    }
+    while (i < lhs.size()) { result.append(lhs[i]); i++; }
+    while (j < rhs.size()) { result.append(rhs[j]); j++; }
+    return result;
+}
+
+let myl := [6,34,22,1,19,11,200,54];
+println sorter(myl);

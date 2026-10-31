@@ -4,4 +4,8 @@ fn addTwo(let i, let j) {
 fn apply(let f, let x, let y) {
     return f(x, y);
 }
+fn divTwo(let q, let p) {
+    return q/p;
+}
 println apply(addTwo, 3, 6);
+println apply(divTwo, 3, 6);

@@ -1,8 +1,12 @@
 #include "bcgen.hpp"
 
 int runtimeDepth(int currDepth, int itemDepth) {
-    if (itemDepth == -1 || currDepth - itemDepth < 0)
+    if (itemDepth == -1)
         return -1;
+    if (currDepth - itemDepth < -1) {
+        cout<<"Hmmm. might have a scoping issue, "<<(currDepth - itemDepth)<<", trying: "<< abs((currDepth - itemDepth))<<endl;
+        return -1;
+    }
     return (currDepth - itemDepth);
 }
 
@@ -144,12 +148,11 @@ void ByteCodeGenerator::emitStoreFuncInEnvironment(astnode* n, bool isLambda) {
     SymbolTableEntry fn_info = symTable.lookup(name);
     bool inClass = symTable.currentScopeIsClass();
     emit(Instruction(mkclosure, fn_info.constPoolIndex, fn_info.depth));
-    if (isLambda && !inClass)
-        return;
     if (inClass) {
         emit(Instruction(ldaddr, fn_info.addr));
         emit(Instruction(stfield, fn_info.addr));
     } else {
+        if (isLambda) return;
         int depth = runtimeDepth(symTable.depth(), fn_info.depth);
         if (fn_info.depth == GLOBAL_SCOPE) {
             emit(Instruction(ldaddr, fn_info.addr));

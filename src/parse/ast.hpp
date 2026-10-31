@@ -47,8 +47,8 @@ struct astnode {
     astnode* next;
     astnode(ExprType et, Token tk) : expr(et), kind(EXPRNODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
     astnode(StmtType st, Token tk) : stmt(st), kind(STMTNODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
-    astnode(Token tk) : kind(TEMP_NODE), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
-    astnode() : token(Token(TK_EOI, "fin")), left(nullptr), right(nullptr), next(nullptr) { }
+    astnode(Token tk) : kind(TEMP_NODE), stmt(EXPR_STMT), token(tk), left(nullptr), right(nullptr), next(nullptr) { }
+    astnode() : kind(TEMP_NODE), stmt(EXPR_STMT), token(Token(TK_EOI, "fin")), left(nullptr), right(nullptr), next(nullptr) { }
     ~astnode() {
         if (next != nullptr)
             delete next;

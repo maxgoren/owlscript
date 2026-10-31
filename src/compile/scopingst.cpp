@@ -94,7 +94,7 @@ void ScopingST::openObjectScope(string name) {
         int constIdx = constPool->insert(alloc.alloc(obj));
         int envAddr = nextAddr();
         objectDefs[name]->cpIdx = constIdx;
-        currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, CLASSVAR, depth(currentScope)+1));
+        currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, CLASSVAR, depth(currentScope)));
         currentScope->find(name).scope = ns;
         currentScope = ns;
     }
@@ -121,8 +121,8 @@ void ScopingST::openFunctionScope(string name, int L1) {
         bool in_class = currentScope->is_class;
         int constIdx = constPool->insert(alloc.alloc(new Closure(Function(name, L1), nullptr)));
         int envAddr = nextAddr();
-        int d = depth(currentScope)+1;
-        d = (d == 0) ? 1:d;
+        int d = depth(currentScope);
+        //d = (d == 0) ? 1:d;
         currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, FUNCVAR, d));
         currentScope->find(name).isReady = true;
         currentScope->find(name).scope = ns;
@@ -235,7 +235,7 @@ void ScopingST::printST(BlockScope* s, int d) {
         auto m = x->data[i];
         if (m.type != NONE) {
             for (int i = 0; i < d; i++) cout<<"  ";
-            cout<<m.name<<": "<<m.addr<<", "<<m.depth<<"("<<m.lineNum<<")"<<endl;
+            cout<<"name: "<<m.name<<",  address: "<<m.addr<<", depth: "<<m.depth<<endl;
             if (m.type == 2) {
                 printST(m.scope, d+1);
             } else if (m.type == 3) {

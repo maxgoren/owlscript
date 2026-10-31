@@ -13,6 +13,7 @@ struct GCObject {
         kind = t;
         marked = false;
     }
+    virtual ~GCObject() { }
 };
 
 
