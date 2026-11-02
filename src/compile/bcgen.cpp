@@ -126,8 +126,8 @@ void ByteCodeGenerator::printByteCode() {
             break;
         addr++;
     }
-    cout<<"----------------"<<endl;
-    cout<<"Symbol table: ";
+    cout<<"----------------\n";
+    cout<<"Symbol table: "<<endl;
     symTable.print();
     cout<<"----------------"<<endl;
 }

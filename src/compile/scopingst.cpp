@@ -108,6 +108,7 @@ void ScopingST::copyObjectScope(string instanceName, string objName) {
     }
 }
 
+
 void ScopingST::openFunctionScope(string name, int L1) {
     if (currentScope->find(name) != currentScope->end()) {
        if (noisey) cout<<"Ropened function scope for "<<name<<endl;
@@ -122,13 +123,18 @@ void ScopingST::openFunctionScope(string name, int L1) {
         int constIdx = constPool->insert(alloc.alloc(new Closure(Function(name, L1), nullptr)));
         int envAddr = nextAddr();
         int d = depth(currentScope);
-        //d = (d == 0) ? 1:d;
         currentScope->insert(name, SymbolTableEntry(name, envAddr, constIdx, FUNCVAR, d));
         currentScope->find(name).isReady = true;
         currentScope->find(name).scope = ns;
         currentScope = ns;
         if (in_class) {
             currentScope->insert("this", SymbolTableEntry("this", 0, depth(currentScope), true));
+            string scopeName = currentScope->enclosingScope->scope_name;
+            cout<<name<<" == "<<scopeName<<"?"<<endl;
+            if (name == scopeName+"_"+scopeName) {
+                objectDefs[scopeName]->hasConstructor = true;
+                objectDefs[scopeName]->constructorIndex = constIdx;
+            }
         }
     }
 }
@@ -207,7 +213,6 @@ int ScopingST::depth() {
     return depth(currentScope);
 }
 void ScopingST::print() {
-    cout<<"Symbol table: \n";
     printST(currentScope, 1);
 }
 
@@ -235,7 +240,7 @@ void ScopingST::printST(BlockScope* s, int d) {
         auto m = x->data[i];
         if (m.type != NONE) {
             for (int i = 0; i < d; i++) cout<<"  ";
-            cout<<"name: "<<m.name<<",  address: "<<m.addr<<", depth: "<<m.depth<<endl;
+            cout<<m.name<<":  addr: "<<m.addr<<", depth: "<<m.depth<<endl;
             if (m.type == 2) {
                 printST(m.scope, d+1);
             } else if (m.type == 3) {

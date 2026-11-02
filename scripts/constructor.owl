@@ -1,0 +1,16 @@
+class Example {
+    let info;
+    let data;
+    def Example() {
+        this.info := "feds";
+    }
+    def showInfo() {
+        println this.info;
+    }
+    def getData() {
+        return this.data;
+    }
+};
+let q := new Example("try this", ["and","this"]);
+q.showInfo();
+println q.getData();

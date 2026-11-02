@@ -48,9 +48,13 @@ struct ClassObject  {
     unordered_map<string, StackItem> fields;
     bool instantiated;
     BlockScope* scope;
+    bool hasConstructor;
+    int constructorIndex;
     ClassObject(string n = "",  BlockScope* s = nullptr) {
         name = n;
         scope = s;
+        hasConstructor = false;
+        constructorIndex = 0;
     }
 };
 
