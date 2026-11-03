@@ -96,7 +96,13 @@ class STBuilder {
                 case ID_EXPR: {
                     if (fromLet) {
                         if (symTable->existsInScope(t->token.getString()) == false) {
-                            symTable->insert(t->token.getString());
+                            if (symTable->currentScopeIsClass()) {
+                                if (symTable->existsInScope(symTable->scopeName()+"_"+t->token.getString()) == false) {
+                                    symTable->insert(t->token.getString());
+                                }
+                            } else {
+                                symTable->insert(t->token.getString());
+                            }
                         }
                     } else if (symTable->lookup(t->token.getString()).addr == -1) {    
                         cout<<"Error: Unknown variable name: "<<t->token.getString()<<endl;
@@ -134,7 +140,6 @@ class STBuilder {
                     buildSymbolTable(t->right);
                 } break;
                 case FIELD_EXPR: {
-                    //buildSymbolTable(t->right);
                     buildSymbolTable(t->left);
                 } break;
                 case RANGE_EXPR: {
