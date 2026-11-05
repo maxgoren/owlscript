@@ -20,6 +20,26 @@ class STBuilder {
             static int n = 0;
             return "lambdafunc" + to_string(n++);
         }
+        astnode* renameFunction(astnode* t) {
+            string scopename, funcname;
+            if (t->token.getString() == "lambda") {
+                funcname = nameLambda();
+            } else {
+                funcname = t->token.getString();
+            } 
+            if (symTable->currentScopeIsClass()) {
+                scopename = symTable->scopeName();
+                funcname = scopename+"_"+funcname;
+            }
+            t->token.setString(funcname);
+            return t;
+        }
+        bool existsAsMethod(string name) {
+            return (symTable->currentScopeIsClass() && symTable->existsInScope(symTable->scopeName()+"_" + name));
+        }
+        bool shouldInsert(string name) {
+            return !symTable->existsInScope(name) && !existsAsMethod(name);
+        }
         void buildStatementST(astnode* t) {
             if (t == nullptr)
                 return;
@@ -95,14 +115,8 @@ class STBuilder {
             switch (t->expr) {
                 case ID_EXPR: {
                     if (fromLet) {
-                        if (symTable->existsInScope(t->token.getString()) == false) {
-                            if (symTable->currentScopeIsClass()) {
-                                if (symTable->existsInScope(symTable->scopeName()+"_"+t->token.getString()) == false) {
-                                    symTable->insert(t->token.getString());
-                                }
-                            } else {
-                                symTable->insert(t->token.getString());
-                            }
+                       if (shouldInsert(t->token.getString())) {
+                            symTable->insert(t->token.getString());
                         }
                     } else if (symTable->lookup(t->token.getString()).addr == -1) {    
                         cout<<"Error: Unknown variable name: "<<t->token.getString()<<endl;
@@ -113,19 +127,7 @@ class STBuilder {
                     buildSymbolTable(t->right);
                 } break;
                 case LAMBDA_EXPR: {
-                    string scopename, funcname;
-                    if (symTable->currentScopeIsClass()) {
-                        scopename = symTable->scopeName();
-                    }
-                    if (t->token.getString() == "lambda") {
-                        funcname = nameLambda();
-                    } else {
-                        funcname = t->token.getString();
-                    } 
-                    if (!scopename.empty()) {
-                        funcname = scopename+"_"+funcname;
-                    }
-                    t->token.setString(funcname);
+                    t = renameFunction(t);
                     symTable->openFunctionScope(t->token.getString(), -1);
                     buildSymbolTable(t->left);
                     buildSymbolTable(t->right);

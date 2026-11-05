@@ -22,11 +22,14 @@
 {"rest",TK_REST}
 {"empty",TK_EMPTY}
 {"from",TK_FROM}
+{"sqrt",TK_SQRT}
 {"floor",TK_FLOOR}
 {"while",TK_WHILE}
 {"false",TK_FALSE}
 {"class",TK_CLASS}
 {"print",TK_PRINT}
+{"fopen",TK_FOPEN}
+{"fclose",TK_FCLOSE}
 {"public",TK_PUBLIC}
 {"random",TK_RANDOM}
 {"append",TK_APPEND}

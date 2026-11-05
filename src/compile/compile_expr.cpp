@@ -54,10 +54,6 @@ void ByteCodeGenerator::emitUnaryOperator(astnode* n) {
             genCode(n->left, true);
             emitStore(n);
         } break;
-        case TK_FLOOR: {
-            genCode(n->left, false);
-            emit(Instruction(floorval));
-        } break;
         default:
             genCode(n->left, false);
             emit(Instruction(unop, VM_NEG));
@@ -79,6 +75,19 @@ void ByteCodeGenerator::emitTernaryExpr(astnode* n) {
     skipTo(L2);
     emit(Instruction(jump, L3));
     restore();
+}
+
+void ByteCodeGenerator::emitBuiltInExpr(astnode* n) {
+    switch (n->token.getSymbol()) {
+        case TK_FLOOR: {
+            genCode(n->left, false);
+            emit(Instruction(floorval));
+        } break;
+        case TK_SQRT: {
+            genCode(n->left, false);
+            emit(Instruction(sqrtval));
+        } break;
+    }
 }
 
 void ByteCodeGenerator::emitRangeExpr(astnode* n) {

@@ -1,27 +1,27 @@
 #ifndef heapitem_hpp
 #define heapitem_hpp
 #include <iostream>
-#include <unordered_set>
 #include <unordered_map>
-#include <list>
 #include <deque>
 #include "gcobject.hpp"
 using namespace std;
 
 enum HeapItemType {
-    STRING, FUNCTION, CLOSURE, LIST, DICT, CLASS, REF, NILPTR
+    STRING, FUNCTION, CLOSURE, LIST, FILEHANDLE, DICT, CLASS, REF, NILPTR
 };
 
 struct StackItem;
 struct ClassObject;
 struct Closure;
 struct Function;
+struct FileHandle;
+
 
 string closureToString(Closure* cl);
 string listToString(deque<StackItem>* list);
 string classToString(ClassObject* obj);
 string dictToString(unordered_map<string,StackItem>* dict);
-
+string fileHandleToString(FileHandle* fh);
 void freeClosure(Closure* cl);
 void freeClass(ClassObject* obj);
 
@@ -33,9 +33,8 @@ struct GCItem : GCObject {
         deque<StackItem>* list;
         ClassObject* object;
         StackItem* reference;
-        unordered_map<string,StackItem>* dict;
+        FileHandle* fileHandle;
     };
-    GCItem(unordered_map<string,StackItem>* d) : GCObject(ITEM), type(DICT), dict(d) { }
     GCItem(string* s) : GCObject(ITEM), type(STRING), strval(s) { }
     GCItem(Closure* c) : GCObject(ITEM), type(CLOSURE), closure(c) { }
     GCItem(deque<StackItem>* l) : GCObject(ITEM), type(LIST), list(l) { }
@@ -77,7 +76,6 @@ struct GCItem : GCObject {
             case STRING: return *(strval);
             case CLOSURE: return closureToString(closure);
             case LIST: return listToString(list);
-            //case DICT: return dictToString(dict);
             case CLASS: return "(class)" + classToString(object);
             case REF: return "(reference)";
         }

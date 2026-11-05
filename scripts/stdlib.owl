@@ -15,3 +15,9 @@ fn filter(let xs, let f) {
     }
     return res;
 }
+fn min(let a, let b) {
+    return (a < b) ? a:b;
+}
+fn max(let a, let b) {
+    return (a < b) ? b:a;
+}

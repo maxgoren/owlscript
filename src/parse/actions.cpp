@@ -438,7 +438,7 @@ astnode* mkRandom(vector<astnode*>& reducing) {
 astnode* mkBuiltin(vector<astnode*>& reducing) {
     astnode* nn = reducing[0];
     nn->kind = EXPRNODE;
-    nn->expr = UOP_EXPR;
+    nn->expr = BUILTIN_EXPR;
     nn->left = reducing[2];
     delete reducing[1];
     delete reducing[3];

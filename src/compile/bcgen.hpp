@@ -40,6 +40,7 @@ class  ByteCodeGenerator {
         void emitConstant(astnode* n) ;
         void emitLambda(astnode* n) ;
         void emitBlessExpr(astnode* n) ;
+        void emitBuiltInExpr(astnode* n);
         void emitFunctionCall(astnode* n) ;
         void emitListConstructor(astnode* n);
         void emitRangeExpr(astnode* n) ;

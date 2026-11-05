@@ -64,6 +64,7 @@ class VM {
         void increment();
         void decrement();
         void floorvalue();
+        void sqrtvalue();
         void haltvm();
         void printTopOfStack();
         void unaryOperation(Instruction& inst);

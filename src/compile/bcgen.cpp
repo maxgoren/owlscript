@@ -61,7 +61,8 @@ void ByteCodeGenerator::genExpression(astnode* n, bool needLvalue) {
         case CONST_EXPR:     { emitConstant(n);         } break;
         case ID_EXPR:        { emitLoad(n, needLvalue); } break;
         case BIN_EXPR:       { emitBinaryOperator(n); } break;
-        case UOP_EXPR:       { emitUnaryOperator(n);  } break; 
+        case UOP_EXPR:       { emitUnaryOperator(n);  } break;
+        case BUILTIN_EXPR:   { emitBuiltInExpr(n); } break; 
         case LAMBDA_EXPR:    { emitLambda(n);         } break;
         case FUNC_EXPR:      { emitFunctionCall(n);   } break;
         case LISTCON_EXPR:   { emitListConstructor(n); } break;

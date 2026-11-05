@@ -1,10 +1,8 @@
-{* Testing objects pointing to objects (pointing to objects, etc.) & the garbage collector *}
-
+{* Testing objects pointing to objects (pointing to objects, etc.) and the garbage collector *}
 class Link {
    let info;
    let next;
 };
-
 
 fn B() {
    let a := new Link();
@@ -24,4 +22,5 @@ fn B() {
    a.next.next.next.info := 15;
    println a;
 }
+
 B();

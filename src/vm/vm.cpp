@@ -477,6 +477,10 @@ void VM::floorvalue() {
     if (top(0).type == NUMBER) top(0).numval = floor(top(0).numval);
 }
 
+void VM::sqrtvalue() {
+    if (top(0).type == NUMBER) top(0).numval = sqrtf(top(0).numval);
+}
+
 void VM::execute(Instruction& inst) {
     switch (inst.op) {
         case list_append: { appendList(); } break;
@@ -517,6 +521,7 @@ void VM::execute(Instruction& inst) {
         case incr:     { increment(); } break;
         case decr:     { decrement(); } break;
         case floorval: { floorvalue(); } break;
+        case sqrtval:  { sqrtvalue(); } break;
         default:
             break;
     }
